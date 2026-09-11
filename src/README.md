@@ -1,4 +1,4 @@
-# Run Project 
+# Run the Project 
 
 ## Prerequisites
 
