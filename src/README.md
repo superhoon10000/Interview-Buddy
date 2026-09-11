@@ -1,6 +1,6 @@
 # Run the Project 
 
-## Prerequisites for the application
+## Prerequisites for the application.
 
 - Node.js 18 or newer
 - npm 9 or newer (installed with Node.js)
