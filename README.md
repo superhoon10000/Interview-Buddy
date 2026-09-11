@@ -68,3 +68,10 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/d
 ### `npm run build` fails to minify
 
 This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+
+
+## Firebase-backed interview questions
+
+The prototype includes a backend question API that reads from Firebase Cloud Firestore instead of hardcoding interview prompts in `InterviewSessionPage.js`.
+
+See [`FIREBASE_SETUP.md`](FIREBASE_SETUP.md) for Firebase credentials, seeding, and local run instructions. The React page calls the existing `src/services/interviewService.js` facade, which talks to the Express application layer; the browser does not access Firestore or quiz answer keys directly.
