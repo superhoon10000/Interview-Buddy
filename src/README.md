@@ -1,4 +1,4 @@
-# Run This Project
+# Run the Project 
 
 ## Prerequisites
 
@@ -24,7 +24,7 @@ npm start
 Then open your browser at:
 
 ```text
-http://localhost:3000
+
 ```
 
 The app reloads automatically when you change source files.
