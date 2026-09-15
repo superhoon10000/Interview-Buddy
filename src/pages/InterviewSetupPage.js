@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import PageLayout from "../components/layout/PageLayout";
+import { PAGES } from "../utils/constants";
 
 function InterviewSetupPage({
   currentPage,
@@ -30,7 +31,7 @@ function InterviewSetupPage({
   }
 
   function handleCancel() {
-    onNavigate("dashboard");
+    onNavigate(PAGES.DASHBOARD);
   }
 
   return (

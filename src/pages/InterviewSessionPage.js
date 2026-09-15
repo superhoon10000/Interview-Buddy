@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import PageLayout from "../components/layout/PageLayout";
 import FeedbackBox from "../components/interview/FeedbackBox";
+import { PAGES } from "../utils/constants";
 
 function InterviewSessionPage({
   currentPage,
@@ -209,7 +210,7 @@ function InterviewSessionPage({
 
           <button
             className="secondaryButton"
-            onClick={() => onNavigate("dashboard")}
+            onClick={() => onNavigate(PAGES.DASHBOARD)}
           >
             Back
           </button>

@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import PageLayout from "../components/layout/PageLayout";
 import mockSettings from "../data/mockSettings";
 import { useTheme } from "../context/ThemeContext";
+import { PAGES } from "../utils/constants";
 
 // UC15 — for the prototype we treat this as the "real" password.
 // In production it would be validated against the auth service.
@@ -120,7 +121,7 @@ function SettingsPage({ currentPage, onNavigate, onAccountDeleted }) {
     if (onAccountDeleted) {
       onAccountDeleted();
     } else {
-      onNavigate("login");
+      onNavigate(PAGES.LOGIN);
     }
   }
 
@@ -264,7 +265,7 @@ function SettingsPage({ currentPage, onNavigate, onAccountDeleted }) {
         <button
           className="primaryButton"
           style={{ marginTop: "10px" }}
-          onClick={() => onNavigate("changePassword")}
+          onClick={() => onNavigate(PAGES.CHANGE_PASSWORD)}
         >
           Change Password
         </button>

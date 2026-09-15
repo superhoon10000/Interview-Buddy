@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import PageLayout from "../components/layout/PageLayout";
 import mockSessions from "../data/mockSessions";
+import { PAGES } from "../utils/constants";
 
 function HistoryPage({ currentPage, onNavigate }) {
   const [expandedId, setExpandedId] = useState(null);
@@ -43,7 +44,7 @@ function HistoryPage({ currentPage, onNavigate }) {
                 <button
                   className="secondaryButton"
                   style={{ marginTop: "10px" }}
-                  onClick={() => onNavigate("interview")}
+                  onClick={() => onNavigate(PAGES.INTERVIEW)}
                 >
                   Resume Session
                 </button>
@@ -59,7 +60,7 @@ function HistoryPage({ currentPage, onNavigate }) {
               </button>
               <button
                 className="secondaryButton"
-                onClick={() => onNavigate("interview")}
+                onClick={() => onNavigate(PAGES.INTERVIEW)}
               >
                 Resume
               </button>
