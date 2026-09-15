@@ -57,8 +57,8 @@ function App() {
     setCurrentPage(PAGES.INTERVIEW_SETUP);
   }
 
-  function handleStartInterview(formData) {
-    setSetupData(formData);
+  function handleStartInterview(sessionData) {
+    setSetupData(sessionData);
     setCurrentPage(PAGES.INTERVIEW);
   }
 
