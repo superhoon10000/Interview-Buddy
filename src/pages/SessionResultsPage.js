@@ -1,6 +1,7 @@
 import React from "react";
 import PageLayout from "../components/layout/PageLayout";
 import FeedbackBox from "../components/interview/FeedbackBox";
+import { PAGES } from "../utils/constants";
 
 // UC14 — View Session Results
 // Mock per-question breakdown that the Analytics Engine would normally
@@ -71,7 +72,7 @@ function SessionResultsPage({
           </p>
           <button
             className="primaryButton"
-            onClick={() => onNavigate("dashboard")}
+            onClick={() => onNavigate(PAGES.DASHBOARD)}
           >
             Return to Home
           </button>
@@ -110,11 +111,11 @@ function SessionResultsPage({
   function handleStartNewSession() {
     // Step 8 happy path — go back to the dashboard so the user can
     // pick a fresh practice mode.
-    onNavigate("dashboard");
+    onNavigate(PAGES.DASHBOARD);
   }
 
   function handleReturnHome() {
-    onNavigate("dashboard");
+    onNavigate(PAGES.DASHBOARD);
   }
 
   function handleRetrySession() {
@@ -122,7 +123,7 @@ function SessionResultsPage({
     if (onRetrySession) {
       onRetrySession(sessionResult);
     } else {
-      onNavigate("interviewSetup");
+      onNavigate(PAGES.INTERVIEW_SETUP);
     }
   }
 
