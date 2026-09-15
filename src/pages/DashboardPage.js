@@ -52,7 +52,7 @@ function DashboardPage({ currentPage, onNavigate, onSelectMode }) {
         <h2 className="panelTitle">Quick Overview</h2>
         <p>
           Select a mode, fill out your interview setup details, and then begin
-          a hardcoded session flow based on your capstone use case.
+          a database-backed session flow that retrieves interview questions through the Interview Buddy application API.
         </p>
       </div>
     </PageLayout>
