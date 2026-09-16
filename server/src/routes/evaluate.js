@@ -41,6 +41,23 @@ Respond ONLY in JSON with this shape: { "score": number (0-100), "feedback": str
     const cleaned = rawText.replace(/```json|```/g, '').trim();
     const evaluation = JSON.parse(cleaned);
 
+    // Sanity-check that Claude actually returned the shape we asked for,
+    // before we save it to Firestore or send it back to the user.
+    // (This is a lightweight version of schema validation — no extra
+    // dependency needed, just checking the two fields we rely on.)
+    const scoreIsValid =
+      typeof evaluation.score === 'number' &&
+      evaluation.score >= 0 &&
+      evaluation.score <= 100;
+    const feedbackIsValid = typeof evaluation.feedback === 'string' && evaluation.feedback.length > 0;
+
+    if (!scoreIsValid || !feedbackIsValid) {
+      return res.status(502).json({
+        error: 'The AI response did not match the expected evaluation shape.',
+        requestId,
+      });
+    }
+
     // Save the evaluation back to Firestore, linked to the session/question
     if (metadata?.sessionId) {
       await db
