@@ -1,25 +1,18 @@
-import React, { useEffect, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import React, { useState } from "react";
 import "./App.css";
 
 import { PAGES } from "./utils/constants";
-import AppRoutes from "./utils/routes";
+import { renderPage } from "./utils/routes";
 
 function App() {
-  const navigate = useNavigate();
-  const location = useLocation();
-
-  // The URL now determines which page is active.
-  const currentPage = location.pathname;
-
+  //State variables
+  const [currentPage, setCurrentPage] = useState(PAGES.LOGIN);
   const [selectedMode, setSelectedMode] = useState("");
-
   const [setupData, setSetupData] = useState({
     jobRole: "",
     experienceLevel: "",
     practiceGoals: "",
   });
-
   const [sessionResult, setSessionResult] = useState({
     mode: "Quiz Style",
     date: "May 4, 2026",
@@ -29,23 +22,22 @@ function App() {
     isCorrect: null,
     answerSubmitted: false,
   });
-
-  // Banner shown on the login page after account deletion.
+  // UC15 — banner shown on the login page after account deletion.
   const [loginMessage, setLoginMessage] = useState("");
 
-  // Clear the login banner when leaving the login page.
-  // This also works when using browser Back/Forward buttons.
-  useEffect(() => {
-    if (currentPage !== PAGES.LOGIN) {
+  //Handler functions
+  function handleNavigate(pageName) {
+    // Any navigation away from login clears the one-shot banner so it
+    // doesn't reappear if the user logs in and then logs out.
+    if (pageName !== PAGES.LOGIN) {
       setLoginMessage("");
     }
-  }, [currentPage]);
-
-  function handleNavigate(path) {
-    navigate(path);
+    setCurrentPage(pageName);
   }
 
   function handleAccountDeleted() {
+    // UC15 happy path — clear sensitive state, set the success banner,
+    // and route back to the public login page.
     setSessionResult({
       mode: "Quiz Style",
       date: "May 4, 2026",
@@ -55,42 +47,39 @@ function App() {
       isCorrect: null,
       answerSubmitted: false,
     });
-
     setSelectedMode("");
     setLoginMessage("Your account has been successfully deleted.");
-
-    navigate(PAGES.LOGIN, { replace: true });
+    setCurrentPage(PAGES.LOGIN);
   }
 
   function handleSelectMode(modeName) {
     setSelectedMode(modeName);
-    navigate(PAGES.INTERVIEW_SETUP);
+    setCurrentPage(PAGES.INTERVIEW_SETUP);
   }
 
   function handleStartInterview(sessionData) {
     setSetupData(sessionData);
-    navigate(PAGES.INTERVIEW);
+    setCurrentPage(PAGES.INTERVIEW);
   }
 
   function handleEndInterview(resultData) {
     setSessionResult(resultData);
-    navigate(PAGES.SESSION_RESULTS);
+    setCurrentPage(PAGES.SESSION_RESULTS);
   }
 
-  return (
-    <AppRoutes
-      currentPage={currentPage}
-      onNavigate={handleNavigate}
-      onSelectMode={handleSelectMode}
-      onStartInterview={handleStartInterview}
-      onEndInterview={handleEndInterview}
-      onAccountDeleted={handleAccountDeleted}
-      loginMessage={loginMessage}
-      selectedMode={selectedMode}
-      setupData={setupData}
-      sessionResult={sessionResult}
-    />
-  );
+  //References route.js to build page
+  return renderPage({
+    currentPage,
+    onNavigate: handleNavigate,
+    onSelectMode: handleSelectMode,
+    onStartInterview: handleStartInterview,
+    onEndInterview: handleEndInterview,
+    onAccountDeleted: handleAccountDeleted,
+    loginMessage,
+    selectedMode,
+    setupData,
+    sessionResult,
+  });
 }
 
 export default App;
