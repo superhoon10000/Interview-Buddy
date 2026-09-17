@@ -1,7 +1,11 @@
 const express = require("express");
 const cors = require("cors");
-const questionRoutes = require("./routes/questions");
-const evaluateRoutes = require("./routes/evaluate");
+const createQuestionRouter = require("./routes/questions");
+const createEvaluateRouter = require("./routes/evaluate");
+const {
+  questionRepository,
+  evaluationRepository,
+} = require("./repositories");
 
 const app = express();
 
@@ -19,8 +23,18 @@ app.get("/api/health", (req, res) => {
 // TODO (authentication sprint): add Firebase Auth token verification middleware
 // here before protected API routes. Keeping the route boundary now means the
 // React pages will not need to change when authentication is added.
-app.use("/api/questions", questionRoutes);
-app.use("/api/evaluate", evaluateRoutes);
+app.use(
+  "/api/questions",
+  createQuestionRouter({
+    questionRepository,
+  })
+);
+app.use(
+  "/api/evaluate",
+  createEvaluateRouter({
+    evaluationRepository,
+  })
+);
 
 app.use((error, req, res, next) => {
   console.error(error);
