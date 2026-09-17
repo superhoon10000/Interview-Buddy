@@ -1,14 +1,17 @@
-//List of page identifiers, consolidated in one place for easy reference / modification
+// Centralized application route paths
 export const PAGES = {
-    LOGIN: "login",
-    REGISTER: "register",
-    DASHBOARD: "dashboard",
-    INTERVIEW_SETUP: "interviewSetup",
-    INTERVIEW: "interview",
-    SESSION_RESULTS: "sessionResults",
-    SETTINGS: "settings",
-    CHANGE_PASSWORD: "changePassword",
-    HISTORY: "history",
-    LEADERBOARD: "leaderboard",
-    ANALYTICS: "analytics"
-}
+  LOGIN: "/login",
+  REGISTER: "/register",
+  DASHBOARD: "/dashboard",
+
+  INTERVIEW_SETUP: "/interview/setup",
+  INTERVIEW: "/interview/session",
+  SESSION_RESULTS: "/results",
+
+  HISTORY: "/history",
+  LEADERBOARD: "/leaderboard",
+  ANALYTICS: "/analytics",
+
+  SETTINGS: "/settings",
+  CHANGE_PASSWORD: "/settings/password",
+};

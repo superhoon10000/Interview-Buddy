@@ -1,4 +1,8 @@
+import React from "react";
+import { Navigate, Route, Routes } from "react-router-dom";
+
 import { PAGES } from "./constants";
+
 import LoginPage from "../pages/LoginPage";
 import RegisterPage from "../pages/RegisterPage";
 import DashboardPage from "../pages/DashboardPage";
@@ -11,75 +15,147 @@ import HistoryPage from "../pages/HistoryPage";
 import LeaderboardPage from "../pages/LeaderboardPage";
 import AnalyticsPage from "../pages/AnalyticsPage";
 
-//Routing given page and state, returns element to render
-export function renderPage({
+function AppRoutes({
+  currentPage,
+  onNavigate,
+  onSelectMode,
+  onStartInterview,
+  onEndInterview,
+  onAccountDeleted,
+  loginMessage,
+  selectedMode,
+  setupData,
+  sessionResult,
+}) {
+  const commonProps = {
     currentPage,
     onNavigate,
-    onSelectMode,
-    onStartInterview,
-    onEndInterview,
-    onAccountDeleted,
-    loginMessage,
-    selectedMode,
-    setupData,
-    sessionResult
-}) {
-    const commonProps = { currentPage, onNavigate };
+  };
 
-    switch (currentPage) {
-      case PAGES.LOGIN:
-        return (
+  return (
+    <Routes>
+      {/* Base URL redirects to login */}
+      <Route
+        path="/"
+        element={<Navigate to={PAGES.LOGIN} replace />}
+      />
+
+      {/* Login */}
+      <Route
+        path={PAGES.LOGIN}
+        element={
           <LoginPage
             onLogin={() => onNavigate(PAGES.DASHBOARD)}
             onGoToRegister={() => onNavigate(PAGES.REGISTER)}
             loginMessage={loginMessage}
           />
-        );
-      case PAGES.REGISTER:
-        return (
+        }
+      />
+
+      {/* Register */}
+      <Route
+        path={PAGES.REGISTER}
+        element={
           <RegisterPage
             onRegister={() => onNavigate(PAGES.DASHBOARD)}
             onGoToLogin={() => onNavigate(PAGES.LOGIN)}
           />
-        );
-      case PAGES.DASHBOARD:
-        return <DashboardPage {...commonProps} onSelectMode={onSelectMode} />;
-      case PAGES.INTERVIEW_SETUP:
-        return (
+        }
+      />
+
+      {/* Dashboard */}
+      <Route
+        path={PAGES.DASHBOARD}
+        element={
+          <DashboardPage
+            {...commonProps}
+            onSelectMode={onSelectMode}
+          />
+        }
+      />
+
+      {/* Interview Setup */}
+      <Route
+        path={PAGES.INTERVIEW_SETUP}
+        element={
           <InterviewSetupPage
             {...commonProps}
             selectedMode={selectedMode}
             onStartInterview={onStartInterview}
           />
-        );
-      case PAGES.INTERVIEW:
-        return (
+        }
+      />
+
+      {/* Active Interview Session */}
+      <Route
+        path={PAGES.INTERVIEW}
+        element={
           <InterviewSessionPage
             {...commonProps}
             selectedMode={selectedMode}
             setupData={setupData}
             onEndInterview={onEndInterview}
           />
-        );
-      case PAGES.SESSION_RESULTS:
-        return <SessionResultsPage {...commonProps} sessionResult={sessionResult} />;
-      case PAGES.SETTINGS:
-        return <SettingsPage {...commonProps} onAccountDeleted={onAccountDeleted} />;
-      case PAGES.CHANGE_PASSWORD:
-        return (
+        }
+      />
+
+      {/* Session Results */}
+      <Route
+        path={PAGES.SESSION_RESULTS}
+        element={
+          <SessionResultsPage
+            {...commonProps}
+            sessionResult={sessionResult}
+          />
+        }
+      />
+
+      {/* History */}
+      <Route
+        path={PAGES.HISTORY}
+        element={<HistoryPage {...commonProps} />}
+      />
+
+      {/* Leaderboard */}
+      <Route
+        path={PAGES.LEADERBOARD}
+        element={<LeaderboardPage {...commonProps} />}
+      />
+
+      {/* Analytics */}
+      <Route
+        path={PAGES.ANALYTICS}
+        element={<AnalyticsPage {...commonProps} />}
+      />
+
+      {/* Settings */}
+      <Route
+        path={PAGES.SETTINGS}
+        element={
+          <SettingsPage
+            {...commonProps}
+            onAccountDeleted={onAccountDeleted}
+          />
+        }
+      />
+
+      {/* Change Password */}
+      <Route
+        path={PAGES.CHANGE_PASSWORD}
+        element={
           <ChangePasswordPage
             onBackToSettings={() => onNavigate(PAGES.SETTINGS)}
           />
-        );
-      case PAGES.HISTORY:
-        return <HistoryPage {...commonProps} />;
-      case PAGES.LEADERBOARD:
-        return <LeaderboardPage {...commonProps} />;
-      case PAGES.ANALYTICS:
-        return <AnalyticsPage {...commonProps} />;
+        }
+      />
 
-      //Fallback to dashboard, same as previous setup
-      default:
-        return <DashboardPage {...commonProps} onSelectMode={onSelectMode} />;
-    }
+      {/* Temporary fallback until we add the 404 page */}
+      <Route
+        path="*"
+        element={<Navigate to={PAGES.DASHBOARD} replace />}
+      />
+    </Routes>
+  );
 }
+
+export default AppRoutes;
