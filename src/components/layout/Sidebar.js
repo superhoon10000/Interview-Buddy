@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { PAGES } from "../../utils/constants";
 
 function Sidebar({ currentPage, onNavigate }) {
   // Local state — controls the UC13 logout confirmation modal.
@@ -14,7 +15,7 @@ function Sidebar({ currentPage, onNavigate }) {
     // Mock equivalent of the spec's "clear session token + cookies".
     // In production this would call the auth service first.
     setShowLogoutDialog(false);
-    onNavigate("login");
+    onNavigate(PAGES.LOGIN);
   }
 
   function handleCancelLogout() {
@@ -30,43 +31,43 @@ function Sidebar({ currentPage, onNavigate }) {
 
         <nav className="sidebarNav">
           <button
-            className={currentPage === "dashboard" ? "sidebarButton active" : "sidebarButton"}
-            onClick={() => onNavigate("dashboard")}
+            className={currentPage === PAGES.DASHBOARD ? "sidebarButton active" : "sidebarButton"}
+            onClick={() => onNavigate(PAGES.DASHBOARD)}
           >
             Home
           </button>
 
           <button
-            className={currentPage === "interview" ? "sidebarButton active" : "sidebarButton"}
-            onClick={() => onNavigate("interview")}
+            className={currentPage === PAGES.INTERVIEW ? "sidebarButton active" : "sidebarButton"}
+            onClick={() => onNavigate(PAGES.INTERVIEW)}
           >
             Practice
           </button>
 
           <button
-            className={currentPage === "history" ? "sidebarButton active" : "sidebarButton"}
-            onClick={() => onNavigate("history")}
+            className={currentPage === PAGES.HISTORY ? "sidebarButton active" : "sidebarButton"}
+            onClick={() => onNavigate(PAGES.HISTORY)}
           >
             History
           </button>
 
           <button
-            className={currentPage === "leaderboard" ? "sidebarButton active" : "sidebarButton"}
-            onClick={() => onNavigate("leaderboard")}
+            className={currentPage === PAGES.LEADERBOARD ? "sidebarButton active" : "sidebarButton"}
+            onClick={() => onNavigate(PAGES.LEADERBOARD)}
           >
             Ranking
           </button>
 
           <button
-            className={currentPage === "analytics" ? "sidebarButton active" : "sidebarButton"}
-            onClick={() => onNavigate("analytics")}
+            className={currentPage === PAGES.ANALYTICS ? "sidebarButton active" : "sidebarButton"}
+            onClick={() => onNavigate(PAGES.ANALYTICS)}
           >
             Stats
           </button>
 
           <button
-            className={currentPage === "settings" ? "sidebarButton active" : "sidebarButton"}
-            onClick={() => onNavigate("settings")}
+            className={currentPage === PAGES.SETTINGS ? "sidebarButton active" : "sidebarButton"}
+            onClick={() => onNavigate(PAGES.SETTINGS)}
           >
             Settings
           </button>

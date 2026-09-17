@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import PageLayout from "../components/layout/PageLayout";
 import FeedbackBox from "../components/interview/FeedbackBox";
+import { PAGES } from "../utils/constants";
 import { interviewService } from "../services";
 
 function InterviewSessionPage({
@@ -311,7 +312,7 @@ function InterviewSessionPage({
 
           {selectedMode === "Quiz Style" ? (
             <div className="quizOptions">
-              {currentQuestion.options.length > 0 ? (
+              {currentQuestion.options?.length > 0 ? (
                 currentQuestion.options.map((option) => (
                   <label className="quizOption" key={option}>
                     <input
@@ -359,7 +360,7 @@ function InterviewSessionPage({
 
             <button
               className="secondaryButton"
-              onClick={() => onNavigate("dashboard")}
+              onClick={() => onNavigate(PAGES.DASHBOARD)}
             >
               Back
             </button>

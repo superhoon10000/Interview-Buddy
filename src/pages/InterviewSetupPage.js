@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import PageLayout from "../components/layout/PageLayout";
+import { PAGES } from "../utils/constants";
+import { interviewService } from "../services";
 
 function InterviewSetupPage({
   currentPage,
@@ -11,8 +13,9 @@ function InterviewSetupPage({
   const [experienceLevel, setExperienceLevel] = useState("");
   const [practiceGoals, setPracticeGoals] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  const [isStartingSession, setIsStartingSession] = useState(false);
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
 
     if (!jobRole || !experienceLevel || !practiceGoals) {
@@ -21,16 +24,28 @@ function InterviewSetupPage({
     }
 
     setErrorMessage("");
+    setIsStartingSession(true);
 
-    onStartInterview({
-      jobRole,
-      experienceLevel,
-      practiceGoals,
-    });
+    try {
+      const session = await interviewService.startSession({
+        mode: selectedMode,
+        jobRole,
+        experienceLevel,
+        practiceGoals,
+      });
+
+      onStartInterview(session);
+    } catch (error) {
+      setErrorMessage(
+        error.message || "Unable to start the interview session. Please try again."
+      );
+    } finally {
+      setIsStartingSession(false);
+    }
   }
 
   function handleCancel() {
-    onNavigate("dashboard");
+    onNavigate(PAGES.DASHBOARD);
   }
 
   return (
@@ -86,14 +101,19 @@ function InterviewSetupPage({
           {errorMessage && <p className="formError">{errorMessage}</p>}
 
           <div className="actionRow">
-            <button type="submit" className="primaryButton">
-              Start Session
+            <button
+              type="submit"
+              className="primaryButton"
+              disabled={isStartingSession}
+            >
+              {isStartingSession ? "Starting Session..." : "Start Session"}
             </button>
             <p> </p>
             <button
               type="button"
               className="secondaryButton"
               onClick={handleCancel}
+              disabled={isStartingSession}
             >
               Cancel
             </button>

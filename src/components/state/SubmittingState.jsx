@@ -1,7 +1,9 @@
+import Spinner from "../common/Spinner";
+
 export default function SubmittingState({message="Submitting..."}) {
   return (
     <div className="state submitting">
-      <Spinner />           // Needs definition for Spinner component
+      <Spinner />           
       <p>{message}</p>
     </div>
   );

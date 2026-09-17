@@ -1,6 +1,7 @@
 import React from "react";
 import PageLayout from "../components/layout/PageLayout";
 import PracticeModeCard from "../components/dashboard/PracticeModeCard";
+import { PAGES } from "../utils/constants";
 
 function DashboardPage({ currentPage, onNavigate, onSelectMode }) {
   return (
@@ -31,17 +32,17 @@ function DashboardPage({ currentPage, onNavigate, onSelectMode }) {
       </div>
 
       <div className="dashboardMiniGrid">
-        <div className="smallPanel" onClick={() => onNavigate("history")}>
+        <div className="smallPanel" onClick={() => onNavigate(PAGES.HISTORY)}>
           <h3>History</h3>
           <p>View past interview sessions.</p>
         </div>
 
-        <div className="smallPanel" onClick={() => onNavigate("leaderboard")}>
+        <div className="smallPanel" onClick={() => onNavigate(PAGES.LEADERBOARD)}>
           <h3>Leaderboard</h3>
           <p>See your ranking against other users.</p>
         </div>
 
-        <div className="smallPanel" onClick={() => onNavigate("analytics")}>
+        <div className="smallPanel" onClick={() => onNavigate(PAGES.ANALYTICS)}>
           <h3>Analytics</h3>
           <p>Review progress and performance.</p>
         </div>
