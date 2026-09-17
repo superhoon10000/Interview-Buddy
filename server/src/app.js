@@ -1,7 +1,6 @@
 const express = require("express");
 const cors = require("cors");
 const questionRoutes = require("./routes/questions");
-const evaluateRoutes = require("./routes/evaluate");
 
 const app = express();
 
@@ -20,7 +19,6 @@ app.get("/api/health", (req, res) => {
 // here before protected API routes. Keeping the route boundary now means the
 // React pages will not need to change when authentication is added.
 app.use("/api/questions", questionRoutes);
-app.use("/api/evaluate", evaluateRoutes);
 
 app.use((error, req, res, next) => {
   console.error(error);
