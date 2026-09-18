@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node src/index.js",
     "dev": "nodemon src/index.js",
-    "seed": "node scripts/seedQuestions.js"
+    "seed": "node scripts/seedQuestions.js",
+    "test": "jest"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.126.0",
@@ -16,6 +17,7 @@
     "firebase-admin": "^13.0.0"
   },
   "devDependencies": {
+    "jest": "^30.5.1",
     "nodemon": "^3.1.0"
   }
 }
