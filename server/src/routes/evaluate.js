@@ -3,61 +3,36 @@
 // Handles AI evaluation of a candidate's interview answer.
 // This file is mounted in app.js as: app.use("/api/evaluate", evaluateRoutes)
 // so the paths in this file are relative to /api/evaluate.
-
+//
+// NOTE: this route no longer imports the Anthropic SDK directly. It only
+// depends on aiService.js (the abstraction) — this is what makes it
+// provider-independent, per the Jira ticket.
+ 
 const express = require('express');
-const Anthropic = require('@anthropic-ai/sdk');
-const { db } = require('../firebaseAdmin'); // reuse existing Firebase Admin connection
+const aiService = require('../services/aiService');
 
-const router = express.Router();
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-
+function createEvaluateRouter({
+  evaluationRepository,
+}) {
+  const router = express.Router();
 // This becomes POST /api/evaluate once mounted in app.js
 // Body shape matches evaluationRequest.interface.ts
 router.post('/', async (req, res, next) => {
   try {
     const { requestId, question, candidateResponse, gradingCriteria, metadata } = req.body;
-
+ 
     if (!question || !candidateResponse) {
       return res.status(400).json({ error: 'question and candidateResponse are required' });
     }
-
-    const criteriaText = gradingCriteria?.length
-      ? `Grade against these criteria: ${gradingCriteria.join(', ')}.`
-      : '';
-
-    const prompt = `You are grading an interview answer.
-Question: ${question.text}
-Candidate's answer: ${candidateResponse}
-${criteriaText}
-Respond ONLY in JSON with this shape: { "score": number (0-100), "feedback": string }`;
-
-    const aiResponse = await anthropic.messages.create({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 500,
-      messages: [{ role: 'user', content: prompt }]
+ 
+    // The route no longer knows or cares which AI provider actually
+    // handles this — that decision lives entirely inside aiService.js.
+    const evaluation = await aiService.generateEvaluation({
+      question,
+      candidateResponse,
+      gradingCriteria,
     });
-
-    const rawText = aiResponse.content[0].text;
-    const cleaned = rawText.replace(/```json|```/g, '').trim();
-    const evaluation = JSON.parse(cleaned);
-
-    // Sanity-check that Claude actually returned the shape we asked for,
-    // before we save it to Firestore or send it back to the user.
-    // (This is a lightweight version of schema validation — no extra
-    // dependency needed, just checking the two fields we rely on.)
-    const scoreIsValid =
-      typeof evaluation.score === 'number' &&
-      evaluation.score >= 0 &&
-      evaluation.score <= 100;
-    const feedbackIsValid = typeof evaluation.feedback === 'string' && evaluation.feedback.length > 0;
-
-    if (!scoreIsValid || !feedbackIsValid) {
-      return res.status(502).json({
-        error: 'The AI response did not match the expected evaluation shape.',
-        requestId,
-      });
-    }
-
+ 
     // Save the evaluation back to Firestore, linked to the session/question
     if (metadata?.sessionId) {
       await db
@@ -74,11 +49,14 @@ Respond ONLY in JSON with this shape: { "score": number (0-100), "feedback": str
           { merge: true }
         );
     }
-
+ 
     return res.json({ requestId, evaluation });
   } catch (error) {
     return next(error);
   }
 });
+  return router;
+} 
 
-module.exports = router;
+module.exports = createEvaluateRouter;
+ 
