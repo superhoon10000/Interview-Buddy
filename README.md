@@ -75,3 +75,9 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/t
 The prototype includes a backend question API that reads from Firebase Cloud Firestore instead of hardcoding interview prompts in `InterviewSessionPage.js`.
 
 See [`FIREBASE_SETUP.md`](FIREBASE_SETUP.md) for Firebase credentials, seeding, and local run instructions. The React page calls the existing `src/services/interviewService.js` facade, which talks to the Express application layer; the browser does not access Firestore or quiz answer keys directly.
+
+## Repository/data-access layer
+
+The Firebase backend now uses explicit repository contracts and concrete Firestore adapters. Express routes do not call Firestore directly.
+
+See [`REPOSITORY_ARCHITECTURE.md`](REPOSITORY_ARCHITECTURE.md) for the acceptance-criteria mapping and [`FIREBASE_SETUP.md`](FIREBASE_SETUP.md) for configuration instructions.

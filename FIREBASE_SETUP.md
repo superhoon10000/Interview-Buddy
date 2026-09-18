@@ -1,18 +1,81 @@
-# Interview Buddy Firebase Question Framework
+# Interview Buddy Firebase Repository Setup
 
-This scaffold replaces the prototype's hardcoded interview questions with a server-side API backed by Firebase Cloud Firestore while preserving the updated prototype's React service layer.
+This version of the prototype keeps Firebase/Firestore behind a server-side repository (data-access) layer.
 
-## Request flow
+## Updated request flow
 
-`InterviewSessionPage.js -> interviewService.js -> Express API -> Firebase Admin -> Firestore questions collection`
+```text
+React page
+  -> src/services/interviewService.js
+  -> Express route
+  -> repository contract
+  -> Firestore repository implementation
+  -> Firebase Admin / Firestore
+```
 
-The updated prototype already introduced `src/services/interviewService.js` as the React-facing interview/session facade. Firebase question retrieval is therefore implemented inside that service instead of adding a second `questionApi.js` abstraction.
+The important change is that the Express routes no longer import `firebaseAdmin.js` or call Firestore APIs directly. Firestore-specific calls such as `collection()`, `where()`, `doc()`, `get()`, and `set()` are isolated under `server/src/repositories/firestore/`.
 
-This keeps database credentials and quiz answer keys off the browser and matches the project's layered client-server design. The UI receives quiz choices, but the quiz `correctAnswer` stays on the server and is checked through a separate API endpoint.
+This matches the acceptance criteria for:
+
+- a repository/data-access layer that isolates Firestore specifics;
+- interfaces/contracts used by the application layer;
+- at least one concrete implementation and a real usage example.
+
+## Repository files
+
+```text
+server/src/repositories/
+├── index.js
+├── contracts/
+│   ├── QuestionRepository.js
+│   └── EvaluationRepository.js
+└── firestore/
+    ├── FirestoreQuestionRepository.js
+    └── FirestoreEvaluationRepository.js
+```
+
+### Contracts
+
+`QuestionRepository.js` defines the operations used by question-related application code:
+
+- `findByMode(mode)`
+- `findById(questionId)`
+- `upsertMany(questions)`
+
+`EvaluationRepository.js` defines:
+
+- `saveEvaluation(...)`
+
+These files contain no Firebase imports and no Firestore-specific APIs.
+
+### Concrete Firestore implementations
+
+`FirestoreQuestionRepository.js` and `FirestoreEvaluationRepository.js` implement the contracts using Firestore.
+
+`server/src/repositories/index.js` is the composition root. It creates the concrete Firestore repositories and exports them for application use.
+
+### Usage example
+
+`server/src/app.js` injects repositories into the router factories:
+
+```js
+app.use(
+  "/api/questions",
+  createQuestionRouter({ questionRepository })
+);
+```
+
+The question route then uses only the repository interface:
+
+```js
+const questions = await questionRepository.findByMode(mode);
+```
+
+The route does not know that the data came from Firestore.
 
 ## 1. Create the Firestore database
 
-In the Firebase console for your Interview Buddy project, enable **Cloud Firestore**. The backend expects a collection named `questions`.
+In the Firebase console for the Interview Buddy project, enable **Cloud Firestore**. The backend currently expects a `questions` collection.
 
 Each question document can contain:
 
@@ -31,7 +94,15 @@ Each question document can contain:
 
 A starter dataset is included in `server/seed/questions.json`.
 
-## 2. Configure Firebase Admin for the backend
+AI evaluations are currently stored under:
+
+```text
+sessions/{sessionId}/responses/{questionId}
+```
+
+That document layout is intentionally contained inside `FirestoreEvaluationRepository.js` so route code does not depend on it.
+
+## 2. Configure Firebase Admin
 
 Create a Firebase/Google service account that can access Firestore. Keep the JSON credential **outside this repository**.
 
@@ -42,7 +113,13 @@ cd server
 cp .env.example .env
 ```
 
-Set `FIREBASE_PROJECT_ID` in `server/.env`, then point `GOOGLE_APPLICATION_CREDENTIALS` to the service-account JSON in your shell.
+Set your project ID in `server/.env`:
+
+```env
+FIREBASE_PROJECT_ID=your-project-id
+```
+
+Then point `GOOGLE_APPLICATION_CREDENTIALS` to the service-account JSON in your shell.
 
 macOS/Linux:
 
@@ -56,65 +133,75 @@ Windows PowerShell:
 $env:GOOGLE_APPLICATION_CREDENTIALS="C:\path\service-account.json"
 ```
 
-## 3. Install and seed the backend
+A hosted environment can instead provide `FIREBASE_SERVICE_ACCOUNT_JSON` as a secret environment variable. Do not put the service-account JSON in a committed `.env` file.
+
+## 3. Configure AI evaluation (optional for Firebase question retrieval)
+
+The current `evaluate.js` route uses the Anthropic SDK. To use that route, add this to `server/.env`:
+
+```env
+ANTHROPIC_API_KEY=your-api-key
+```
+
+Firebase-backed question retrieval and quiz checking do not require the Anthropic key.
+
+## 4. Install, test, seed, and run the backend
 
 ```bash
 cd server
 npm install
+npm test
 npm run seed
 npm start
 ```
+
+The seed script now uses `QuestionRepository.upsertMany()` rather than calling Firestore directly. This keeps Firestore write behavior in the data-access layer as well.
 
 The API defaults to `http://localhost:5001` and exposes:
 
 - `GET /api/health`
 - `GET /api/questions?mode=Quiz%20Style&jobRole=...&experienceLevel=...&practiceGoals=...`
 - `POST /api/questions/:questionId/check` with `{ "answer": "..." }`
+- `POST /api/evaluate`
 
-## 4. Configure and run the React client
+## 5. Configure and run the React client
 
-From the repository root, create `.env.local`:
+From the repository root, copy the React environment template:
+
+```bash
+cp .env.example .env.local
+```
+
+It should contain:
 
 ```env
 REACT_APP_API_BASE_URL=http://localhost:5001/api
 ```
 
-Then run the existing React app:
+Then run:
 
 ```bash
 npm install
 npm start
 ```
 
-Start the React client and the `server` process in separate terminals during development.
+Run the React client and the `server` process in separate terminals during development.
 
-## 5. Firestore rules
+## 6. Firestore security rules
 
-`firestore.rules` currently denies all direct browser access because the application layer is responsible for database access. Firebase Admin on the backend uses IAM and does not depend on client security rules.
+`firestore.rules` denies direct browser access because the application layer is responsible for database access. Firebase Admin on the backend uses IAM and does not depend on browser Firestore rules.
 
-When Firebase Authentication is implemented, add token verification middleware to the Express API before protected routes. Because `InterviewSessionPage.js` calls `interviewService.js`, authentication and backend changes can be added without giving page components direct Firebase knowledge.
+When Firebase Authentication is implemented, token verification middleware can be placed in the Express application before protected routes. The React pages will still use the same service/API boundary and will not need direct Firestore knowledge.
 
-## Combined-project files
+## Why this structure matters
 
-### Existing updated-prototype service retained and expanded
+Before this update, `questions.js` and `evaluate.js` directly imported Firebase Admin and performed Firestore reads/writes. That coupled application logic to Firestore.
 
-- `src/services/interviewService.js` — remains the single React-facing interview/session service and now contains database-backed question retrieval and quiz checking.
-- `src/services/index.js` — unchanged; it already exports `interviewService`.
-- `src/services/aiService.js` — unchanged; AI answer evaluation remains a separate Sprint 2 concern.
-- `src/services/authService.js`, `historyService.js`, `leaderboardService.js` — unchanged.
+After this update:
 
-### Interview flow changed
+```text
+questions.js  -> QuestionRepository -> FirestoreQuestionRepository -> Firestore
+evaluate.js   -> EvaluationRepository -> FirestoreEvaluationRepository -> Firestore
+```
 
-- `src/pages/InterviewSessionPage.js` — removes hardcoded questions, loads Firebase-backed questions through `interviewService`, supports multiple questions, and checks quiz answers through the backend.
-- `src/pages/DashboardPage.js` — wording updated from a hardcoded flow to a database-backed flow.
-
-### Backend/Firebase files added
-
-- `server/src/firebaseAdmin.js` — Firebase Admin/Firestore connection.
-- `server/src/routes/questions.js` — question retrieval and quiz-answer endpoints.
-- `server/seed/questions.json` — starter Firestore data.
-- `server/scripts/seedQuestions.js` — seed utility.
-- `firestore.rules` — blocks direct client database access.
-- `.env.example` and `server/.env.example` — environment templates.
-
-There is intentionally **no `src/services/questionApi.js`** in this merged version. Its responsibilities were folded into the newer prototype's `interviewService.js` so the application has one interview-service abstraction instead of two competing ones.
+A future database adapter could implement the same contracts without requiring changes to the route logic or React pages.
