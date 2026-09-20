@@ -3,14 +3,30 @@
     "id": "quiz-fifo-001",
     "mode": "Quiz Style",
     "prompt": "Which data structure uses First In, First Out behavior?",
-    "options": ["Stack", "Queue", "Tree", "Graph"],
+    "options": [
+      "Stack",
+      "Queue",
+      "Tree",
+      "Graph"
+    ],
     "correctAnswer": "Queue",
     "explanation": "A queue follows FIFO: the first item added is the first item removed.",
     "difficulty": "Beginner",
     "topic": "Data Structures",
-    "tags": ["data structures", "queue", "fifo"],
-    "experienceLevels": ["Beginner", "Intermediate"],
-    "jobRoles": ["software engineer", "frontend developer", "backend developer"],
+    "tags": [
+      "data structures",
+      "queue",
+      "fifo"
+    ],
+    "experienceLevels": [
+      "Beginner",
+      "Intermediate"
+    ],
+    "jobRoles": [
+      "software engineer",
+      "frontend developer",
+      "backend developer"
+    ],
     "priority": 10,
     "active": true
   },
@@ -18,14 +34,31 @@
     "id": "quiz-http-001",
     "mode": "Quiz Style",
     "prompt": "Which HTTP status code most commonly indicates that a requested resource was not found?",
-    "options": ["200", "301", "404", "500"],
+    "options": [
+      "200",
+      "301",
+      "404",
+      "500"
+    ],
     "correctAnswer": "404",
     "explanation": "HTTP 404 means the server could not find the requested resource.",
     "difficulty": "Beginner",
     "topic": "Web Development",
-    "tags": ["http", "web", "status codes", "api"],
-    "experienceLevels": ["Beginner", "Intermediate"],
-    "jobRoles": ["frontend developer", "backend developer", "full stack developer"],
+    "tags": [
+      "http",
+      "web",
+      "status codes",
+      "api"
+    ],
+    "experienceLevels": [
+      "Beginner",
+      "Intermediate"
+    ],
+    "jobRoles": [
+      "frontend developer",
+      "backend developer",
+      "full stack developer"
+    ],
     "priority": 8,
     "active": true
   },
@@ -35,9 +68,20 @@
     "prompt": "Write a function that checks whether a string is a palindrome.",
     "difficulty": "Beginner",
     "topic": "Strings",
-    "tags": ["strings", "palindrome", "algorithms"],
-    "experienceLevels": ["Beginner", "Intermediate"],
-    "jobRoles": ["software engineer", "frontend developer", "backend developer"],
+    "tags": [
+      "strings",
+      "palindrome",
+      "algorithms"
+    ],
+    "experienceLevels": [
+      "Beginner",
+      "Intermediate"
+    ],
+    "jobRoles": [
+      "software engineer",
+      "frontend developer",
+      "backend developer"
+    ],
     "priority": 10,
     "active": true
   },
@@ -47,9 +91,20 @@
     "prompt": "Given an array of integers and a target value, write a function that returns the indices of two numbers whose sum equals the target.",
     "difficulty": "Intermediate",
     "topic": "Arrays and Hash Maps",
-    "tags": ["arrays", "hash map", "two sum", "algorithms"],
-    "experienceLevels": ["Intermediate", "Experienced"],
-    "jobRoles": ["software engineer", "backend developer"],
+    "tags": [
+      "arrays",
+      "hash map",
+      "two sum",
+      "algorithms"
+    ],
+    "experienceLevels": [
+      "Intermediate",
+      "Experienced"
+    ],
+    "jobRoles": [
+      "software engineer",
+      "backend developer"
+    ],
     "priority": 8,
     "active": true
   },
@@ -59,9 +114,22 @@
     "prompt": "Explain the difference between a stack and a queue, and give one real use case for each.",
     "difficulty": "Beginner",
     "topic": "Data Structures",
-    "tags": ["stack", "queue", "lifo", "fifo", "data structures"],
-    "experienceLevels": ["Beginner", "Intermediate"],
-    "jobRoles": ["software engineer", "frontend developer", "backend developer"],
+    "tags": [
+      "stack",
+      "queue",
+      "lifo",
+      "fifo",
+      "data structures"
+    ],
+    "experienceLevels": [
+      "Beginner",
+      "Intermediate"
+    ],
+    "jobRoles": [
+      "software engineer",
+      "frontend developer",
+      "backend developer"
+    ],
     "priority": 10,
     "active": true
   },
@@ -71,9 +139,654 @@
     "prompt": "What are the main characteristics of a RESTful API, and why are stateless requests useful?",
     "difficulty": "Intermediate",
     "topic": "Web APIs",
-    "tags": ["rest", "api", "http", "stateless"],
-    "experienceLevels": ["Intermediate", "Experienced"],
-    "jobRoles": ["backend developer", "full stack developer", "software engineer"],
+    "tags": [
+      "rest",
+      "api",
+      "http",
+      "stateless"
+    ],
+    "experienceLevels": [
+      "Intermediate",
+      "Experienced"
+    ],
+    "jobRoles": [
+      "backend developer",
+      "full stack developer",
+      "software engineer"
+    ],
+    "priority": 8,
+    "active": true
+  },
+  {
+    "id": "quiz-binary-search-001",
+    "mode": "Quiz Style",
+    "prompt": "What is the average time complexity of binary search on a sorted array?",
+    "options": [
+      "O(1)",
+      "O(log n)",
+      "O(n)",
+      "O(n log n)"
+    ],
+    "correctAnswer": "O(log n)",
+    "explanation": "Binary search halves the remaining search space after each comparison, giving O(log n) time.",
+    "difficulty": "Beginner",
+    "topic": "Algorithms",
+    "tags": [
+      "algorithms",
+      "binary search",
+      "time complexity"
+    ],
+    "experienceLevels": [
+      "Beginner",
+      "Intermediate"
+    ],
+    "jobRoles": [
+      "software engineer",
+      "frontend developer",
+      "backend developer"
+    ],
+    "priority": 10,
+    "active": true
+  },
+  {
+    "id": "quiz-sql-join-001",
+    "mode": "Quiz Style",
+    "prompt": "Which SQL join returns only rows that have matching values in both tables?",
+    "options": [
+      "LEFT JOIN",
+      "RIGHT JOIN",
+      "FULL OUTER JOIN",
+      "INNER JOIN"
+    ],
+    "correctAnswer": "INNER JOIN",
+    "explanation": "INNER JOIN returns only records where the join condition matches in both tables.",
+    "difficulty": "Beginner",
+    "topic": "Databases",
+    "tags": [
+      "sql",
+      "databases",
+      "joins"
+    ],
+    "experienceLevels": [
+      "Beginner",
+      "Intermediate"
+    ],
+    "jobRoles": [
+      "backend developer",
+      "full stack developer",
+      "software engineer"
+    ],
+    "priority": 9,
+    "active": true
+  },
+  {
+    "id": "quiz-git-branch-001",
+    "mode": "Quiz Style",
+    "prompt": "Which Git command creates a new branch and switches to it in one step?",
+    "options": [
+      "git branch new-feature",
+      "git checkout -b new-feature",
+      "git merge new-feature",
+      "git pull new-feature"
+    ],
+    "correctAnswer": "git checkout -b new-feature",
+    "explanation": "git checkout -b <branch> creates a new branch and immediately switches the working tree to it.",
+    "difficulty": "Beginner",
+    "topic": "Version Control",
+    "tags": [
+      "git",
+      "version control",
+      "branches"
+    ],
+    "experienceLevels": [
+      "Beginner",
+      "Intermediate"
+    ],
+    "jobRoles": [
+      "software engineer",
+      "frontend developer",
+      "backend developer",
+      "full stack developer"
+    ],
+    "priority": 8,
+    "active": true
+  },
+  {
+    "id": "quiz-css-specificity-001",
+    "mode": "Quiz Style",
+    "prompt": "Which selector generally has the highest CSS specificity?",
+    "options": [
+      "Element selector",
+      "Class selector",
+      "ID selector",
+      "Universal selector"
+    ],
+    "correctAnswer": "ID selector",
+    "explanation": "Among these choices, an ID selector has higher specificity than class, element, or universal selectors.",
+    "difficulty": "Beginner",
+    "topic": "Frontend Development",
+    "tags": [
+      "css",
+      "specificity",
+      "frontend"
+    ],
+    "experienceLevels": [
+      "Beginner",
+      "Intermediate"
+    ],
+    "jobRoles": [
+      "frontend developer",
+      "full stack developer",
+      "software engineer"
+    ],
+    "priority": 8,
+    "active": true
+  },
+  {
+    "id": "quiz-stack-complexity-001",
+    "mode": "Quiz Style",
+    "prompt": "What is the typical time complexity of push and pop operations on a stack?",
+    "options": [
+      "O(1)",
+      "O(log n)",
+      "O(n)",
+      "O(n log n)"
+    ],
+    "correctAnswer": "O(1)",
+    "explanation": "A stack adds and removes elements at one end, so push and pop are typically constant-time operations.",
+    "difficulty": "Beginner",
+    "topic": "Data Structures",
+    "tags": [
+      "stack",
+      "data structures",
+      "time complexity"
+    ],
+    "experienceLevels": [
+      "Beginner",
+      "Intermediate"
+    ],
+    "jobRoles": [
+      "software engineer",
+      "frontend developer",
+      "backend developer"
+    ],
+    "priority": 9,
+    "active": true
+  },
+  {
+    "id": "quiz-http-method-001",
+    "mode": "Quiz Style",
+    "prompt": "Which HTTP method is most commonly used to create a new resource in a RESTful API?",
+    "options": [
+      "GET",
+      "POST",
+      "DELETE",
+      "HEAD"
+    ],
+    "correctAnswer": "POST",
+    "explanation": "POST is commonly used to submit data that creates a new resource on the server.",
+    "difficulty": "Beginner",
+    "topic": "Web APIs",
+    "tags": [
+      "http",
+      "rest",
+      "api",
+      "post"
+    ],
+    "experienceLevels": [
+      "Beginner",
+      "Intermediate"
+    ],
+    "jobRoles": [
+      "backend developer",
+      "full stack developer",
+      "frontend developer"
+    ],
+    "priority": 9,
+    "active": true
+  },
+  {
+    "id": "quiz-oop-encapsulation-001",
+    "mode": "Quiz Style",
+    "prompt": "Which object-oriented programming principle focuses on bundling data with the methods that operate on it and restricting direct access to internal state?",
+    "options": [
+      "Inheritance",
+      "Encapsulation",
+      "Polymorphism",
+      "Recursion"
+    ],
+    "correctAnswer": "Encapsulation",
+    "explanation": "Encapsulation groups data and behavior together while controlling how internal state can be accessed or changed.",
+    "difficulty": "Intermediate",
+    "topic": "Object-Oriented Programming",
+    "tags": [
+      "oop",
+      "encapsulation",
+      "software design"
+    ],
+    "experienceLevels": [
+      "Beginner",
+      "Intermediate"
+    ],
+    "jobRoles": [
+      "software engineer",
+      "backend developer",
+      "full stack developer"
+    ],
+    "priority": 8,
+    "active": true
+  },
+  {
+    "id": "quiz-db-index-001",
+    "mode": "Quiz Style",
+    "prompt": "What is the primary purpose of a database index?",
+    "options": [
+      "Encrypt stored data",
+      "Speed up data retrieval",
+      "Replace primary keys",
+      "Automatically normalize tables"
+    ],
+    "correctAnswer": "Speed up data retrieval",
+    "explanation": "Indexes create additional lookup structures that can reduce the amount of data the database must scan for many queries.",
+    "difficulty": "Intermediate",
+    "topic": "Databases",
+    "tags": [
+      "database",
+      "index",
+      "performance",
+      "sql"
+    ],
+    "experienceLevels": [
+      "Intermediate",
+      "Experienced"
+    ],
+    "jobRoles": [
+      "backend developer",
+      "full stack developer",
+      "software engineer"
+    ],
+    "priority": 8,
+    "active": true
+  },
+  {
+    "id": "code-fizzbuzz-001",
+    "mode": "Code Style",
+    "prompt": "Write a function that prints or returns the numbers from 1 to n, replacing multiples of 3 with 'Fizz', multiples of 5 with 'Buzz', and multiples of both with 'FizzBuzz'.",
+    "difficulty": "Beginner",
+    "topic": "Control Flow",
+    "tags": [
+      "loops",
+      "conditionals",
+      "fizzbuzz"
+    ],
+    "experienceLevels": [
+      "Beginner",
+      "Intermediate"
+    ],
+    "jobRoles": [
+      "software engineer",
+      "frontend developer",
+      "backend developer"
+    ],
+    "priority": 9,
+    "active": true
+  },
+  {
+    "id": "code-valid-parentheses-001",
+    "mode": "Code Style",
+    "prompt": "Given a string containing only parentheses, brackets, and braces, write a function that determines whether the brackets are balanced and properly nested.",
+    "difficulty": "Intermediate",
+    "topic": "Stacks",
+    "tags": [
+      "stack",
+      "strings",
+      "valid parentheses",
+      "algorithms"
+    ],
+    "experienceLevels": [
+      "Intermediate",
+      "Experienced"
+    ],
+    "jobRoles": [
+      "software engineer",
+      "backend developer",
+      "frontend developer"
+    ],
+    "priority": 10,
+    "active": true
+  },
+  {
+    "id": "code-reverse-linked-list-001",
+    "mode": "Code Style",
+    "prompt": "Write a function that reverses a singly linked list and returns the new head.",
+    "difficulty": "Intermediate",
+    "topic": "Linked Lists",
+    "tags": [
+      "linked list",
+      "pointers",
+      "algorithms"
+    ],
+    "experienceLevels": [
+      "Intermediate",
+      "Experienced"
+    ],
+    "jobRoles": [
+      "software engineer",
+      "backend developer"
+    ],
+    "priority": 9,
+    "active": true
+  },
+  {
+    "id": "code-merge-sorted-arrays-001",
+    "mode": "Code Style",
+    "prompt": "Given two sorted arrays of integers, write a function that merges them into one sorted array.",
+    "difficulty": "Beginner",
+    "topic": "Arrays",
+    "tags": [
+      "arrays",
+      "sorting",
+      "two pointers",
+      "algorithms"
+    ],
+    "experienceLevels": [
+      "Beginner",
+      "Intermediate"
+    ],
+    "jobRoles": [
+      "software engineer",
+      "frontend developer",
+      "backend developer"
+    ],
+    "priority": 8,
+    "active": true
+  },
+  {
+    "id": "code-first-unique-char-001",
+    "mode": "Code Style",
+    "prompt": "Write a function that returns the index of the first non-repeating character in a string, or -1 if every character repeats.",
+    "difficulty": "Intermediate",
+    "topic": "Strings and Hash Maps",
+    "tags": [
+      "strings",
+      "hash map",
+      "frequency counting",
+      "algorithms"
+    ],
+    "experienceLevels": [
+      "Intermediate",
+      "Experienced"
+    ],
+    "jobRoles": [
+      "software engineer",
+      "backend developer",
+      "frontend developer"
+    ],
+    "priority": 8,
+    "active": true
+  },
+  {
+    "id": "code-max-subarray-001",
+    "mode": "Code Style",
+    "prompt": "Given an integer array, write a function that finds the contiguous subarray with the largest sum and returns that sum.",
+    "difficulty": "Intermediate",
+    "topic": "Dynamic Programming",
+    "tags": [
+      "arrays",
+      "dynamic programming",
+      "kadane",
+      "algorithms"
+    ],
+    "experienceLevels": [
+      "Intermediate",
+      "Experienced"
+    ],
+    "jobRoles": [
+      "software engineer",
+      "backend developer"
+    ],
+    "priority": 9,
+    "active": true
+  },
+  {
+    "id": "code-binary-tree-bfs-001",
+    "mode": "Code Style",
+    "prompt": "Write a function that performs a breadth-first traversal of a binary tree and returns the node values level by level.",
+    "difficulty": "Intermediate",
+    "topic": "Trees and Graph Traversal",
+    "tags": [
+      "tree",
+      "bfs",
+      "queue",
+      "algorithms"
+    ],
+    "experienceLevels": [
+      "Intermediate",
+      "Experienced"
+    ],
+    "jobRoles": [
+      "software engineer",
+      "backend developer"
+    ],
+    "priority": 8,
+    "active": true
+  },
+  {
+    "id": "code-deduplicate-array-001",
+    "mode": "Code Style",
+    "prompt": "Write a function that removes duplicate values from an array while preserving the order of each value's first appearance.",
+    "difficulty": "Beginner",
+    "topic": "Arrays and Sets",
+    "tags": [
+      "arrays",
+      "set",
+      "duplicates",
+      "algorithms"
+    ],
+    "experienceLevels": [
+      "Beginner",
+      "Intermediate"
+    ],
+    "jobRoles": [
+      "software engineer",
+      "frontend developer",
+      "backend developer",
+      "full stack developer"
+    ],
+    "priority": 8,
+    "active": true
+  },
+  {
+    "id": "theory-oop-principles-001",
+    "mode": "Theoretical Style",
+    "prompt": "Explain the four main principles of object-oriented programming and give a brief example of how each can appear in a software application.",
+    "difficulty": "Intermediate",
+    "topic": "Object-Oriented Programming",
+    "tags": [
+      "oop",
+      "encapsulation",
+      "inheritance",
+      "polymorphism",
+      "abstraction"
+    ],
+    "experienceLevels": [
+      "Intermediate",
+      "Experienced"
+    ],
+    "jobRoles": [
+      "software engineer",
+      "backend developer",
+      "full stack developer"
+    ],
+    "priority": 9,
+    "active": true
+  },
+  {
+    "id": "theory-process-thread-001",
+    "mode": "Theoretical Style",
+    "prompt": "Explain the difference between a process and a thread, including how memory and resources are typically shared.",
+    "difficulty": "Intermediate",
+    "topic": "Operating Systems",
+    "tags": [
+      "process",
+      "thread",
+      "operating systems",
+      "concurrency"
+    ],
+    "experienceLevels": [
+      "Intermediate",
+      "Experienced"
+    ],
+    "jobRoles": [
+      "software engineer",
+      "backend developer"
+    ],
+    "priority": 9,
+    "active": true
+  },
+  {
+    "id": "theory-tcp-udp-001",
+    "mode": "Theoretical Style",
+    "prompt": "Compare TCP and UDP. Describe their reliability, connection behavior, performance trade-offs, and one appropriate use case for each.",
+    "difficulty": "Intermediate",
+    "topic": "Computer Networks",
+    "tags": [
+      "tcp",
+      "udp",
+      "networking",
+      "protocols"
+    ],
+    "experienceLevels": [
+      "Intermediate",
+      "Experienced"
+    ],
+    "jobRoles": [
+      "software engineer",
+      "backend developer",
+      "full stack developer"
+    ],
+    "priority": 8,
+    "active": true
+  },
+  {
+    "id": "theory-db-normalization-001",
+    "mode": "Theoretical Style",
+    "prompt": "What is database normalization, and what problems is it intended to reduce in a relational database?",
+    "difficulty": "Intermediate",
+    "topic": "Databases",
+    "tags": [
+      "database",
+      "normalization",
+      "relational database",
+      "sql"
+    ],
+    "experienceLevels": [
+      "Intermediate",
+      "Experienced"
+    ],
+    "jobRoles": [
+      "backend developer",
+      "full stack developer",
+      "software engineer"
+    ],
+    "priority": 8,
+    "active": true
+  },
+  {
+    "id": "theory-authentication-authorization-001",
+    "mode": "Theoretical Style",
+    "prompt": "Explain the difference between authentication and authorization, and describe how both are used in a secure web application.",
+    "difficulty": "Beginner",
+    "topic": "Web Security",
+    "tags": [
+      "authentication",
+      "authorization",
+      "security",
+      "web"
+    ],
+    "experienceLevels": [
+      "Beginner",
+      "Intermediate",
+      "Experienced"
+    ],
+    "jobRoles": [
+      "backend developer",
+      "full stack developer",
+      "software engineer"
+    ],
+    "priority": 10,
+    "active": true
+  },
+  {
+    "id": "theory-js-event-loop-001",
+    "mode": "Theoretical Style",
+    "prompt": "Explain how the JavaScript event loop handles asynchronous work, including the roles of the call stack, task queues, and promises.",
+    "difficulty": "Experienced",
+    "topic": "JavaScript",
+    "tags": [
+      "javascript",
+      "event loop",
+      "async",
+      "promises"
+    ],
+    "experienceLevels": [
+      "Intermediate",
+      "Experienced"
+    ],
+    "jobRoles": [
+      "frontend developer",
+      "full stack developer",
+      "software engineer"
+    ],
+    "priority": 8,
+    "active": true
+  },
+  {
+    "id": "theory-testing-levels-001",
+    "mode": "Theoretical Style",
+    "prompt": "Compare unit testing, integration testing, and end-to-end testing. What does each level verify, and when would you use each one?",
+    "difficulty": "Intermediate",
+    "topic": "Software Testing",
+    "tags": [
+      "testing",
+      "unit test",
+      "integration test",
+      "end-to-end"
+    ],
+    "experienceLevels": [
+      "Intermediate",
+      "Experienced"
+    ],
+    "jobRoles": [
+      "software engineer",
+      "frontend developer",
+      "backend developer",
+      "full stack developer"
+    ],
+    "priority": 9,
+    "active": true
+  },
+  {
+    "id": "theory-indexing-tradeoffs-001",
+    "mode": "Theoretical Style",
+    "prompt": "Explain how database indexes improve query performance and describe the storage and write-performance trade-offs they introduce.",
+    "difficulty": "Experienced",
+    "topic": "Database Performance",
+    "tags": [
+      "database",
+      "indexes",
+      "performance",
+      "sql"
+    ],
+    "experienceLevels": [
+      "Experienced",
+      "Intermediate"
+    ],
+    "jobRoles": [
+      "backend developer",
+      "software engineer",
+      "full stack developer"
+    ],
     "priority": 8,
     "active": true
   }

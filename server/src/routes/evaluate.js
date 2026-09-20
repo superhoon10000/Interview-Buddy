@@ -10,10 +10,11 @@
  
 const express = require('express');
 const aiService = require('../services/aiService');
-const { db } = require('../firebaseAdmin'); // reuse existing Firebase Admin connection
- 
-const router = express.Router();
- 
+
+function createEvaluateRouter({
+  evaluationRepository,
+}) {
+  const router = express.Router();
 // This becomes POST /api/evaluate once mounted in app.js
 // Body shape matches evaluationRequest.interface.ts
 router.post('/', async (req, res, next) => {
@@ -54,6 +55,8 @@ router.post('/', async (req, res, next) => {
     return next(error);
   }
 });
- 
-module.exports = router;
+  return router;
+} 
+
+module.exports = createEvaluateRouter;
  
