@@ -66,6 +66,18 @@ describe('anthropicProvider.generateEvaluation', () => {
 
     await expect(
       generateEvaluation({ question: { id: 'q1', text: 'test' }, candidateResponse: 'test' })
-    ).rejects.toThrow('did not match the expected evaluation shape');
+    ).rejects.toThrow('did not match the expected evaluation shape. Feedback is missing');
+  }); 
+
+  it('throws when score is missing', async () => {
+    mockCreate.mockResolvedValue({
+      content: [{ text: '{"feedback": "looks good"}' }],
+    });
+
+    await expect(
+      generateEvaluation({ question: { id: 'q1', text: 'feedback' }, candidateResponse: 'feedback' })
+    ).rejects.toThrow('did not match the expected evaluation shape. shape is missing');
   });
+     
+  
 });

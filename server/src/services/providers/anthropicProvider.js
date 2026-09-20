@@ -41,9 +41,16 @@ Respond ONLY in JSON with this shape: { "score": number (0-100), "feedback": str
   const scoreIsValid = typeof parsed.score === 'number' && parsed.score >= 0 && parsed.score <= 100;
   const feedbackIsValid = typeof parsed.feedback === 'string' && parsed.feedback.length > 0;
 
-  if (!scoreIsValid || !feedbackIsValid) {
-    throw new Error('Anthropic response did not match the expected evaluation shape.');
+  if (!scoreIsValid) {
+    throw new Error('Anthropic response is missing Valid score');
   }
+   
+  if (!feedbackIsValid) {
+    throw new Error('Anthropic response is missing Valid score');
+  }
+  
+
+
 
   return { score: parsed.score, feedback: parsed.feedback };
 }

@@ -81,4 +81,11 @@ describe('aiService.generateEvaluation', () => {
       })
     ).rejects.toThrow('Anthropic response did not match the expected evaluation shape.');
   });
+
+
+  it('throws when it is out of range: ', async () => {
+    mockCreate.mockResolvedValue({
+        content: [{ text: '{"score": 150, "feedback": "Great."'}],
+    });
+  })
 });
