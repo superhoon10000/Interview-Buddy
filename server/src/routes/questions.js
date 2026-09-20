@@ -1,7 +1,4 @@
 const express = require("express");
-const { db } = require("../firebaseAdmin");
-
-const router = express.Router();
 
 const ALLOWED_MODES = new Set([
   "Quiz Style",
@@ -58,11 +55,9 @@ function relevanceScore(question, setup) {
   return score;
 }
 
-function toPublicQuestion(document) {
-  const question = document.data();
-
+function toPublicQuestion(question) {
   return {
-    id: document.id,
+    id: question.id,
     mode: question.mode,
     prompt: question.prompt,
     options: Array.isArray(question.options) ? question.options : [],
@@ -72,97 +67,102 @@ function toPublicQuestion(document) {
   };
 }
 
-router.get("/", async (req, res, next) => {
-  try {
-    const mode = String(req.query.mode || "").trim();
-    if (!ALLOWED_MODES.has(mode)) {
-      return res.status(400).json({
-        error:
-          "A valid mode is required: Quiz Style, Code Style, or Theoretical Style.",
-      });
-    }
-
-    const requestedLimit = Number.parseInt(req.query.limit, 10);
-    const limit = Number.isFinite(requestedLimit)
-      ? Math.min(Math.max(requestedLimit, 1), 20)
-      : 10;
-
-    // Query by mode in Firestore, then do lightweight relevance ranking in the
-    // application layer using the user's setup data. This avoids requiring a
-    // separate Firestore composite index for every future matching field.
-    const snapshot = await db
-      .collection("questions")
-      .where("mode", "==", mode)
-      .limit(100)
-      .get();
-
-    const setup = {
-      jobRole: req.query.jobRole,
-      experienceLevel: req.query.experienceLevel,
-      practiceGoals: req.query.practiceGoals,
-    };
-
-    const ranked = snapshot.docs
-      .filter((document) => document.data().active !== false)
-      .map((document) => ({
-        document,
-        score: relevanceScore(document.data(), setup),
-      }))
-      .sort((a, b) => b.score - a.score)
-      .slice(0, limit)
-      .map(({ document }) => toPublicQuestion(document));
-
-    return res.json({ questions: ranked });
-  } catch (error) {
-    return next(error);
+/**
+ * Router factory. The application injects a QuestionRepository implementation
+ * so this route stays independent of Firestore/Firebase APIs.
+ */
+function createQuestionRouter({ questionRepository }) {
+  if (!questionRepository) {
+    throw new Error("createQuestionRouter requires questionRepository.");
   }
-});
 
-router.post("/:questionId/check", async (req, res, next) => {
-  try {
-    const answer = String(req.body?.answer || "").trim();
-    if (!answer) {
-      return res.status(400).json({ error: "An answer is required." });
+  const router = express.Router();
+
+  router.get("/", async (req, res, next) => {
+    try {
+      const mode = String(req.query.mode || "").trim();
+      if (!ALLOWED_MODES.has(mode)) {
+        return res.status(400).json({
+          error:
+            "A valid mode is required: Quiz Style, Code Style, or Theoretical Style.",
+        });
+      }
+
+      const requestedLimit = Number.parseInt(req.query.limit, 10);
+      const limit = Number.isFinite(requestedLimit)
+        ? Math.min(Math.max(requestedLimit, 1), 20)
+        : 10;
+
+      // Database querying is delegated to the repository. Relevance ranking is
+      // application behavior, so it remains here and is database-agnostic.
+      const questions = await questionRepository.findByMode(mode);
+
+      const setup = {
+        jobRole: req.query.jobRole,
+        experienceLevel: req.query.experienceLevel,
+        practiceGoals: req.query.practiceGoals,
+      };
+
+      const ranked = questions
+        .filter((question) => question.active !== false)
+        .map((question) => ({
+          question,
+          score: relevanceScore(question, setup),
+        }))
+        .sort((a, b) => b.score - a.score)
+        .slice(0, limit)
+        .map(({ question }) => toPublicQuestion(question));
+
+      return res.json({ questions: ranked });
+    } catch (error) {
+      return next(error);
     }
+  });
 
-    const document = await db
-      .collection("questions")
-      .doc(req.params.questionId)
-      .get();
+  router.post("/:questionId/check", async (req, res, next) => {
+    try {
+      const answer = String(req.body?.answer || "").trim();
+      if (!answer) {
+        return res.status(400).json({ error: "An answer is required." });
+      }
 
-    if (!document.exists) {
-      return res.status(404).json({ error: "Question not found." });
-    }
+      const question = await questionRepository.findById(req.params.questionId);
 
-    const question = document.data();
-    if (question.mode !== "Quiz Style") {
-      return res.status(400).json({
-        error: "Server-side answer checking is currently only used for Quiz Style.",
+      if (!question) {
+        return res.status(404).json({ error: "Question not found." });
+      }
+
+      if (question.mode !== "Quiz Style") {
+        return res.status(400).json({
+          error: "Server-side answer checking is currently only used for Quiz Style.",
+        });
+      }
+
+      const correctAnswer = normalize(question.correctAnswer);
+      if (!correctAnswer) {
+        return res.status(500).json({
+          error: "This quiz question is missing a correct answer in the data store.",
+        });
+      }
+
+      const isCorrect = normalize(answer) === correctAnswer;
+      const explanation =
+        question.explanation ||
+        (isCorrect
+          ? "Correct."
+          : "That answer is not correct. Review the topic and try another question.");
+
+      return res.json({
+        questionId: question.id,
+        isCorrect,
+        explanation,
       });
+    } catch (error) {
+      return next(error);
     }
+  });
 
-    const correctAnswer = normalize(question.correctAnswer);
-    if (!correctAnswer) {
-      return res.status(500).json({
-        error: "This quiz question is missing a correct answer in Firebase.",
-      });
-    }
+  return router;
+}
 
-    const isCorrect = normalize(answer) === correctAnswer;
-    const explanation =
-      question.explanation ||
-      (isCorrect
-        ? "Correct."
-        : "That answer is not correct. Review the topic and try another question.");
-
-    return res.json({
-      questionId: document.id,
-      isCorrect,
-      explanation,
-    });
-  } catch (error) {
-    return next(error);
-  }
-});
-
-module.exports = router;
+module.exports = createQuestionRouter;
