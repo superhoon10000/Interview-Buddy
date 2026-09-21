@@ -82,8 +82,11 @@ Each question document can contain:
 - `mode`: `Quiz Style`, `Code Style`, or `Theoretical Style`
 - `prompt`: question shown to the user
 - `options`: array used by Quiz Style questions
-- `correctAnswer`: server-only quiz answer
-- `explanation`: server-returned explanation after a quiz submission
+- `correctAnswer`: server-only Quiz Style answer
+- `explanation`: server-returned Quiz Style explanation after submission
+- `referenceAnswer`: private Code/Theoretical grading reference kept on the backend
+- `gradingCriteria`: private weighted rubric entries for Code/Theoretical evaluation
+- `evaluationInstructions`: optional private guidance for the AI evaluator
 - `difficulty`: optional metadata
 - `topic`: optional metadata
 - `tags`: array used for lightweight matching against practice goals
@@ -137,13 +140,15 @@ A hosted environment can instead provide `FIREBASE_SERVICE_ACCOUNT_JSON` as a se
 
 ## 3. Configure AI evaluation (optional for Firebase question retrieval)
 
-The current `evaluate.js` route uses the Anthropic SDK. To use that route, add this to `server/.env`:
+`evaluate.js` depends on the provider-independent `server/src/services/aiService.js`. Provider-specific SDK code is isolated under `server/src/services/providers/`. The current configured provider is Anthropic. Add these values to `server/.env`:
 
 ```env
+AI_PROVIDER=anthropic
 ANTHROPIC_API_KEY=your-api-key
+ANTHROPIC_MODEL=claude-sonnet-4-6
 ```
 
-Firebase-backed question retrieval and quiz checking do not require the Anthropic key.
+Firebase-backed question retrieval and quiz checking do not require the Anthropic key. See `AI_GRADING_SETUP.md` for the weighted grading schema and response contract.
 
 ## 4. Install, test, seed, and run the backend
 
@@ -162,7 +167,7 @@ The API defaults to `http://localhost:5001` and exposes:
 - `GET /api/health`
 - `GET /api/questions?mode=Quiz%20Style&jobRole=...&experienceLevel=...&practiceGoals=...`
 - `POST /api/questions/:questionId/check` with `{ "answer": "..." }`
-- `POST /api/evaluate`
+- `POST /api/evaluate` with `{ "questionId": "...", "candidateResponse": "...", "metadata": { ... } }`
 
 ## 5. Configure and run the React client
 
@@ -200,8 +205,9 @@ Before this update, `questions.js` and `evaluate.js` directly imported Firebase 
 After this update:
 
 ```text
-questions.js  -> QuestionRepository -> FirestoreQuestionRepository -> Firestore
-evaluate.js   -> EvaluationRepository -> FirestoreEvaluationRepository -> Firestore
+questions.js -> QuestionRepository -> FirestoreQuestionRepository -> Firestore
+evaluate.js  -> QuestionRepository -> aiService -> provider adapter
+             -> EvaluationRepository -> FirestoreEvaluationRepository -> Firestore
 ```
 
 A future database adapter could implement the same contracts without requiring changes to the route logic or React pages.
