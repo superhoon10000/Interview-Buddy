@@ -2,7 +2,25 @@ import React, { useCallback, useEffect, useState } from "react";
 import PageLayout from "../components/layout/PageLayout";
 import FeedbackBox from "../components/interview/FeedbackBox";
 import { PAGES } from "../utils/constants";
-import { interviewService } from "../services";
+import { aiService, interviewService } from "../services";
+
+function formatEvaluationFeedback(evaluation) {
+  const sections = [`Score: ${evaluation.score}/100`, evaluation.feedback];
+
+  if (evaluation.strengths?.length) {
+    sections.push(`Strengths: ${evaluation.strengths.join("; ")}`);
+  }
+
+  if (evaluation.weaknesses?.length) {
+    sections.push(`Weaknesses: ${evaluation.weaknesses.join("; ")}`);
+  }
+
+  if (evaluation.suggestions?.length) {
+    sections.push(`Suggestions: ${evaluation.suggestions.join("; ")}`);
+  }
+
+  return sections.filter(Boolean).join("\n\n");
+}
 
 function InterviewSessionPage({
   currentPage,
@@ -98,18 +116,24 @@ function InterviewSessionPage({
           selectedAnswer
         );
 
-        setFeedbackType(result.isCorrect ? "correct" : "incorrect");
-        setFeedbackMessage(
+        const quizFeedback =
           result.explanation ||
-            (result.isCorrect
-              ? "Correct."
-              : "That answer is not correct. Try another question when ready.")
-        );
+          (result.isCorrect
+            ? "Correct."
+            : "That answer is not correct. Review the topic and try another question.");
+
+        setFeedbackType(result.isCorrect ? "correct" : "incorrect");
+        setFeedbackMessage(quizFeedback);
         setAnsweredQuestions((previous) => ({
           ...previous,
           [currentQuestion.id]: {
             submitted: true,
+            questionId: currentQuestion.id,
+            prompt: currentQuestion.prompt,
+            userAnswer: selectedAnswer,
             isCorrect: Boolean(result.isCorrect),
+            score: result.isCorrect ? 100 : 0,
+            feedback: quizFeedback,
           },
         }));
       } catch (error) {
@@ -130,62 +154,43 @@ function InterviewSessionPage({
       return;
     }
 
-    // AI evaluation remains behind aiService for the later AI integration
-    // sprint. For now, this confirms the response to the Firebase-loaded
-    // question without duplicating AI behavior in the database service.
-    setFeedbackType("ai-feedback");
-    setFeedbackMessage(
-      generatePrototypeFeedback(selectedMode, writtenAnswer, currentQuestion)
-    );
-    setAnsweredQuestions((previous) => ({
-      ...previous,
-      [currentQuestion.id]: {
-        submitted: true,
-        isCorrect: null,
-      },
-    }));
-  }
+    setIsSubmitting(true);
 
-  function generatePrototypeFeedback(mode, answer, question) {
-    const normalizedAnswer = answer.toLowerCase();
+    try {
+      const evaluation = await aiService.evaluateAnswer({
+        questionId: currentQuestion.id,
+        userAnswer: writtenAnswer,
+        sessionId: setupData.id,
+        jobRole: setupData.jobRole,
+        experienceLevel: setupData.experienceLevel,
+      });
 
-    // Preserve the updated prototype's existing mock feedback for its two
-    // original demo questions when those same prompts are loaded from
-    // Firebase. Other database questions receive a neutral placeholder until
-    // aiService is connected to the real AI processing layer.
-    if (
-      mode === "Code Style" &&
-      (question.id === "code-palindrome-001" ||
-        question.prompt.toLowerCase().includes("palindrome"))
-    ) {
-      if (
-        normalizedAnswer.includes("palindrome") &&
-        normalizedAnswer.includes("function")
-      ) {
-        return "Good start! Your function concept is correct. Consider edge cases like empty strings, case sensitivity, and non-alphanumeric characters. Here's a suggested improvement: function isPalindrome(str) { const cleanStr = str.replace(/[^a-zA-Z0-9]/g, '').toLowerCase(); return cleanStr === cleanStr.split('').reverse().join(''); }";
-      }
-
-      return "Your answer shows understanding of the problem. For a palindrome check, you need to compare the string with its reverse. Try implementing a function that handles case insensitivity and removes punctuation.";
+      setFeedbackType("ai-feedback");
+      setFeedbackMessage(formatEvaluationFeedback(evaluation));
+      setAnsweredQuestions((previous) => ({
+        ...previous,
+        [currentQuestion.id]: {
+          submitted: true,
+          questionId: currentQuestion.id,
+          prompt: currentQuestion.prompt,
+          userAnswer: writtenAnswer.trim(),
+          isCorrect: null,
+          score: evaluation.score,
+          feedback: evaluation.feedback,
+          strengths: evaluation.strengths || [],
+          weaknesses: evaluation.weaknesses || [],
+          suggestions: evaluation.suggestions || [],
+          criterionResults: evaluation.criterionResults || [],
+        },
+      }));
+    } catch (error) {
+      setFeedbackType("warning");
+      setFeedbackMessage(
+        error.message || "AI evaluation is currently unavailable. Please try again."
+      );
+    } finally {
+      setIsSubmitting(false);
     }
-
-    if (
-      mode === "Theoretical Style" &&
-      (question.id === "theory-stack-queue-001" ||
-        (question.prompt.toLowerCase().includes("stack") &&
-          question.prompt.toLowerCase().includes("queue")))
-    ) {
-      if (
-        normalizedAnswer.includes("stack") &&
-        normalizedAnswer.includes("queue") &&
-        (normalizedAnswer.includes("lifo") || normalizedAnswer.includes("fifo"))
-      ) {
-        return "Excellent explanation! You correctly identified the key differences: Stack is LIFO (Last In, First Out) while Queue is FIFO (First In, First Out). Your use cases are practical. To improve: mention time complexities for operations and when to choose one over the other.";
-      }
-
-      return "You touched on some good points. Remember: Stack follows LIFO (Last In, First Out) - like a stack of plates. Queue follows FIFO (First In, First Out) - like a line at a store. Try giving specific real-world examples for each.";
-    }
-
-    return "Your answer was recorded for this Firebase-loaded prompt. Detailed AI evaluation for database questions will be handled through the existing aiService when the AI processing layer is connected.";
   }
 
   function handleNextQuestion() {
@@ -197,12 +202,12 @@ function InterviewSessionPage({
   }
 
   function handleEndInterview() {
-    const submittedAnswers = Object.values(answeredQuestions).filter(
-      (record) => record.submitted
-    );
+    const submittedAnswers = questions
+      .map((question) => answeredQuestions[question.id])
+      .filter((record) => record?.submitted);
     const questionsAnswered = submittedAnswers.length;
 
-    let score = questionsAnswered > 0 ? "100%" : "0%";
+    let score = "0%";
     let eloChange = "0";
     let isCorrect = null;
 
@@ -223,7 +228,31 @@ function InterviewSessionPage({
       eloChange = eloValue > 0 ? `+${eloValue}` : String(eloValue);
       isCorrect =
         questionsAnswered === 1 ? submittedAnswers[0].isCorrect : null;
+    } else {
+      const aiScores = submittedAnswers
+        .map((record) => Number(record.score))
+        .filter((value) => Number.isFinite(value));
+
+      const averageScore = aiScores.length
+        ? Math.round(
+            aiScores.reduce((sum, value) => sum + value, 0) / aiScores.length
+          )
+        : 0;
+
+      score = `${averageScore}%`;
     }
+
+    const aiFeedback =
+      selectedMode === "Quiz Style"
+        ? ""
+        : submittedAnswers
+            .map((record, index) =>
+              record.feedback
+                ? `Question ${index + 1}: ${record.feedback}`
+                : ""
+            )
+            .filter(Boolean)
+            .join("\n\n");
 
     onEndInterview({
       mode: selectedMode || "Interview Mode",
@@ -239,6 +268,9 @@ function InterviewSessionPage({
       answerSubmitted: questionsAnswered > 0,
       feedbackMessage,
       feedbackType,
+      aiFeedback,
+      perQuestion: submittedAnswers,
+      setupData,
     });
   }
 
@@ -340,7 +372,7 @@ function InterviewSessionPage({
               placeholder="Type your answer here..."
               value={writtenAnswer}
               onChange={(event) => setWrittenAnswer(event.target.value)}
-              disabled={hasSubmitted}
+              disabled={hasSubmitted || isSubmitting}
             />
           )}
 
@@ -355,12 +387,17 @@ function InterviewSessionPage({
               onClick={handleSubmit}
               disabled={hasSubmitted || isSubmitting}
             >
-              {isSubmitting ? "Checking..." : "Submit"}
+              {isSubmitting
+                ? selectedMode === "Quiz Style"
+                  ? "Checking..."
+                  : "Evaluating..."
+                : "Submit"}
             </button>
 
             <button
               className="secondaryButton"
               onClick={() => onNavigate(PAGES.DASHBOARD)}
+              disabled={isSubmitting}
             >
               Back
             </button>
@@ -371,7 +408,11 @@ function InterviewSessionPage({
               </button>
             )}
 
-            <button className="primaryButton" onClick={handleEndInterview}>
+            <button
+              className="primaryButton"
+              onClick={handleEndInterview}
+              disabled={isSubmitting}
+            >
               End Interview
             </button>
           </div>

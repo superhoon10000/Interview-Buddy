@@ -1,71 +1,166 @@
-// server/src/services/providers/anthropicProvider.test.js
-//
-// Tests the Anthropic-specific logic: does it build a sensible prompt,
-// does it correctly parse Claude's response, does it reject a malformed
-// response. We mock the Anthropic SDK itself so no real API call happens.
+const mockCreate = jest.fn();
 
-jest.mock('@anthropic-ai/sdk', () => {
-  // jest.fn() creates a fake function we can control and inspect.
-  const mockCreate = jest.fn();
-  return jest.fn().mockImplementation(() => ({
-    messages: { create: mockCreate },
-  }));
-});
+jest.mock(
+  "@anthropic-ai/sdk",
+  () =>
+    jest.fn().mockImplementation(() => ({
+      messages: { create: mockCreate },
+    })),
+  { virtual: true }
+);
 
-const Anthropic = require('@anthropic-ai/sdk');
-const { generateEvaluation } = require('./anthropicProvider');
+const { generateEvaluation } = require("./anthropicProvider");
 
-// Grab a reference to the fake "create" function so tests can control it.
-const mockCreate = new Anthropic().messages.create;
+const question = {
+  id: "q1",
+  mode: "Code Style",
+  prompt: "Write a function.",
+  referenceAnswer: "A correct implementation with an explanation.",
+  gradingCriteria: [
+    {
+      name: "Correctness",
+      weight: 60,
+      description: "The solution is correct.",
+    },
+    {
+      name: "Explanation",
+      weight: 40,
+      description: "The solution is explained clearly.",
+    },
+  ],
+};
 
-describe('anthropicProvider.generateEvaluation', () => {
+describe("anthropicProvider.generateEvaluation", () => {
+  const originalKey = process.env.ANTHROPIC_API_KEY;
+
   beforeEach(() => {
     jest.clearAllMocks();
+    process.env.ANTHROPIC_API_KEY = "test-key";
   });
 
-  it('returns a valid score and feedback when Claude responds correctly', async () => {
+  afterAll(() => {
+    if (originalKey === undefined) {
+      delete process.env.ANTHROPIC_API_KEY;
+    } else {
+      process.env.ANTHROPIC_API_KEY = originalKey;
+    }
+  });
+
+  it("returns structured feedback and calculates score from rubric points", async () => {
     mockCreate.mockResolvedValue({
-      content: [{ text: '{"score": 90, "feedback": "Great answer."}' }],
+      content: [
+        {
+          type: "text",
+          text: JSON.stringify({
+            feedback: "Good answer.",
+            strengths: ["Correct approach"],
+            weaknesses: ["Could explain more"],
+            suggestions: ["Discuss complexity"],
+            criterionResults: [
+              {
+                name: "Correctness",
+                awardedPoints: 55,
+                feedback: "Mostly correct.",
+              },
+              {
+                name: "Explanation",
+                awardedPoints: 30,
+                feedback: "Clear but brief.",
+              },
+            ],
+          }),
+        },
+      ],
     });
 
     const result = await generateEvaluation({
-      question: { id: 'q1', text: 'What is a closure?' },
-      candidateResponse: 'A function with access to its outer scope.',
+      question,
+      candidateResponse: "candidate answer",
+      gradingCriteria: question.gradingCriteria,
     });
 
-    expect(result).toEqual({ score: 90, feedback: 'Great answer.' });
+    expect(result.score).toBe(85);
+    expect(result.feedback).toBe("Good answer.");
+    expect(result.criterionResults).toEqual([
+      {
+        name: "Correctness",
+        awardedPoints: 55,
+        maxPoints: 60,
+        feedback: "Mostly correct.",
+      },
+      {
+        name: "Explanation",
+        awardedPoints: 30,
+        maxPoints: 40,
+        feedback: "Clear but brief.",
+      },
+    ]);
   });
 
-  it('handles Claude wrapping its JSON in markdown code fences', async () => {
+  it("handles JSON wrapped in markdown code fences", async () => {
     mockCreate.mockResolvedValue({
-      content: [{ text: '```json\n{"score": 70, "feedback": "Decent."}\n```' }],
+      content: [
+        {
+          type: "text",
+          text: '```json\n{"feedback":"Decent.","strengths":[],"weaknesses":[],"suggestions":[],"criterionResults":[{"name":"Correctness","awardedPoints":40,"feedback":"ok"},{"name":"Explanation","awardedPoints":20,"feedback":"ok"}]}\n```',
+        },
+      ],
     });
 
     const result = await generateEvaluation({
-      question: { id: 'q1', text: 'test' },
-      candidateResponse: 'test',
+      question,
+      candidateResponse: "test",
+      gradingCriteria: question.gradingCriteria,
     });
 
-    expect(result).toEqual({ score: 70, feedback: 'Decent.' });
+    expect(result.score).toBe(60);
   });
 
-  it('throws when the score is out of range', async () => {
+  it("throws when a criterion award exceeds its configured weight", async () => {
     mockCreate.mockResolvedValue({
-      content: [{ text: '{"score": 150, "feedback": "Great."}' }],
+      content: [
+        {
+          type: "text",
+          text: JSON.stringify({
+            feedback: "Invalid",
+            strengths: [],
+            weaknesses: [],
+            suggestions: [],
+            criterionResults: [
+              {
+                name: "Correctness",
+                awardedPoints: 80,
+                feedback: "too high",
+              },
+              {
+                name: "Explanation",
+                awardedPoints: 20,
+                feedback: "ok",
+              },
+            ],
+          }),
+        },
+      ],
     });
 
     await expect(
-      generateEvaluation({ question: { id: 'q1', text: 'test' }, candidateResponse: 'test' })
-    ).rejects.toThrow('did not match the expected evaluation shape');
+      generateEvaluation({
+        question,
+        candidateResponse: "test",
+        gradingCriteria: question.gradingCriteria,
+      })
+    ).rejects.toThrow("did not match the expected evaluation shape");
   });
 
-  it('throws when feedback is missing', async () => {
-    mockCreate.mockResolvedValue({
-      content: [{ text: '{"score": 80}' }],
-    });
+  it("requires the server-side Anthropic key", async () => {
+    delete process.env.ANTHROPIC_API_KEY;
 
     await expect(
-      generateEvaluation({ question: { id: 'q1', text: 'test' }, candidateResponse: 'test' })
-    ).rejects.toThrow('did not match the expected evaluation shape');
+      generateEvaluation({
+        question,
+        candidateResponse: "test",
+        gradingCriteria: question.gradingCriteria,
+      })
+    ).rejects.toThrow("ANTHROPIC_API_KEY");
   });
 });
