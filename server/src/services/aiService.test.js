@@ -1,91 +1,122 @@
-// server/src/services/aiService.test.js
-//
-// Tests the ABSTRACTION layer, not the real Anthropic API. We don't want
-// tests that make real network calls (slow, costs money, requires a real
-// API key, fails if Anthropic's servers are down). Instead we "mock" the
-// provider — swap in a fake version we control — so we can test aiService's
-// own logic (picking the right provider, handling errors) in isolation.
+jest.mock("./providers/anthropicProvider", () => ({
+  generateEvaluation: jest.fn(),
+}));
 
-// jest.mock() replaces the real anthropicProvider module with a fake one
-// for this test file only. Anywhere aiService.js does
-// require('./providers/anthropicProvider'), it gets this fake instead.
-jest.mock('./providers/anthropicProvider');
+const anthropicProvider = require("./providers/anthropicProvider");
+const aiService = require("./aiService");
 
-const anthropicProvider = require('./providers/anthropicProvider');
-const aiService = require('./aiService');
+const question = {
+  id: "q1",
+  mode: "Theoretical Style",
+  prompt: "Explain closures.",
+  referenceAnswer: "A closure retains access to its lexical scope.",
+  gradingCriteria: [
+    {
+      name: "Accuracy",
+      weight: 60,
+      description: "Correctly explains lexical scope.",
+    },
+    {
+      name: "Clarity",
+      weight: 40,
+      description: "Explains the idea clearly.",
+    },
+  ],
+};
 
-describe('aiService.generateEvaluation', () => {
+describe("aiService.generateEvaluation", () => {
+  const originalProvider = process.env.AI_PROVIDER;
+
   beforeEach(() => {
-    // Clears any fake return values/call history from the previous test,
-    // so tests don't accidentally affect each other.
     jest.clearAllMocks();
+    process.env.AI_PROVIDER = "anthropic";
   });
 
-  it('calls the anthropic provider by default', async () => {
-    // Tell the FAKE anthropicProvider what to return when called.
-    anthropicProvider.generateEvaluation.mockResolvedValue({
+  afterAll(() => {
+    if (originalProvider === undefined) {
+      delete process.env.AI_PROVIDER;
+    } else {
+      process.env.AI_PROVIDER = originalProvider;
+    }
+  });
+
+  it("calls the configured provider through the abstraction", async () => {
+    const expected = {
       score: 85,
-      feedback: 'Solid answer, could be more specific.',
-    });
+      feedback: "Solid answer.",
+      strengths: ["Accurate definition"],
+      weaknesses: [],
+      suggestions: ["Add an example"],
+      criterionResults: [
+        {
+          name: "Accuracy",
+          awardedPoints: 55,
+          maxPoints: 60,
+          feedback: "Accurate.",
+        },
+        {
+          name: "Clarity",
+          awardedPoints: 30,
+          maxPoints: 40,
+          feedback: "Mostly clear.",
+        },
+      ],
+    };
+
+    anthropicProvider.generateEvaluation.mockResolvedValue(expected);
 
     const result = await aiService.generateEvaluation({
-      question: { id: 'q1', text: 'Explain closures.' },
-      candidateResponse: 'A closure is...',
-      gradingCriteria: ['clarity'],
+      question,
+      candidateResponse: "A closure is...",
     });
 
-    // Confirm aiService actually called the provider, and with the right data.
     expect(anthropicProvider.generateEvaluation).toHaveBeenCalledWith({
-      question: { id: 'q1', text: 'Explain closures.' },
-      candidateResponse: 'A closure is...',
-      gradingCriteria: ['clarity'],
+      question,
+      candidateResponse: "A closure is...",
+      gradingCriteria: question.gradingCriteria,
     });
-
-    // Confirm aiService returned exactly what the provider gave it.
-    expect(result).toEqual({
-      score: 85,
-      feedback: 'Solid answer, could be more specific.',
-    });
+    expect(result).toEqual(expected);
   });
 
-  it('throws a clear error for an unknown provider', async () => {
-    // Temporarily override the env variable for this one test.
-    const originalProvider = process.env.AI_PROVIDER;
-    process.env.AI_PROVIDER = 'not-a-real-provider';
+  it("rejects a question that does not contain a valid private rubric", async () => {
+    await expect(
+      aiService.generateEvaluation({
+        question: {
+          id: "q2",
+          prompt: "Test",
+          referenceAnswer: "Reference",
+          gradingCriteria: [{ name: "Only", weight: 100, description: "x" }],
+        },
+        candidateResponse: "Answer",
+      })
+    ).rejects.toThrow("not configured for AI grading");
 
-    // Re-require aiService so it picks up the new env value
-    // (it reads AI_PROVIDER once, when the module first loads).
-    jest.resetModules();
-    const aiServiceWithBadProvider = require('./aiService');
+    expect(anthropicProvider.generateEvaluation).not.toHaveBeenCalled();
+  });
+
+  it("throws a clear error for an unknown provider", async () => {
+    process.env.AI_PROVIDER = "not-a-real-provider";
 
     await expect(
-      aiServiceWithBadProvider.generateEvaluation({
-        question: { id: 'q1', text: 'test' },
-        candidateResponse: 'test',
+      aiService.generateEvaluation({
+        question,
+        candidateResponse: "test",
       })
-    ).rejects.toThrow('Unknown AI_PROVIDER');
-
-    // Restore the original value so we don't affect other tests.
-    process.env.AI_PROVIDER = originalProvider;
+    ).rejects.toThrow("Unknown AI_PROVIDER");
   });
 
-  it('propagates errors from the provider instead of swallowing them', async () => {
+  it("propagates provider errors instead of swallowing them", async () => {
     anthropicProvider.generateEvaluation.mockRejectedValue(
-      new Error('Anthropic response did not match the expected evaluation shape.')
+      new Error("Anthropic response did not match the expected evaluation shape.")
     );
 
     await expect(
       aiService.generateEvaluation({
-        question: { id: 'q1', text: 'test' },
-        candidateResponse: 'test',
+        question,
+        candidateResponse: "test",
       })
-    ).rejects.toThrow('Anthropic response did not match the expected evaluation shape.');
+    ).rejects.toThrow(
+      "Anthropic response did not match the expected evaluation shape."
+    );
   });
-
-
-  it('throws when it is out of range: ', async () => {
-    mockCreate.mockResolvedValue({
-        content: [{ text: '{"score": 150, "feedback": "Great."'}],
-    });
-  })
 });

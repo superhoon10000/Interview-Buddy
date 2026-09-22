@@ -10,7 +10,7 @@ const FirestoreQuestionRepository = require("./firestore/FirestoreQuestionReposi
 const FirestoreEvaluationRepository = require("./firestore/FirestoreEvaluationRepository");
 
 const questionRepository = new FirestoreQuestionRepository({ db, admin });
-const evaluationRepository = new FirestoreEvaluationRepository({ db });
+const evaluationRepository = new FirestoreEvaluationRepository({ db, admin });
 
 module.exports = {
   questionRepository,

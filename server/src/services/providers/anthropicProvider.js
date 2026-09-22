@@ -1,48 +1,23 @@
 // server/src/services/providers/anthropicProvider.js
 //
-// One concrete implementation of the AI provider contract (see
-// aiProvider.interface.js). All Anthropic-specific details live in
-// this ONE file — the SDK import, the prompt wording, the response
-// parsing. Nothing outside this file should ever import '@anthropic-ai/sdk'.
+// Anthropic-specific adapter for the common AI evaluation contract. No route
+// or page imports the Anthropic SDK directly.
 
-const Anthropic = require('@anthropic-ai/sdk');
+const Anthropic = require("@anthropic-ai/sdk");
+const {
+  formatRubric,
+  normalizeEvaluation,
+} = require("../evaluationContract");
 
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+function getAnthropicClient() {
+  const apiKey = process.env.ANTHROPIC_API_KEY;
 
-/**
- * @param {Object} params
- * @param {{ id: string, text: string }} params.question
- * @param {string} params.candidateResponse
- * @param {string[]} [params.gradingCriteria]
- * @returns {Promise<{ score: number, feedback: string }>}
- */
-async function generateEvaluation({ question, candidateResponse, gradingCriteria }) {
-  const criteriaText = gradingCriteria?.length
-    ? `Grade against these criteria: ${gradingCriteria.join(', ')}.`
-    : '';
-
-  const prompt = `You are grading an interview answer.
-Question: ${question.text}
-Candidate's answer: ${candidateResponse}
-${criteriaText}
-Respond ONLY in JSON with this shape: { "score": number (0-100), "feedback": string }`;
-
-  const aiResponse = await anthropic.messages.create({
-    model: 'claude-sonnet-4-6',
-    max_tokens: 500,
-    messages: [{ role: 'user', content: prompt }],
-  });
-
-  const rawText = aiResponse.content[0].text;
-  const cleaned = rawText.replace(/```json|```/g, '').trim();
-  const parsed = JSON.parse(cleaned);
-
-  // Enforce the shared output shape before handing it back to the caller.
-  const scoreIsValid = typeof parsed.score === 'number' && parsed.score >= 0 && parsed.score <= 100;
-  const feedbackIsValid = typeof parsed.feedback === 'string' && parsed.feedback.length > 0;
-
-  if (!scoreIsValid) {
-    throw new Error('Anthropic response is missing Valid score');
+  if (!apiKey) {
+    const error = new Error(
+      "AI evaluation is not configured. Set ANTHROPIC_API_KEY in server/.env."
+    );
+    error.statusCode = 503;
+    throw error;
   }
    
   if (!feedbackIsValid) {
@@ -52,7 +27,107 @@ Respond ONLY in JSON with this shape: { "score": number (0-100), "feedback": str
 
 
 
-  return { score: parsed.score, feedback: parsed.feedback };
+  return new Anthropic({ apiKey });
+}
+
+function extractTextContent(aiResponse) {
+  if (!Array.isArray(aiResponse?.content)) {
+    return "";
+  }
+
+  return aiResponse.content
+    .filter((block) => block?.type === "text" || typeof block?.text === "string")
+    .map((block) => String(block.text || ""))
+    .join("\n")
+    .trim();
+}
+
+function parseJsonResponse(rawText) {
+  const cleaned = String(rawText || "")
+    .replace(/```json/gi, "")
+    .replace(/```/g, "")
+    .trim();
+
+  return JSON.parse(cleaned);
+}
+
+async function generateEvaluation({
+  question,
+  candidateResponse,
+  gradingCriteria,
+}) {
+  const rubricText = formatRubric(gradingCriteria);
+  const evaluationInstructions = String(
+    question.evaluationInstructions ||
+      "Accept technically equivalent answers and alternative valid approaches. Do not require exact wording from the reference answer."
+  ).trim();
+
+  const prompt = `You are the answer-evaluation component for Interview Buddy.
+
+Evaluate the candidate's response using ONLY the interview question, private reference answer, and weighted grading rubric below.
+
+Interview mode: ${question.mode}
+Topic: ${question.topic || "General"}
+Difficulty: ${question.difficulty || "Unspecified"}
+
+QUESTION
+${question.prompt}
+
+CANDIDATE RESPONSE
+${candidateResponse}
+
+PRIVATE REFERENCE ANSWER
+${question.referenceAnswer}
+
+WEIGHTED GRADING RUBRIC (TOTAL 100 POINTS)
+${rubricText}
+
+QUESTION-SPECIFIC EVALUATION INSTRUCTIONS
+${evaluationInstructions}
+
+GRADING REQUIREMENTS
+- Grade each criterion independently and award between 0 and that criterion's point value.
+- The final total score is calculated by server code from the awarded criterion points.
+- Accept equivalent correct solutions, terminology, examples, or algorithms when they satisfy the rubric.
+- Do not invent requirements that are not present in the question or rubric.
+- Feedback must be specific to the candidate response and useful for interview practice.
+- For code questions, focus on correctness, edge cases, complexity, and explanation only when the rubric asks for them.
+- For theoretical questions, focus on technical accuracy, completeness, examples, and clarity only when the rubric asks for them.
+
+Respond ONLY with valid JSON in this exact structure:
+{
+  "feedback": "One concise overall evaluation.",
+  "strengths": ["specific strength"],
+  "weaknesses": ["specific weakness"],
+  "suggestions": ["specific improvement"],
+  "criterionResults": [
+    {
+      "name": "criterion name in the same order as the rubric",
+      "awardedPoints": 0,
+      "feedback": "criterion-specific explanation"
+    }
+  ]
+}`;
+
+  const anthropic = getAnthropicClient();
+  const aiResponse = await anthropic.messages.create({
+    model: process.env.ANTHROPIC_MODEL || "claude-sonnet-4-6",
+    max_tokens: 1200,
+    temperature: 0,
+    messages: [{ role: "user", content: prompt }],
+  });
+
+  try {
+    const parsed = parseJsonResponse(extractTextContent(aiResponse));
+    return normalizeEvaluation(parsed, gradingCriteria);
+  } catch (error) {
+    const wrapped = new Error(
+      "Anthropic response did not match the expected evaluation shape."
+    );
+    wrapped.cause = error;
+    wrapped.statusCode = 502;
+    throw wrapped;
+  }
 }
 
 module.exports = { generateEvaluation };

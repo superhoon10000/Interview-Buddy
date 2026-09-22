@@ -306,48 +306,87 @@ describe("leaderboardService", () => {
 });
 
 describe("aiService", () => {
-  test("evaluateAnswer returns the Sprint 1 placeholder structure", async () => {
+  beforeEach(() => {
+    global.fetch = jest.fn();
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  test("evaluateAnswer posts the public question id and candidate response", async () => {
+    global.fetch.mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        evaluation: {
+          score: 85,
+          feedback: "Good answer.",
+          strengths: ["Accurate"],
+          weaknesses: [],
+          suggestions: ["Add an example"],
+          criterionResults: [],
+        },
+      }),
+    });
+
     const result = await aiService.evaluateAnswer({
-      question: "What is a stack?",
-      referenceAnswer: "A LIFO data structure.",
-      userAnswer:
-        "A stack uses last in, first out ordering.",
+      questionId: "theory-stack-queue-001",
+      userAnswer: "A stack is LIFO and a queue is FIFO.",
+      sessionId: "mock-session-1",
+      jobRole: "Software Engineer",
+      experienceLevel: "Intermediate",
     });
 
-    expect(result).toEqual({
-      score: null,
-      strengths: [],
-      weaknesses: [],
-      suggestions: [],
-      isMock: true,
-    });
+    expect(global.fetch).toHaveBeenCalledWith(
+      "http://localhost:5001/api/evaluate",
+      expect.objectContaining({
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      })
+    );
+
+    const request = global.fetch.mock.calls[0][1];
+    const body = JSON.parse(request.body);
+    expect(body.questionId).toBe("theory-stack-queue-001");
+    expect(body.candidateResponse).toBe(
+      "A stack is LIFO and a queue is FIFO."
+    );
+    expect(body).not.toHaveProperty("referenceAnswer");
+    expect(body).not.toHaveProperty("gradingCriteria");
+    expect(result.score).toBe(85);
   });
 
-  test("evaluateAnswer requires a question", async () => {
+  test("evaluateAnswer requires a question id", async () => {
     await expect(
       aiService.evaluateAnswer({
-        referenceAnswer: "Reference answer",
         userAnswer: "User answer",
       })
-    ).rejects.toThrow("Question is required.");
-  });
-
-  test("evaluateAnswer requires a reference answer", async () => {
-    await expect(
-      aiService.evaluateAnswer({
-        question: "Question",
-        userAnswer: "User answer",
-      })
-    ).rejects.toThrow("Reference answer is required.");
+    ).rejects.toThrow("Question ID is required.");
   });
 
   test("evaluateAnswer rejects an empty user answer", async () => {
     await expect(
       aiService.evaluateAnswer({
-        question: "What is a stack?",
-        referenceAnswer: "A LIFO data structure.",
+        questionId: "q1",
         userAnswer: "",
       })
     ).rejects.toThrow("User answer is required.");
+  });
+
+  test("evaluateAnswer surfaces backend errors", async () => {
+    global.fetch.mockResolvedValue({
+      ok: false,
+      status: 503,
+      json: async () => ({
+        error: "AI evaluation is not configured.",
+      }),
+    });
+
+    await expect(
+      aiService.evaluateAnswer({
+        questionId: "q1",
+        userAnswer: "Answer",
+      })
+    ).rejects.toThrow("AI evaluation is not configured.");
   });
 });

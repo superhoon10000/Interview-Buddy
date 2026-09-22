@@ -3,6 +3,56 @@ require("dotenv").config();
 const fs = require("fs");
 const path = require("path");
 const { questionRepository } = require("../src/repositories");
+const { validateRubric } = require("../src/services/evaluationContract");
+
+const ALLOWED_MODES = new Set([
+  "Quiz Style",
+  "Code Style",
+  "Theoretical Style",
+]);
+
+function validateQuestion(question) {
+  if (!question.id || !question.mode || !question.prompt) {
+    throw new Error(
+      "Every seed question must include id, mode, and prompt fields."
+    );
+  }
+
+  if (!ALLOWED_MODES.has(question.mode)) {
+    throw new Error(
+      `Question ${question.id} has an invalid mode: ${question.mode}.`
+    );
+  }
+
+  if (question.mode === "Quiz Style") {
+    if (!Array.isArray(question.options) || question.options.length < 2) {
+      throw new Error(
+        `Quiz question ${question.id} requires at least two options.`
+      );
+    }
+
+    if (!question.correctAnswer || !question.explanation) {
+      throw new Error(
+        `Quiz question ${question.id} requires correctAnswer and explanation.`
+      );
+    }
+
+    if (!question.options.includes(question.correctAnswer)) {
+      throw new Error(
+        `Quiz question ${question.id} has a correctAnswer that is not present in options.`
+      );
+    }
+
+    return;
+  }
+
+  const rubricError = validateRubric(question);
+  if (rubricError) {
+    throw new Error(
+      `AI-graded question ${question.id} is invalid: ${rubricError}`
+    );
+  }
+}
 
 async function seed() {
   const seedPath = path.join(__dirname, "..", "seed", "questions.json");
@@ -12,16 +62,20 @@ async function seed() {
     throw new Error("server/seed/questions.json does not contain any questions.");
   }
 
+  const seenIds = new Set();
+
   for (const question of questions) {
-    if (!question.id || !question.mode || !question.prompt) {
-      throw new Error(
-        "Every seed question must include id, mode, and prompt fields."
-      );
+    validateQuestion(question);
+
+    if (seenIds.has(question.id)) {
+      throw new Error(`Duplicate question id in seed file: ${question.id}.`);
     }
+
+    seenIds.add(question.id);
   }
 
   const count = await questionRepository.upsertMany(questions);
-  console.log(`Seeded ${count} questions through QuestionRepository.`);
+  console.log(`Seeded ${count} validated questions through QuestionRepository.`);
 }
 
 seed()

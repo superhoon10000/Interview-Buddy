@@ -76,6 +76,8 @@ The prototype includes a backend question API that reads from Firebase Cloud Fir
 
 See [`FIREBASE_SETUP.md`](FIREBASE_SETUP.md) for Firebase credentials, seeding, and local run instructions. The React page calls the existing `src/services/interviewService.js` facade, which talks to the Express application layer; the browser does not access Firestore or quiz answer keys directly.
 
+Code Style and Theoretical Style now use the main branch's provider-independent AI service and repository layers for weighted evaluation. See [`AI_GRADING_SETUP.md`](AI_GRADING_SETUP.md) for the request flow, private rubric schema, and provider configuration.
+
 ## Repository/data-access layer
 
 The Firebase backend now uses explicit repository contracts and concrete Firestore adapters. Express routes do not call Firestore directly.

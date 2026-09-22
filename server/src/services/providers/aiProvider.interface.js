@@ -1,15 +1,8 @@
 // server/src/services/providers/aiProvider.interface.js
 //
-// This file has NO real code that runs — it's documentation of a contract.
-// Every provider file (anthropicProvider.js, openaiProvider.js, etc.) must
-// export a function matching this exact shape:
-//
-//   async function generateEvaluation({ question, candidateResponse, gradingCriteria })
-//     -> returns { score: number, feedback: string }
-//
-// Why write this down as a file at all, instead of just a comment somewhere?
-// So the next person adding a provider (or you, in six months) has one
-// obvious place to check: "what am I supposed to build?"
+// Documentation-only contract for AI provider adapters. Every provider keeps
+// its SDK, prompt construction, and provider-specific response parsing inside
+// its own module, while the rest of the app sees one common evaluation shape.
 
 module.exports = {
   CONTRACT: `
@@ -18,17 +11,22 @@ module.exports = {
     async function generateEvaluation({ question, candidateResponse, gradingCriteria })
 
     Input:
-      - question: { id, text }
+      - question: server-side question object, including private grading fields
       - candidateResponse: string
-      - gradingCriteria: string[] (optional)
+      - gradingCriteria: weighted rubric entries
 
-    Output (must always match this shape, regardless of provider):
-      - { score: number (0-100), feedback: string }
+    Output:
+      - score: number (0-100), calculated from awarded rubric points
+      - feedback: string
+      - strengths: string[]
+      - weaknesses: string[]
+      - suggestions: string[]
+      - criterionResults: [{ name, awardedPoints, maxPoints, feedback }]
 
     Providers are responsible for:
-      - Building their own provider-specific prompt/request
-      - Parsing their own provider-specific response format
-      - Converting their result into the shared { score, feedback } shape
-        before returning, so callers never see provider-specific fields.
+      - Building their provider-specific prompt/request
+      - Parsing their provider-specific response format
+      - Returning the shared structured evaluation shape
+      - Never exposing provider-specific SDK response objects to callers
   `,
 };

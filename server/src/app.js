@@ -33,6 +33,7 @@ app.use(
 app.use(
   "/api/evaluate",
   createEvaluateRouter({
+    questionRepository,
     evaluationRepository,
   })
 );

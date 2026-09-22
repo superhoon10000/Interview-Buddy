@@ -83,7 +83,31 @@
       "backend developer"
     ],
     "priority": 10,
-    "active": true
+    "active": true,
+    "referenceAnswer": "A correct solution compares the string with itself in reverse or uses two pointers moving inward from both ends. The answer should clearly state any assumptions about case sensitivity or punctuation because the prompt does not require normalization. A typical solution runs in O(n) time; a two-pointer version can use O(1) auxiliary space while a reverse-and-compare version may use O(n) extra space.",
+    "gradingCriteria": [
+      {
+        "name": "Core correctness",
+        "weight": 55,
+        "description": "The algorithm correctly determines whether the input string reads the same forward and backward under its stated assumptions."
+      },
+      {
+        "name": "Assumptions and edge cases",
+        "weight": 15,
+        "description": "The answer handles or clearly states assumptions for cases such as empty strings, one-character strings, capitalization, or punctuation."
+      },
+      {
+        "name": "Implementation quality",
+        "weight": 15,
+        "description": "The proposed function is coherent and uses a reasonable approach without logical errors."
+      },
+      {
+        "name": "Explanation and complexity",
+        "weight": 15,
+        "description": "The answer explains the approach and gives a reasonable time/space complexity discussion."
+      }
+    ],
+    "evaluationInstructions": "Accept reverse-and-compare, two-pointer, recursive, or other equivalent correct solutions. The current prompt does not require ignoring capitalization or punctuation, so do not deduct points solely for treating them literally when the candidate's assumptions are consistent."
   },
   {
     "id": "code-two-sum-001",
@@ -106,7 +130,31 @@
       "backend developer"
     ],
     "priority": 8,
-    "active": true
+    "active": true,
+    "referenceAnswer": "A strong solution scans the array once while storing previously seen values and their indices in a hash map. For each value x at index i, compute target - x and check whether that complement is already in the map. If it is, return the stored index and i. This runs in O(n) average time and O(n) extra space.",
+    "gradingCriteria": [
+      {
+        "name": "Correct pair detection",
+        "weight": 45,
+        "description": "The solution returns indices for two distinct elements whose values sum to the target."
+      },
+      {
+        "name": "Algorithmic efficiency",
+        "weight": 25,
+        "description": "The solution demonstrates an efficient approach, preferably O(n) average time with a hash map, or clearly justifies another approach."
+      },
+      {
+        "name": "Index and duplicate handling",
+        "weight": 15,
+        "description": "The solution does not reuse the same array element and handles repeated values correctly."
+      },
+      {
+        "name": "Explanation and complexity",
+        "weight": 15,
+        "description": "The answer explains why the approach works and states reasonable time and space complexity."
+      }
+    ],
+    "evaluationInstructions": "A correct O(n^2) brute-force solution can receive substantial correctness credit, but should lose efficiency points. Equivalent hash-map variants are acceptable."
   },
   {
     "id": "theory-stack-queue-001",
@@ -131,7 +179,31 @@
       "backend developer"
     ],
     "priority": 10,
-    "active": true
+    "active": true,
+    "referenceAnswer": "A stack follows LIFO (Last In, First Out), so the most recently added item is removed first. Common uses include function-call stacks, undo history, or depth-first traversal. A queue follows FIFO (First In, First Out), so the earliest added item is removed first. Common uses include task scheduling, print jobs, breadth-first traversal, or request processing.",
+    "gradingCriteria": [
+      {
+        "name": "Stack concept",
+        "weight": 30,
+        "description": "Correctly explains that a stack uses LIFO behavior."
+      },
+      {
+        "name": "Queue concept",
+        "weight": 30,
+        "description": "Correctly explains that a queue uses FIFO behavior."
+      },
+      {
+        "name": "Practical examples",
+        "weight": 25,
+        "description": "Provides at least one technically appropriate use case for each structure."
+      },
+      {
+        "name": "Clarity",
+        "weight": 15,
+        "description": "Clearly distinguishes the two structures without contradictory statements."
+      }
+    ],
+    "evaluationInstructions": "Accept any valid real-world or computing use cases; the examples do not need to match the reference answer exactly."
   },
   {
     "id": "theory-rest-001",
@@ -155,7 +227,31 @@
       "software engineer"
     ],
     "priority": 8,
-    "active": true
+    "active": true,
+    "referenceAnswer": "REST commonly models resources through URLs, uses standard HTTP methods, exchanges representations such as JSON, separates client and server concerns, supports cacheability when appropriate, and treats requests as stateless. Statelessness means each request contains the information needed to process it rather than relying on server-side conversational state, which can simplify scaling, recovery, and load balancing.",
+    "gradingCriteria": [
+      {
+        "name": "REST resource model",
+        "weight": 25,
+        "description": "Explains resources/endpoints and the use of standard HTTP methods in a REST-style interface."
+      },
+      {
+        "name": "Statelessness",
+        "weight": 30,
+        "description": "Correctly explains that each request should carry the context needed for processing rather than depend on prior request state stored by the server."
+      },
+      {
+        "name": "Benefits of statelessness",
+        "weight": 25,
+        "description": "Connects statelessness to benefits such as scalability, load balancing, resilience, or simpler server design."
+      },
+      {
+        "name": "Additional REST characteristics and clarity",
+        "weight": 20,
+        "description": "Mentions other relevant constraints or characteristics and communicates them accurately."
+      }
+    ],
+    "evaluationInstructions": "Do not require the candidate to list every formal REST constraint. Give credit for accurate high-level characteristics appropriate to an interview answer."
   },
   {
     "id": "quiz-binary-search-001",
@@ -429,7 +525,31 @@
       "backend developer"
     ],
     "priority": 9,
-    "active": true
+    "active": true,
+    "referenceAnswer": "Iterate from 1 through n. For each value, return or print 'FizzBuzz' when divisible by both 3 and 5, 'Fizz' when divisible only by 3, 'Buzz' when divisible only by 5, and otherwise the number. Checking divisibility by 15 first, or checking both conditions before the individual conditions, avoids misclassifying multiples of both.",
+    "gradingCriteria": [
+      {
+        "name": "Core correctness",
+        "weight": 50,
+        "description": "The proposed algorithm correctly solves the requested problem and produces the required result."
+      },
+      {
+        "name": "Edge cases and robustness",
+        "weight": 20,
+        "description": "The answer considers important boundary conditions or failure cases relevant to the problem."
+      },
+      {
+        "name": "Efficiency",
+        "weight": 15,
+        "description": "The solution uses a reasonable algorithm and discusses or demonstrates appropriate time/space complexity."
+      },
+      {
+        "name": "Explanation",
+        "weight": 15,
+        "description": "The candidate clearly explains why the approach works and how the main steps fit together."
+      }
+    ],
+    "evaluationInstructions": "Accept any programming language and any equivalent correct algorithm. Do not require exact syntax when the approach is clearly expressed."
   },
   {
     "id": "code-valid-parentheses-001",
@@ -453,7 +573,31 @@
       "frontend developer"
     ],
     "priority": 10,
-    "active": true
+    "active": true,
+    "referenceAnswer": "Use a stack. Push opening brackets. For each closing bracket, verify the stack is not empty and that the top opening bracket matches it, then pop. At the end, the stack must be empty. This is O(n) time and O(n) space in the worst case.",
+    "gradingCriteria": [
+      {
+        "name": "Correctness",
+        "weight": 45,
+        "description": "The function correctly accepts balanced, properly nested bracket strings and rejects invalid ordering or unmatched brackets."
+      },
+      {
+        "name": "Use of appropriate data structure",
+        "weight": 20,
+        "description": "The solution uses a stack or an equivalent mechanism that correctly tracks nested opening brackets."
+      },
+      {
+        "name": "Edge cases",
+        "weight": 20,
+        "description": "The solution handles empty input, unmatched closing brackets, leftover opening brackets, and mixed bracket types."
+      },
+      {
+        "name": "Explanation and complexity",
+        "weight": 15,
+        "description": "The answer explains the approach and identifies O(n) time with appropriate space complexity."
+      }
+    ],
+    "evaluationInstructions": "Accept implementations using arrays as stacks. The question guarantees that input contains only bracket characters, so do not penalize missing validation for other characters."
   },
   {
     "id": "code-reverse-linked-list-001",
@@ -475,7 +619,31 @@
       "backend developer"
     ],
     "priority": 9,
-    "active": true
+    "active": true,
+    "referenceAnswer": "Use three pointers: previous, current, and next. Save current.next, point current.next to previous, advance previous to current, then advance current to the saved next node. When current becomes null, previous is the new head. This is O(n) time and O(1) auxiliary space for the iterative solution.",
+    "gradingCriteria": [
+      {
+        "name": "Core correctness",
+        "weight": 50,
+        "description": "The proposed algorithm correctly solves the requested problem and produces the required result."
+      },
+      {
+        "name": "Edge cases and robustness",
+        "weight": 20,
+        "description": "The answer considers important boundary conditions or failure cases relevant to the problem."
+      },
+      {
+        "name": "Efficiency",
+        "weight": 15,
+        "description": "The solution uses a reasonable algorithm and discusses or demonstrates appropriate time/space complexity."
+      },
+      {
+        "name": "Explanation",
+        "weight": 15,
+        "description": "The candidate clearly explains why the approach works and how the main steps fit together."
+      }
+    ],
+    "evaluationInstructions": "Accept any programming language and any equivalent correct algorithm. Do not require exact syntax when the approach is clearly expressed."
   },
   {
     "id": "code-merge-sorted-arrays-001",
@@ -499,7 +667,31 @@
       "backend developer"
     ],
     "priority": 8,
-    "active": true
+    "active": true,
+    "referenceAnswer": "Use two indices, one for each sorted array. Repeatedly append the smaller current value and advance that array's index, then append any remaining values after one array is exhausted. This produces a sorted merged array in O(n + m) time and O(n + m) output space.",
+    "gradingCriteria": [
+      {
+        "name": "Core correctness",
+        "weight": 50,
+        "description": "The proposed algorithm correctly solves the requested problem and produces the required result."
+      },
+      {
+        "name": "Edge cases and robustness",
+        "weight": 20,
+        "description": "The answer considers important boundary conditions or failure cases relevant to the problem."
+      },
+      {
+        "name": "Efficiency",
+        "weight": 15,
+        "description": "The solution uses a reasonable algorithm and discusses or demonstrates appropriate time/space complexity."
+      },
+      {
+        "name": "Explanation",
+        "weight": 15,
+        "description": "The candidate clearly explains why the approach works and how the main steps fit together."
+      }
+    ],
+    "evaluationInstructions": "Accept any programming language and any equivalent correct algorithm. Do not require exact syntax when the approach is clearly expressed."
   },
   {
     "id": "code-first-unique-char-001",
@@ -523,7 +715,31 @@
       "frontend developer"
     ],
     "priority": 8,
-    "active": true
+    "active": true,
+    "referenceAnswer": "Count each character's frequency, then scan the string from left to right and return the first index whose character has frequency one. If none exists, return -1. This is O(n) time with O(k) space for the character set.",
+    "gradingCriteria": [
+      {
+        "name": "Core correctness",
+        "weight": 50,
+        "description": "The proposed algorithm correctly solves the requested problem and produces the required result."
+      },
+      {
+        "name": "Edge cases and robustness",
+        "weight": 20,
+        "description": "The answer considers important boundary conditions or failure cases relevant to the problem."
+      },
+      {
+        "name": "Efficiency",
+        "weight": 15,
+        "description": "The solution uses a reasonable algorithm and discusses or demonstrates appropriate time/space complexity."
+      },
+      {
+        "name": "Explanation",
+        "weight": 15,
+        "description": "The candidate clearly explains why the approach works and how the main steps fit together."
+      }
+    ],
+    "evaluationInstructions": "Accept any programming language and any equivalent correct algorithm. Do not require exact syntax when the approach is clearly expressed."
   },
   {
     "id": "code-max-subarray-001",
@@ -546,7 +762,31 @@
       "backend developer"
     ],
     "priority": 9,
-    "active": true
+    "active": true,
+    "referenceAnswer": "Use Kadane's algorithm: track the best subarray sum ending at the current position and the best sum seen overall. At each value, choose between starting a new subarray at that value or extending the previous one. This runs in O(n) time and O(1) auxiliary space.",
+    "gradingCriteria": [
+      {
+        "name": "Core correctness",
+        "weight": 50,
+        "description": "The proposed algorithm correctly solves the requested problem and produces the required result."
+      },
+      {
+        "name": "Edge cases and robustness",
+        "weight": 20,
+        "description": "The answer considers important boundary conditions or failure cases relevant to the problem."
+      },
+      {
+        "name": "Efficiency",
+        "weight": 15,
+        "description": "The solution uses a reasonable algorithm and discusses or demonstrates appropriate time/space complexity."
+      },
+      {
+        "name": "Explanation",
+        "weight": 15,
+        "description": "The candidate clearly explains why the approach works and how the main steps fit together."
+      }
+    ],
+    "evaluationInstructions": "Accept any programming language and any equivalent correct algorithm. Do not require exact syntax when the approach is clearly expressed."
   },
   {
     "id": "code-binary-tree-bfs-001",
@@ -569,7 +809,31 @@
       "backend developer"
     ],
     "priority": 8,
-    "active": true
+    "active": true,
+    "referenceAnswer": "Use a queue. Enqueue the root, then repeatedly process one queue level at a time, collecting each node's value and enqueueing its non-null children. Return the collected values grouped by level. The traversal is O(n) time and O(w) space where w is the maximum tree width.",
+    "gradingCriteria": [
+      {
+        "name": "Core correctness",
+        "weight": 50,
+        "description": "The proposed algorithm correctly solves the requested problem and produces the required result."
+      },
+      {
+        "name": "Edge cases and robustness",
+        "weight": 20,
+        "description": "The answer considers important boundary conditions or failure cases relevant to the problem."
+      },
+      {
+        "name": "Efficiency",
+        "weight": 15,
+        "description": "The solution uses a reasonable algorithm and discusses or demonstrates appropriate time/space complexity."
+      },
+      {
+        "name": "Explanation",
+        "weight": 15,
+        "description": "The candidate clearly explains why the approach works and how the main steps fit together."
+      }
+    ],
+    "evaluationInstructions": "Accept any programming language and any equivalent correct algorithm. Do not require exact syntax when the approach is clearly expressed."
   },
   {
     "id": "code-deduplicate-array-001",
@@ -594,7 +858,31 @@
       "full stack developer"
     ],
     "priority": 8,
-    "active": true
+    "active": true,
+    "referenceAnswer": "A strong solution iterates through the array, tracks seen values in a set, and appends a value to the result only the first time it appears. The result preserves first-occurrence order. This is O(n) average time with O(n) extra space.",
+    "gradingCriteria": [
+      {
+        "name": "Duplicate removal",
+        "weight": 40,
+        "description": "Each distinct input value appears exactly once in the output."
+      },
+      {
+        "name": "Order preservation",
+        "weight": 25,
+        "description": "The output preserves the order of the first occurrence of each value."
+      },
+      {
+        "name": "Efficiency",
+        "weight": 20,
+        "description": "The approach avoids unnecessary repeated scans and has reasonable time and space complexity."
+      },
+      {
+        "name": "Explanation",
+        "weight": 15,
+        "description": "The answer clearly explains how duplicates are detected and why order is preserved."
+      }
+    ],
+    "evaluationInstructions": "Language-native ordered-set behavior is acceptable if the candidate explains that insertion order is preserved in the chosen language/runtime."
   },
   {
     "id": "theory-oop-principles-001",
@@ -619,7 +907,31 @@
       "full stack developer"
     ],
     "priority": 9,
-    "active": true
+    "active": true,
+    "referenceAnswer": "The four commonly discussed OOP principles are encapsulation, abstraction, inheritance, and polymorphism. Encapsulation controls access to an object's internal state; abstraction exposes essential behavior while hiding implementation details; inheritance lets a type reuse or extend behavior from another type; polymorphism lets code use a common interface while different concrete types provide different behavior. Appropriate examples can include private fields with methods, interfaces, base/derived classes, and overridden methods.",
+    "gradingCriteria": [
+      {
+        "name": "Technical accuracy",
+        "weight": 45,
+        "description": "The explanation is technically correct and does not contain contradictions about the core concept."
+      },
+      {
+        "name": "Completeness",
+        "weight": 30,
+        "description": "The response covers the major parts explicitly requested by the question."
+      },
+      {
+        "name": "Examples and trade-offs",
+        "weight": 15,
+        "description": "The answer includes useful examples, implications, or trade-offs when they are relevant to the question."
+      },
+      {
+        "name": "Clarity",
+        "weight": 10,
+        "description": "The response is organized, understandable, and uses terminology consistently."
+      }
+    ],
+    "evaluationInstructions": "Accept technically equivalent terminology and examples. Grade the substance of the explanation rather than exact wording."
   },
   {
     "id": "theory-process-thread-001",
@@ -642,7 +954,31 @@
       "backend developer"
     ],
     "priority": 9,
-    "active": true
+    "active": true,
+    "referenceAnswer": "A process is an independently executing program with its own virtual address space and operating-system resources. Threads are execution units inside a process and typically share the process's memory and many resources while each thread has its own stack and execution state. Processes provide stronger isolation but are more expensive to create and communicate between; threads are lighter weight but require synchronization around shared state.",
+    "gradingCriteria": [
+      {
+        "name": "Technical accuracy",
+        "weight": 45,
+        "description": "The explanation is technically correct and does not contain contradictions about the core concept."
+      },
+      {
+        "name": "Completeness",
+        "weight": 30,
+        "description": "The response covers the major parts explicitly requested by the question."
+      },
+      {
+        "name": "Examples and trade-offs",
+        "weight": 15,
+        "description": "The answer includes useful examples, implications, or trade-offs when they are relevant to the question."
+      },
+      {
+        "name": "Clarity",
+        "weight": 10,
+        "description": "The response is organized, understandable, and uses terminology consistently."
+      }
+    ],
+    "evaluationInstructions": "Accept technically equivalent terminology and examples. Grade the substance of the explanation rather than exact wording."
   },
   {
     "id": "theory-tcp-udp-001",
@@ -666,7 +1002,31 @@
       "full stack developer"
     ],
     "priority": 8,
-    "active": true
+    "active": true,
+    "referenceAnswer": "TCP is connection-oriented and provides reliable, ordered byte delivery with retransmission and flow/congestion control, at the cost of more overhead and latency. UDP is connectionless and does not guarantee delivery, ordering, or duplicate suppression, but has lower overhead and supports latency-sensitive or application-controlled reliability. TCP is appropriate for web pages, file transfer, or database connections; UDP is common for real-time media, gaming, or DNS.",
+    "gradingCriteria": [
+      {
+        "name": "Technical accuracy",
+        "weight": 45,
+        "description": "The explanation is technically correct and does not contain contradictions about the core concept."
+      },
+      {
+        "name": "Completeness",
+        "weight": 30,
+        "description": "The response covers the major parts explicitly requested by the question."
+      },
+      {
+        "name": "Examples and trade-offs",
+        "weight": 15,
+        "description": "The answer includes useful examples, implications, or trade-offs when they are relevant to the question."
+      },
+      {
+        "name": "Clarity",
+        "weight": 10,
+        "description": "The response is organized, understandable, and uses terminology consistently."
+      }
+    ],
+    "evaluationInstructions": "Accept technically equivalent terminology and examples. Grade the substance of the explanation rather than exact wording."
   },
   {
     "id": "theory-db-normalization-001",
@@ -690,7 +1050,31 @@
       "software engineer"
     ],
     "priority": 8,
-    "active": true
+    "active": true,
+    "referenceAnswer": "Database normalization organizes relational data into well-structured tables based on dependencies so that facts are stored in appropriate places. Normal forms such as 1NF, 2NF, and 3NF reduce redundancy and help prevent insert, update, and delete anomalies. The goal is data integrity and maintainability, though highly normalized schemas can require more joins and sometimes are intentionally denormalized for performance.",
+    "gradingCriteria": [
+      {
+        "name": "Technical accuracy",
+        "weight": 45,
+        "description": "The explanation is technically correct and does not contain contradictions about the core concept."
+      },
+      {
+        "name": "Completeness",
+        "weight": 30,
+        "description": "The response covers the major parts explicitly requested by the question."
+      },
+      {
+        "name": "Examples and trade-offs",
+        "weight": 15,
+        "description": "The answer includes useful examples, implications, or trade-offs when they are relevant to the question."
+      },
+      {
+        "name": "Clarity",
+        "weight": 10,
+        "description": "The response is organized, understandable, and uses terminology consistently."
+      }
+    ],
+    "evaluationInstructions": "Accept technically equivalent terminology and examples. Grade the substance of the explanation rather than exact wording."
   },
   {
     "id": "theory-authentication-authorization-001",
@@ -715,7 +1099,31 @@
       "software engineer"
     ],
     "priority": 10,
-    "active": true
+    "active": true,
+    "referenceAnswer": "Authentication verifies who a user or service is, for example with passwords, MFA, or identity tokens. Authorization determines what an authenticated identity is allowed to do, often through roles, permissions, or ownership checks. A secure web application authenticates the request first and then enforces authorization on protected server-side operations rather than trusting the client.",
+    "gradingCriteria": [
+      {
+        "name": "Technical accuracy",
+        "weight": 45,
+        "description": "The explanation is technically correct and does not contain contradictions about the core concept."
+      },
+      {
+        "name": "Completeness",
+        "weight": 30,
+        "description": "The response covers the major parts explicitly requested by the question."
+      },
+      {
+        "name": "Examples and trade-offs",
+        "weight": 15,
+        "description": "The answer includes useful examples, implications, or trade-offs when they are relevant to the question."
+      },
+      {
+        "name": "Clarity",
+        "weight": 10,
+        "description": "The response is organized, understandable, and uses terminology consistently."
+      }
+    ],
+    "evaluationInstructions": "Accept technically equivalent terminology and examples. Grade the substance of the explanation rather than exact wording."
   },
   {
     "id": "theory-js-event-loop-001",
@@ -739,7 +1147,31 @@
       "software engineer"
     ],
     "priority": 8,
-    "active": true
+    "active": true,
+    "referenceAnswer": "JavaScript executes synchronous work on the call stack. Asynchronous APIs arrange callbacks to be queued for later. The event loop runs queued work when the stack is empty. Promise reactions are placed in the microtask queue, which is generally drained before the next task/macrotask such as a timer callback. This model enables non-blocking coordination even though a typical JavaScript execution context processes one stack at a time.",
+    "gradingCriteria": [
+      {
+        "name": "Technical accuracy",
+        "weight": 45,
+        "description": "The explanation is technically correct and does not contain contradictions about the core concept."
+      },
+      {
+        "name": "Completeness",
+        "weight": 30,
+        "description": "The response covers the major parts explicitly requested by the question."
+      },
+      {
+        "name": "Examples and trade-offs",
+        "weight": 15,
+        "description": "The answer includes useful examples, implications, or trade-offs when they are relevant to the question."
+      },
+      {
+        "name": "Clarity",
+        "weight": 10,
+        "description": "The response is organized, understandable, and uses terminology consistently."
+      }
+    ],
+    "evaluationInstructions": "Accept technically equivalent terminology and examples. Grade the substance of the explanation rather than exact wording."
   },
   {
     "id": "theory-testing-levels-001",
@@ -764,7 +1196,31 @@
       "full stack developer"
     ],
     "priority": 9,
-    "active": true
+    "active": true,
+    "referenceAnswer": "Unit tests verify a small isolated unit such as a function or class, often with dependencies mocked. Integration tests verify that multiple components or external boundaries work together, such as an API with a database adapter. End-to-end tests exercise the application through a realistic user flow across the full stack. Teams use more unit tests for fast local feedback, integration tests for subsystem contracts, and a smaller number of end-to-end tests for critical workflows.",
+    "gradingCriteria": [
+      {
+        "name": "Technical accuracy",
+        "weight": 45,
+        "description": "The explanation is technically correct and does not contain contradictions about the core concept."
+      },
+      {
+        "name": "Completeness",
+        "weight": 30,
+        "description": "The response covers the major parts explicitly requested by the question."
+      },
+      {
+        "name": "Examples and trade-offs",
+        "weight": 15,
+        "description": "The answer includes useful examples, implications, or trade-offs when they are relevant to the question."
+      },
+      {
+        "name": "Clarity",
+        "weight": 10,
+        "description": "The response is organized, understandable, and uses terminology consistently."
+      }
+    ],
+    "evaluationInstructions": "Accept technically equivalent terminology and examples. Grade the substance of the explanation rather than exact wording."
   },
   {
     "id": "theory-indexing-tradeoffs-001",
@@ -788,6 +1244,30 @@
       "full stack developer"
     ],
     "priority": 8,
-    "active": true
+    "active": true,
+    "referenceAnswer": "A database index is an auxiliary data structure, commonly based on a B-tree or similar structure, that helps the database locate rows without scanning the entire table. It can greatly speed reads that filter, join, or sort on indexed columns. Trade-offs include additional storage, slower inserts/updates/deletes because indexes must be maintained, and the need to choose indexes carefully because unnecessary indexes can waste resources.",
+    "gradingCriteria": [
+      {
+        "name": "Index definition",
+        "weight": 30,
+        "description": "Explains that an index is a separate lookup structure that helps locate rows efficiently."
+      },
+      {
+        "name": "Read-performance benefit",
+        "weight": 30,
+        "description": "Explains how indexes can reduce scanning and improve common query operations such as filtering, joining, or ordering."
+      },
+      {
+        "name": "Write and storage trade-offs",
+        "weight": 25,
+        "description": "Identifies costs such as extra storage and additional maintenance during writes."
+      },
+      {
+        "name": "Clarity and nuance",
+        "weight": 15,
+        "description": "Communicates that indexes are workload-dependent rather than universally beneficial for every column or query."
+      }
+    ],
+    "evaluationInstructions": "Do not require a specific index implementation. B-tree, hash, and other index examples are acceptable when described correctly."
   }
 ]
