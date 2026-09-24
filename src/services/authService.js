@@ -1,32 +1,48 @@
-import mockUser from "../data/mockUser";
+import {
+  GoogleAuthProvider,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signInWithPopup,
+  signOut,
+  updateProfile,
+} from "firebase/auth";
 
-/**
- * React-facing authentication service facade.
- *
- * Sprint 1 keeps authentication simulated. React components should eventually
- * call this module instead of talking directly to Firebase/Auth providers.
- * A later backend implementation can replace these internals without changing
- * the component-facing method names.
- */
+import { auth } from "../config/firebase";
+
+function mapFirebaseUser(user) {
+  if (!user) {
+    return null;
+  }
+
+  return {
+    uid: user.uid,
+    email: user.email,
+    username: user.displayName || "",
+    emailVerified: user.emailVerified,
+  };
+}
+
 export const authService = {
   async login(credentials) {
     if (!credentials) {
       throw new Error("Login credentials are required.");
     }
 
-    const identifier = credentials.username || credentials.email;
+    const { email, password } = credentials;
 
-    if (!identifier || !credentials.password) {
-      throw new Error("Username/email and password are required.");
+    if (!email || !password) {
+      throw new Error("Email and password are required.");
     }
 
-    // Sprint 1 mock behavior: any non-empty credentials authenticate.
+    const userCredential = await signInWithEmailAndPassword(
+      auth,
+      email.trim(),
+      password
+    );
+
     return {
       authenticated: true,
-      user: {
-        ...mockUser,
-        username: identifier,
-      },
+      user: mapFirebaseUser(userCredential.user),
     };
   },
 
@@ -38,35 +54,70 @@ export const authService = {
     const { username, email, password } = userData;
 
     if (!username || !email || !password) {
-      throw new Error("Username, email, and password are required.");
+      throw new Error(
+        "Username, email, and password are required."
+      );
     }
 
-    // Sprint 1 mock behavior only.
+    const userCredential =
+      await createUserWithEmailAndPassword(
+        auth,
+        email.trim(),
+        password
+      );
+
+    await updateProfile(userCredential.user, {
+      displayName: username.trim(),
+    });
+
     return {
       created: true,
-      user: {
-        ...mockUser,
-        username,
-        email,
-      },
+      user: mapFirebaseUser(userCredential.user),
+    };
+  },
+
+  async loginWithGoogle() {
+    const provider = new GoogleAuthProvider();
+
+    const userCredential = await signInWithPopup(
+      auth,
+      provider
+    );
+
+    return {
+      authenticated: true,
+      user: mapFirebaseUser(userCredential.user),
     };
   },
 
   async logout() {
-    // Future: invalidate the authenticated backend/Firebase session.
-    return { success: true };
+    await signOut(auth);
+
+    return {
+      success: true,
+    };
+  },
+
+  getCurrentUser() {
+    return mapFirebaseUser(auth.currentUser);
   },
 
   async changePassword(currentPassword, newPassword) {
     if (!currentPassword || !newPassword) {
-      throw new Error("Current and new passwords are required.");
+      throw new Error(
+        "Current and new passwords are required."
+      );
     }
 
     if (currentPassword === newPassword) {
-      throw new Error("New password cannot be the same as the current password.");
+      throw new Error(
+        "New password cannot be the same as the current password."
+      );
     }
 
-    // Future: verify the current password and update it through auth/backend.
-    return { success: true };
+    // Password-change functionality will be connected separately.
+    throw new Error(
+      "Password change is not implemented yet."
+    );
   },
 };
