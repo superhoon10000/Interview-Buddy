@@ -1,6 +1,7 @@
 import {
   GoogleAuthProvider,
   createUserWithEmailAndPassword,
+  onAuthStateChanged,
   signInWithEmailAndPassword,
   signInWithPopup,
   signOut,
@@ -100,6 +101,16 @@ export const authService = {
 
   getCurrentUser() {
     return mapFirebaseUser(auth.currentUser);
+  },
+
+  subscribeToAuthState(callback) {
+    if (typeof callback !== "function") {
+      throw new Error("Auth state callback is required.");
+    }
+
+    return onAuthStateChanged(auth, (user) => {
+      callback(mapFirebaseUser(user));
+    });
   },
 
   async changePassword(currentPassword, newPassword) {

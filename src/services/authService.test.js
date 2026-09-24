@@ -3,6 +3,7 @@ jest.mock("firebase/auth", () => ({
     providerId: "google.com",
   })),
   createUserWithEmailAndPassword: jest.fn(),
+  onAuthStateChanged: jest.fn(),
   signInWithEmailAndPassword: jest.fn(),
   signInWithPopup: jest.fn(),
   signOut: jest.fn(),
@@ -17,6 +18,7 @@ jest.mock("../config/firebase", () => ({
 
 import {
   createUserWithEmailAndPassword,
+  onAuthStateChanged,
   signInWithEmailAndPassword,
   signInWithPopup,
   signOut,
@@ -116,6 +118,41 @@ describe("authService", () => {
     expect(signInWithPopup).toHaveBeenCalled();
     expect(result.authenticated).toBe(true);
     expect(result.user.email).toBe("daniel@gmail.com");
+  });
+
+  test("subscribeToAuthState maps Firebase user changes", () => {
+    const callback = jest.fn();
+    const unsubscribe = jest.fn();
+
+    onAuthStateChanged.mockImplementation((auth, listener) => {
+      listener({
+        uid: "user-123",
+        email: "daniel@example.com",
+        displayName: "Daniel",
+        emailVerified: true,
+      });
+
+      return unsubscribe;
+    });
+
+    const result = authService.subscribeToAuthState(callback);
+
+    expect(onAuthStateChanged).toHaveBeenCalled();
+
+    expect(callback).toHaveBeenCalledWith({
+      uid: "user-123",
+      email: "daniel@example.com",
+      username: "Daniel",
+      emailVerified: true,
+    });
+
+    expect(result).toBe(unsubscribe);
+  });
+
+  test("subscribeToAuthState rejects a missing callback", () => {
+    expect(() => {
+      authService.subscribeToAuthState();
+    }).toThrow("Auth state callback is required.");
   });
 
   test("logout signs out through Firebase", async () => {
