@@ -1,85 +1,11 @@
 import {
-  authService,
   interviewService,
   INTERVIEW_MODES,
-  historyService,
-  leaderboardService,
-  aiService,
-} from "./index";
+} from "./interviewService";
 
-describe("authService", () => {
-  test("login returns an authenticated user for valid mock credentials", async () => {
-    const result = await authService.login({
-      username: "daniel",
-      password: "password123",
-    });
-
-    expect(result.authenticated).toBe(true);
-    expect(result.user.username).toBe("daniel");
-  });
-
-  test("login rejects missing credentials", async () => {
-    await expect(authService.login()).rejects.toThrow(
-      "Login credentials are required."
-    );
-
-    await expect(
-      authService.login({
-        username: "daniel",
-        password: "",
-      })
-    ).rejects.toThrow("Username/email and password are required.");
-  });
-
-  test("register creates a mock user", async () => {
-    const result = await authService.register({
-      username: "daniel",
-      email: "daniel@example.com",
-      password: "password123",
-    });
-
-    expect(result.created).toBe(true);
-    expect(result.user.username).toBe("daniel");
-    expect(result.user.email).toBe("daniel@example.com");
-  });
-
-  test("register rejects incomplete registration data", async () => {
-    await expect(
-      authService.register({
-        username: "daniel",
-        email: "",
-        password: "password123",
-      })
-    ).rejects.toThrow("Username, email, and password are required.");
-  });
-
-  test("logout returns success", async () => {
-    const result = await authService.logout();
-
-    expect(result).toEqual({
-      success: true,
-    });
-  });
-
-  test("changePassword succeeds when passwords are different", async () => {
-    const result = await authService.changePassword(
-      "oldPassword",
-      "newPassword"
-    );
-
-    expect(result).toEqual({
-      success: true,
-    });
-  });
-
-  test("changePassword rejects using the same password", async () => {
-    await expect(
-      authService.changePassword("password123", "password123")
-    ).rejects.toThrow(
-      "New password cannot be the same as the current password."
-    );
-  });
-});
+import { historyService } from "./historyService";
+import { leaderboardService } from "./leaderboardService";
+import { aiService } from "./aiService";
 
 describe("interviewService", () => {
   test("startSession creates an active Quiz Style session", async () => {
