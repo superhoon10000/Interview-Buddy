@@ -19,6 +19,13 @@ function getAnthropicClient() {
     error.statusCode = 503;
     throw error;
   }
+   
+  if (!feedbackIsValid) {
+    throw new Error('Anthropic response is missing Valid score');
+  }
+  
+
+
 
   return new Anthropic({ apiKey });
 }
