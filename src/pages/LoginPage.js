@@ -1,11 +1,37 @@
-import React from "react";
+import React, { useState } from "react"; 
+import { authService } from "..\services\authService.js";
 
 function LoginPage({ onLogin, onGoToRegister, loginMessage }) {
+  const [email, setEmail] = useState("");
+  const [password,setPassword] = useState("");
+  const handleLogin = async () => {
+    try {
+      const result = await authService.login({
+        email,
+        password,
+      });
+
+      console.log("Login successful:", result);
+    } catch (error) {
+      console.error("Login failed:", error);
+    }
+  };
+
+  // 4. Render the UI
+  return (
+    <div className="loginPage">
+      {/* Your existing UI goes here */}
+    </div>
+  );
+}
+
+
+
   return (
     <div className="loginPage">
       <div className="loginCard">
         <div className="loginHeader">
-          <img src="/IBlogo.jpg" alt="Interview Buiddy logo" class="LoginLogo" />
+          <img src="/IBlogo.jpg" alt="Interview Buiddy logo" className="loginLogo" />
           <h1 className="loginTitle">Interview Buddy</h1>
           <p className="loginSubtitle">
             Technical Interview Excellence
@@ -36,6 +62,8 @@ function LoginPage({ onLogin, onGoToRegister, loginMessage }) {
                 className="textInput"
                 type="text"
                 placeholder="Username or Email"
+                value={email}
+                onChange={(e)=> setEmail.(e.target.value)}
               />
           </div>
 
@@ -49,6 +77,8 @@ function LoginPage({ onLogin, onGoToRegister, loginMessage }) {
                    className="textInput"
                    type="password"
                    placeholder="Password"
+                   value={password}
+                   onChange={(e)=> setPassword(e.target.value)}
                    />
           </div>
 
@@ -60,12 +90,12 @@ function LoginPage({ onLogin, onGoToRegister, loginMessage }) {
             <span className="dividerText">OR</span>
           </div>
 
-          <div className="socialButtons"> 
+          <div className="socialButton"> 
             <button className="socialButton" type="button">
             <span style={{ color: 'gold' }}>&#9679;</span> Google
             </button>
             <button className="socialButton" type="button">
-              <span>&diams</span> Github
+              <span>&diams; </span> Github
             </button>
           </div>
 
