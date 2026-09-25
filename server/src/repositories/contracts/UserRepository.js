@@ -13,6 +13,7 @@ class UserRepository {
     }
   }
 
+  //Registration & General
   async createProfile(profile) {
     throw new Error("createProfile() must be implemented.");
   }
@@ -23,6 +24,19 @@ class UserRepository {
 
   async findByUsername(username) {
     throw new Error("findByUsername() must be implemented.");
+  }
+
+  //Profile & Settings
+  async updateProfile(uid, updates) {
+    throw new Error("updateProfile(uid, updates) must be implemented.");
+  }
+
+  async getSettings(uid) {
+    throw new Error("getSettings(uid) must be implemented.");
+  }
+
+  async updateSettings(uid, settings) {
+    throw new Error("updateSettings(uid, settings) must be implemented.");
   }
 }
 
