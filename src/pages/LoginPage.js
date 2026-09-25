@@ -1,6 +1,32 @@
-import React from "react";
+import React, { useState } from "react"; 
+import { authService } from "..\services\authService.js";
 
 function LoginPage({ onLogin, onGoToRegister, loginMessage }) {
+  const [email, setEmail] = useState("");
+  const [password,setPassword] = useState("");
+  const handleLogin = async () => {
+    try {
+      const result = await authService.login({
+        email,
+        password,
+      });
+
+      console.log("Login successful:", result);
+    } catch (error) {
+      console.error("Login failed:", error);
+    }
+  };
+
+  // 4. Render the UI
+  return (
+    <div className="loginPage">
+      {/* Your existing UI goes here */}
+    </div>
+  );
+}
+
+
+
   return (
     <div className="loginPage">
       <div className="loginCard">
@@ -36,6 +62,8 @@ function LoginPage({ onLogin, onGoToRegister, loginMessage }) {
                 className="textInput"
                 type="text"
                 placeholder="Username or Email"
+                value={email}
+                onChange={(e)=> setEmail.(e.target.value)}
               />
           </div>
 
@@ -49,6 +77,8 @@ function LoginPage({ onLogin, onGoToRegister, loginMessage }) {
                    className="textInput"
                    type="password"
                    placeholder="Password"
+                   value={password}
+                   onChange={(e)=> setPassword(e.target.value)}
                    />
           </div>
 
