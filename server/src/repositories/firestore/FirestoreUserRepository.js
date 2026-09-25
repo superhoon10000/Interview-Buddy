@@ -126,6 +126,145 @@ class FirestoreUserRepository extends UserRepository {
       ...document.data(),
     };
   }
+
+  async updateProfile(uid, updates = {}) {
+    const normalizedUid = String(uid || "").trim();
+
+    //Uid for update
+    if (!normalizedUid) {
+      throw new Error("uid is required to update a user profile.");
+    }
+
+    //Find reference
+    const userRef = this.db
+      .collection("users")
+      .doc(normalizedUid);
+
+    const existingDocument = await userRef.get();
+
+    if (!existingDocument.exists) {
+      return null;
+    }
+
+    const allowedUpdates = {};
+
+    if (updates.username !== undefined) {
+      const normalizedUsername = String(
+        updates.username || ""
+      ).trim();
+
+      //Check username empty / in use
+      if (!normalizedUsername) {
+        throw new Error("Username cannot be empty.");
+      }
+
+      const existingUser =
+        await this.findByUsername(normalizedUsername);
+
+      if (
+        existingUser &&
+        existingUser.uid !== normalizedUid
+      ) {
+        const error = new Error(
+          "That username is already in use."
+        );
+
+        error.code = "username-already-exists";
+
+        throw error;
+      }
+
+      //Set allowed update for username
+      allowedUpdates.username = normalizedUsername;
+      allowedUpdates.usernameLower =
+        normalizedUsername.toLowerCase();
+    }
+
+    if (updates.displayName !== undefined) {
+      const normalizedDisplayName = String(
+        updates.displayName || ""
+      ).trim();
+
+      allowedUpdates.displayName =
+        normalizedDisplayName;
+    }
+
+    allowedUpdates.updatedAt =
+      this.getTimestamp();
+
+    await userRef.update(allowedUpdates);
+
+    return this.findById(normalizedUid);
+  }
+
+  //Find by id, check if null, return settings
+  async getSettings(uid) {
+    const user = await this.findById(uid);
+
+    if (!user) {
+      return null;
+    }
+
+    return user.settings || {};
+  }
+
+  async updateSettings(uid, settings = {}) {
+    const normalizedUid = String(uid || "").trim();
+
+    if (!normalizedUid) {
+      throw new Error("uid is required to update settings.");
+    }
+
+    const userRef = this.db
+      .collection("users")
+      .doc(normalizedUid);
+
+    const existingDocument = await userRef.get();
+
+    if (!existingDocument.exists) {
+      return null;
+    }
+
+    const allowedSettings = {};
+
+    if (settings.theme !== undefined) {
+      if (!["light", "dark"].includes(settings.theme)) {
+        throw new Error(
+          "theme must be either light or dark."
+        );
+      }
+
+      allowedSettings.theme = settings.theme;
+    }
+
+    if (settings.notifications !== undefined) {
+      if (
+        typeof settings.notifications !== "boolean"
+      ) {
+        throw new Error(
+          "notifications must be a boolean."
+        );
+      }
+
+      allowedSettings.notifications =
+        settings.notifications;
+    }
+
+    //Merge w/ existing data
+    const existingData = existingDocument.data();
+
+    const updatedSettings = {
+      ...(existingData.settings || {}),
+      ...allowedSettings,
+    };
+
+    await userRef.update({
+      settings: updatedSettings,
+      updatedAt: this.getTimestamp(),
+    });
+
+    return this.getSettings(normalizedUid);
+  }
 }
 
 module.exports = FirestoreUserRepository;
