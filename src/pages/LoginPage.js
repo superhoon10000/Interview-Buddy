@@ -5,7 +5,7 @@ function LoginPage({ onLogin, onGoToRegister, loginMessage }) {
     <div className="loginPage">
       <div className="loginCard">
         <div className="loginHeader">
-          <img src="/IBlogo.jpg" alt="Interview Buiddy logo" class="LoginLogo" />
+          <img src="/IBlogo.jpg" alt="Interview Buiddy logo" className="loginLogo" />
           <h1 className="loginTitle">Interview Buddy</h1>
           <p className="loginSubtitle">
             Technical Interview Excellence
@@ -60,12 +60,12 @@ function LoginPage({ onLogin, onGoToRegister, loginMessage }) {
             <span className="dividerText">OR</span>
           </div>
 
-          <div className="socialButtons"> 
+          <div className="socialButton"> 
             <button className="socialButton" type="button">
             <span style={{ color: 'gold' }}>&#9679;</span> Google
             </button>
             <button className="socialButton" type="button">
-              <span>&diams</span> Github
+              <span>&diams; </span> Github
             </button>
           </div>
 
