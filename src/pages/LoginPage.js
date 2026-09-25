@@ -82,7 +82,7 @@ function LoginPage({ onLogin, onGoToRegister, loginMessage }) {
                    />
           </div>
 
-          <button className="primaryButton" onClick={onLogin}>
+          <button className="primaryButton" onClick={handleLogin}>
             Login to Workspace &rarr;
           </button>
 
