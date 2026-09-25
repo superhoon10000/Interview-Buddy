@@ -1,5 +1,5 @@
 import React, { useState } from "react"; 
-import { authService } from "..\services\authService.js";
+import { authService } from "../services/authService.js";
 
 function LoginPage({ onLogin, onGoToRegister, loginMessage }) {
   const [email, setEmail] = useState("");
@@ -16,16 +16,6 @@ function LoginPage({ onLogin, onGoToRegister, loginMessage }) {
       console.error("Login failed:", error);
     }
   };
-
-  // 4. Render the UI
-  return (
-    <div className="loginPage">
-      {/* Your existing UI goes here */}
-    </div>
-  );
-}
-
-
 
   return (
     <div className="loginPage">
@@ -63,7 +53,7 @@ function LoginPage({ onLogin, onGoToRegister, loginMessage }) {
                 type="text"
                 placeholder="Username or Email"
                 value={email}
-                onChange={(e)=> setEmail.(e.target.value)}
+                onChange={(e)=> setEmail(e.target.value)}
               />
           </div>
 
