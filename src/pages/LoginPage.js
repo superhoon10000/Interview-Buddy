@@ -1,9 +1,10 @@
 import React, { useState } from "react"; 
-import { authService } from "..\services\authService.js";
+import { authService } from "../services/authService.js";
 
 function LoginPage({ onLogin, onGoToRegister, loginMessage }) {
   const [email, setEmail] = useState("");
   const [password,setPassword] = useState("");
+
   const handleLogin = async () => {
     try {
       const result = await authService.login({
@@ -11,22 +12,30 @@ function LoginPage({ onLogin, onGoToRegister, loginMessage }) {
         password,
       });
 
-      console.log("Login successful:", result);
+      if (result.authenticated){
+        console.log("Login Successful:", result);
+        onLogin();
+      }
+
     } catch (error) {
       console.error("Login failed:", error);
     }
   };
 
+  const handleGoogleLogin = async () => {
+    try {
+      const result = await authService.loginWithGoogle();
+      if(result.authenticated) {
+        console.log("Google login successful:", result);
+         onLogin();
+      }
+    } catch (error){
+      console.error("Google login failed:", error);
+    }
+  };
+
   // 4. Render the UI
-  return (
-    <div className="loginPage">
-      {/* Your existing UI goes here */}
-    </div>
-  );
-}
-
-
-
+  
   return (
     <div className="loginPage">
       <div className="loginCard">
@@ -55,19 +64,21 @@ function LoginPage({ onLogin, onGoToRegister, loginMessage }) {
           </p>
         )}
 
+          
+
         <div className="loginForm">
           <div className="inputGroup">  
           <label className="inputLabel">Email or Username</label>
               <input
                 className="textInput"
                 type="text"
-                placeholder="Username or Email"
+                placeholder="Email"
                 value={email}
-                onChange={(e)=> setEmail.(e.target.value)}
+                onChange={(e)=> setEmail(e.target.value)}
               />
           </div>
 
-
+                  
           <div className="inputGroup">
             <div className="labelRow"> 
                <label className="inputLabel">Password</label>
@@ -89,13 +100,13 @@ function LoginPage({ onLogin, onGoToRegister, loginMessage }) {
           <div className="divider">
             <span className="dividerText">OR</span>
           </div>
-
+          
           <div className="socialButton"> 
-            <button className="socialButton" type="button">
+            <button className="socialButton" 
+            type="button"
+            onClick={handleGoogleLogin}
+            >
             <span style={{ color: 'gold' }}>&#9679;</span> Google
-            </button>
-            <button className="socialButton" type="button">
-              <span>&diams; </span> Github
             </button>
           </div>
 
