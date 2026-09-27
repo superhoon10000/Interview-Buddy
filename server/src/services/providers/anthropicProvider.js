@@ -8,26 +8,14 @@ const {
   formatRubric,
   normalizeEvaluation,
 } = require("../evaluationContract");
+const { getAiConfig } = require("../../config/aiConfig");
 
-function getAnthropicClient() {
-  const apiKey = process.env.ANTHROPIC_API_KEY;
+async function getAnthropicClient() {
+  const config = await getAiConfig();
 
-  if (!apiKey) {
-    const error = new Error(
-      "AI evaluation is not configured. Set ANTHROPIC_API_KEY in server/.env."
-    );
-    error.statusCode = 503;
-    throw error;
-  }
-   
-  if (!feedbackIsValid) {
-    throw new Error('Anthropic response is missing Valid score');
-  }
-  
-
-
-
-  return new Anthropic({ apiKey });
+  return new Anthropic({
+    apiKey: config.anthropicApiKey,
+  });
 }
 
 function extractTextContent(aiResponse) {
@@ -109,7 +97,7 @@ Respond ONLY with valid JSON in this exact structure:
   ]
 }`;
 
-  const anthropic = getAnthropicClient();
+  const anthropic = await getAnthropicClient();
   const aiResponse = await anthropic.messages.create({
     model: process.env.ANTHROPIC_MODEL || "claude-sonnet-4-6",
     max_tokens: 1200,

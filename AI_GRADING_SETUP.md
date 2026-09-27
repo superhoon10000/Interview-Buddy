@@ -81,7 +81,6 @@ PORT=5001
 FIREBASE_PROJECT_ID=your-firebase-project-id
 CLIENT_ORIGIN=http://localhost:3000
 AI_PROVIDER=anthropic
-ANTHROPIC_API_KEY=your-real-server-side-key
 ANTHROPIC_MODEL=claude-sonnet-4-6
 ```
 

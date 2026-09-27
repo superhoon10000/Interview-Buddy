@@ -9,6 +9,12 @@ jest.mock(
   { virtual: true }
 );
 
+jest.mock("../../config/aiConfig", () => ({
+  getAiConfig: jest.fn(),
+}));
+
+const Anthropic = require("@anthropic-ai/sdk");
+const { getAiConfig } = require("../../config/aiConfig");
 const { generateEvaluation } = require("./anthropicProvider");
 
 const question = {
@@ -31,19 +37,51 @@ const question = {
 };
 
 describe("anthropicProvider.generateEvaluation", () => {
-  const originalKey = process.env.ANTHROPIC_API_KEY;
-
   beforeEach(() => {
     jest.clearAllMocks();
-    process.env.ANTHROPIC_API_KEY = "test-key";
+
+    getAiConfig.mockResolvedValue({
+      anthropicApiKey: "test-key",
+    });
   });
 
-  afterAll(() => {
-    if (originalKey === undefined) {
-      delete process.env.ANTHROPIC_API_KEY;
-    } else {
-      process.env.ANTHROPIC_API_KEY = originalKey;
-    }
+  it("loads the Anthropic API key from AI config", async () => {
+    mockCreate.mockResolvedValue({
+      content: [
+        {
+          type: "text",
+          text: JSON.stringify({
+            feedback: "Good answer.",
+            strengths: ["Correct approach"],
+            weaknesses: ["Could explain more"],
+            suggestions: ["Discuss complexity"],
+            criterionResults: [
+              {
+                name: "Correctness",
+                awardedPoints: 55,
+                feedback: "Mostly correct.",
+              },
+              {
+                name: "Explanation",
+                awardedPoints: 30,
+                feedback: "Clear but brief.",
+              },
+            ],
+          }),
+        },
+      ],
+    });
+
+    await generateEvaluation({
+      question,
+      candidateResponse: "candidate answer",
+      gradingCriteria: question.gradingCriteria,
+    });
+
+    expect(getAiConfig).toHaveBeenCalledTimes(1);
+    expect(Anthropic).toHaveBeenCalledWith({
+      apiKey: "test-key",
+    });
   });
 
   it("returns structured feedback and calculates score from rubric points", async () => {
@@ -152,8 +190,10 @@ describe("anthropicProvider.generateEvaluation", () => {
     ).rejects.toThrow("did not match the expected evaluation shape");
   });
 
-  it("requires the server-side Anthropic key", async () => {
-    delete process.env.ANTHROPIC_API_KEY;
+  it("fails when the Firestore AI configuration cannot be loaded", async () => {
+    getAiConfig.mockRejectedValue(
+      new Error("Anthropic API key is missing from Firestore configuration.")
+    );
 
     await expect(
       generateEvaluation({
@@ -161,6 +201,10 @@ describe("anthropicProvider.generateEvaluation", () => {
         candidateResponse: "test",
         gradingCriteria: question.gradingCriteria,
       })
-    ).rejects.toThrow("ANTHROPIC_API_KEY");
+    ).rejects.toThrow(
+      "Anthropic API key is missing from Firestore configuration."
+    );
+
+    expect(mockCreate).not.toHaveBeenCalled();
   });
 });
