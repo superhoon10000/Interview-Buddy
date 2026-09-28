@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { PAGES } from "../../utils/constants";
+import { authService } from "../../services/authService";
 
 function Sidebar({ currentPage, onNavigate }) {
   // Local state — controls the UC13 logout confirmation modal.
@@ -11,9 +12,8 @@ function Sidebar({ currentPage, onNavigate }) {
     setShowLogoutDialog(true);
   }
 
-  function handleConfirmLogout() {
-    // Mock equivalent of the spec's "clear session token + cookies".
-    // In production this would call the auth service first.
+  async function handleConfirmLogout() {
+    await authService.logout();
     setShowLogoutDialog(false);
     onNavigate(PAGES.LOGIN);
   }

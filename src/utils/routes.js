@@ -2,6 +2,7 @@ import React from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 
 import { PAGES } from "./constants";
+import ProtectedRoute from "../components/common/protectedRoute";
 
 import LoginPage from "../pages/LoginPage";
 import RegisterPage from "../pages/RegisterPage";
@@ -57,7 +58,7 @@ function AppRoutes({
         path={PAGES.REGISTER}
         element={
           <RegisterPage
-            onRegister={() => onNavigate(PAGES.DASHBOARD)}
+            onRegister={() => onNavigate(PAGES.LOGIN)}
             onGoToLogin={() => onNavigate(PAGES.LOGIN)}
           />
         }
@@ -67,10 +68,13 @@ function AppRoutes({
       <Route
         path={PAGES.DASHBOARD}
         element={
+          <ProtectedRoute>
+
           <DashboardPage
             {...commonProps}
             onSelectMode={onSelectMode}
-          />
+            />
+          </ProtectedRoute>
         }
       />
 
