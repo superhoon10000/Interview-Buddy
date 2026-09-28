@@ -5,13 +5,17 @@ describe("StateRenderer", () => {
   test("renders submitting state", () => {
     render(<StateRenderer status="submitting" />);
 
-    expect(screen.getByText(/submitting/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/submitting/i)
+    ).toBeInTheDocument();
   });
 
   test("renders loading state", () => {
     render(<StateRenderer status="loading" />);
 
-    expect(screen.getByText(/loading/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/loading/i, { selector: "p" })
+    ).toBeInTheDocument();
   });
 
   test("renders error state", () => {
@@ -35,7 +39,9 @@ describe("StateRenderer", () => {
       />
     );
 
-    expect(screen.getByText(/no/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/no/i)
+    ).toBeInTheDocument();
   });
 
   test("renders children when successful", () => {
