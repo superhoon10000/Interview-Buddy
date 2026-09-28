@@ -24,6 +24,7 @@ function SettingsPage({ currentPage, onNavigate, onAccountDeleted }) {
   });
 
   const [isLoading, setIsLoading] = useState(true);
+  void isLoading; // Prevent unused variable warning
   const [editingField, setEditingField] = useState(null);
   const [tempValue, setTempValue] = useState("");
   const [saveStatus, setSaveStatus] = useState("");

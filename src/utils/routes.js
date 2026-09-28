@@ -14,6 +14,7 @@ import ChangePasswordPage from "../pages/ChangePasswordPage";
 import HistoryPage from "../pages/HistoryPage";
 import LeaderboardPage from "../pages/LeaderboardPage";
 import AnalyticsPage from "../pages/AnalyticsPage";
+import ForgotPasswordPage from "../pages/ForgotPasswordPage";
 
 function AppRoutes({
   currentPage,
@@ -50,6 +51,12 @@ function AppRoutes({
             loginMessage={loginMessage}
           />
         }
+      />
+
+      {/* Forgot Password */}
+      <Route
+        path={PAGES.FORGOT_PASSWORD}
+        element={<ForgotPasswordPage />}
       />
 
       {/* Register */}

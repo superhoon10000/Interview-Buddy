@@ -1,5 +1,7 @@
 import React, { useState } from "react"; 
 import { authService } from "../services/authService.js";
+import { Link } from "react-router-dom";
+import { PAGES } from "../utils/constants";
 
 function LoginPage({ onLogin, onGoToRegister, loginMessage }) {
   const [email, setEmail] = useState("");
@@ -82,7 +84,7 @@ function LoginPage({ onLogin, onGoToRegister, loginMessage }) {
           <div className="inputGroup">
             <div className="labelRow"> 
                <label className="inputLabel">Password</label>
-               <a href="#" className="forgotPasswordLink">Forgot Password</a>
+               <Link to={PAGES.FORGOT_PASSWORD} className="forgotPasswordLink">Forgot Password</Link>
             </div>
                  <input
                    className="textInput"
