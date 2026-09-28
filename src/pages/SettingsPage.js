@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import PageLayout from "../components/layout/PageLayout";
-import mockSettings from "../data/mockSettings";
+import { userService } from "../services/userService";
+import { settingsService } from "../services/settingsService";
 import { useTheme } from "../context/ThemeContext";
 import { PAGES } from "../utils/constants";
 
@@ -13,10 +14,66 @@ function SettingsPage({ currentPage, onNavigate, onAccountDeleted }) {
   // Theme is sourced from the app-wide ThemeContext so changing it
   // actually flips the palette. Everything else stays in local state.
   const { theme, setTheme } = useTheme();
-  const [settings, setSettings] = useState({ ...mockSettings, theme });
+
+  //Empty settings
+  const [settings, setSettings] = useState({
+    username: "",
+    email: "",
+    theme,
+    notifications: "Disabled",
+  });
+
+  const [isLoading, setIsLoading] = useState(true);
   const [editingField, setEditingField] = useState(null);
   const [tempValue, setTempValue] = useState("");
   const [saveStatus, setSaveStatus] = useState("");
+
+  //Persistence
+  useEffect(() => {
+    async function loadPersistedSettings() {
+      try {
+        const [profile, savedSettings] =
+          await Promise.all([
+            userService.getProfile(),
+            settingsService.getSettings(),
+          ]);
+
+        setSettings({
+          username: profile?.username || "",
+          email: profile?.email || "",
+          theme:
+            savedSettings.theme === "dark"
+              ? "Dark"
+              : "Light",
+          notifications:
+            savedSettings.notifications
+              ? "Enabled"
+              : "Disabled",
+        });
+
+        if (savedSettings.theme) {
+          setTheme(
+            savedSettings.theme === "dark"
+              ? "Dark"
+              : "Light"
+          );
+        }
+      } catch (error) {
+        console.error(
+          "Failed to load persisted settings:",
+          error
+        );
+
+        setSaveStatus(
+          "Unable to load your saved settings."
+        );
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    loadPersistedSettings();
+  }, [setTheme]);
 
   // Keep the displayed value in sync with the live theme.
   if (settings.theme !== theme) {
@@ -43,17 +100,94 @@ function SettingsPage({ currentPage, onNavigate, onAccountDeleted }) {
     setTempValue("");
   }
 
-  function saveEdit(field) {
-    if (!tempValue.trim()) return;
-    const newValue = tempValue.trim();
-    setSettings({ ...settings, [field]: newValue });
-    // Theme is special — push it into the context so the rest of the
-    // app re-renders against the new palette.
-    if (field === "theme") {
-      setTheme(newValue);
+  async function saveEdit(field) {
+    if (!tempValue.trim()) {
+      return;
     }
-    setEditingField(null);
-    setSaveStatus(`"${field}" updated successfully.`);
+
+    const newValue = tempValue.trim();
+
+    try {
+      if (
+        field === "username" ||
+        field === "email"
+      ) {
+        const updates = {};
+
+        if (field === "username") {
+          updates.username = newValue;
+        }
+
+        // Do not send email unless the backend supports it.
+        if (field === "email") {
+          setSaveStatus(
+            "Email editing is not supported yet."
+          );
+
+          setEditingField(null);
+          return;
+        }
+
+        const updatedProfile =
+          await userService.updateProfile(
+            updates
+          );
+
+        setSettings((current) => ({
+          ...current,
+          username:
+            updatedProfile.username ||
+            current.username,
+        }));
+      }
+
+      if (field === "theme") {
+        const persistedTheme =
+          newValue.toLowerCase();
+
+        await settingsService.updateSettings({
+          theme: persistedTheme,
+        });
+
+        setSettings((current) => ({
+          ...current,
+          theme: newValue,
+        }));
+
+        setTheme(newValue);
+      }
+
+      if (field === "notifications") {
+        const notificationsEnabled =
+          newValue === "Enabled";
+
+        await settingsService.updateSettings({
+          notifications:
+            notificationsEnabled,
+        });
+
+        setSettings((current) => ({
+          ...current,
+          notifications: newValue,
+        }));
+      }
+
+      setEditingField(null);
+
+      setSaveStatus(
+        `"${field}" updated successfully.`
+      );
+    } catch (error) {
+      console.error(
+        `Failed to update ${field}:`,
+        error
+      );
+
+      setSaveStatus(
+        error.message ||
+          `"${field}" could not be updated.`
+      );
+    }
   }
 
   // ----- UC15 handlers -------------------------------------------------
