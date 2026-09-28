@@ -8,6 +8,12 @@ import { MemoryRouter } from "react-router-dom";
 
 import App from "./App";
 
+jest.mock("./config/firebase", () => ({
+  auth: {
+    currentUser: null,
+  },
+}));
+
 function renderAtRoute(route) {
   return render(
     <MemoryRouter initialEntries={[route]}>
@@ -38,7 +44,7 @@ describe("Interview Buddy application routing", () => {
 
     expect(
       screen.getByRole("button", {
-        name: "Login",
+        name: /login to workspace/i,
       })
     ).toBeInTheDocument();
   });

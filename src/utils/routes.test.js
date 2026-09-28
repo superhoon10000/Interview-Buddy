@@ -67,6 +67,11 @@ jest.mock(
   () => () => <div>Change Password Route</div>
 );
 
+jest.mock(
+  "../pages/ForgotPasswordPage",
+  () => () => <div>Forgot Password Route</div>
+);
+
 function LocationDisplay() {
   const location = useLocation();
 
@@ -140,6 +145,7 @@ describe("AppRoutes", () => {
       PAGES.CHANGE_PASSWORD,
       "Change Password Route",
     ],
+    [PAGES.FORGOT_PASSWORD, "Forgot Password Route"],
   ])(
     "renders the correct page for %s",
     (path, expectedPage) => {

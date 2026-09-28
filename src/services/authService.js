@@ -3,6 +3,7 @@ import {
   createUserWithEmailAndPassword,
   deleteUser,
   onAuthStateChanged,
+  sendPasswordResetEmail,
   signInWithEmailAndPassword,
   signInWithPopup,
   signOut,
@@ -351,5 +352,38 @@ export const authService = {
     throw new Error(
       "Password change is not implemented yet."
     );
+  },
+  async resetPassword(email) {
+    const normalizedEmail = email?.trim();
+
+    if (!normalizedEmail) {
+      throw new Error("Email is required.");
+    }
+
+    try {
+      await sendPasswordResetEmail(auth, normalizedEmail);
+    } catch (error) {
+      const messages = {
+        "auth/invalid-email": "Please enter a valid email address.",
+        "auth/user-not-found": "No account was found with that email.",
+        "auth/too-many-requests":
+          "Too many requests. Please try again later.",
+        "auth/network-request-failed":
+          "Unable to reach Firebase. Please try again.",
+      };
+
+      const resetError = new Error(
+        messages[error?.code] ||
+          "Password reset email could not be sent."
+      );
+
+      resetError.code = error?.code || "auth/reset-failed";
+
+      throw resetError;
+    }
+
+    return {
+      success: true,
+    };
   },
 };
