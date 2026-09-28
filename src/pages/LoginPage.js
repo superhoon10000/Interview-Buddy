@@ -68,7 +68,7 @@ function LoginPage({ onLogin, onGoToRegister, loginMessage }) {
 
         <div className="loginForm">
           <div className="inputGroup">  
-          <label className="inputLabel">Email or Username</label>
+          <label className="inputLabel">Email</label>
               <input
                 className="textInput"
                 type="text"

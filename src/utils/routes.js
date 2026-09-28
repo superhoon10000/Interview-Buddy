@@ -57,7 +57,7 @@ function AppRoutes({
         path={PAGES.REGISTER}
         element={
           <RegisterPage
-            onRegister={() => onNavigate(PAGES.DASHBOARD)}
+            onRegister={() => onNavigate(PAGES.LOGIN)}
             onGoToLogin={() => onNavigate(PAGES.LOGIN)}
           />
         }
