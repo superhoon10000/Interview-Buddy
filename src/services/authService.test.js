@@ -87,6 +87,143 @@ describe("authService", () => {
     ).rejects.toThrow("Email and password are required.");
   });
 
+  test("login trims email before authenticating", async () => {
+    signInWithEmailAndPassword.mockResolvedValue({
+      user: {
+        uid: "user-123",
+        email: "daniel@example.com",
+        displayName: "Daniel",
+        emailVerified: false,
+      },
+    });
+
+    await authService.login({
+      email: "  daniel@example.com  ",
+      password: "password123",
+    });
+
+    expect(
+      signInWithEmailAndPassword
+    ).toHaveBeenCalledWith(
+      expect.anything(),
+      "daniel@example.com",
+      "password123"
+    );
+  });
+
+  test("login rejects whitespace-only email before calling Firebase", async () => {
+    await expect(
+      authService.login({
+        email: "   ",
+        password: "password123",
+      })
+    ).rejects.toThrow(
+      "Email and password are required."
+    );
+
+    expect(
+      signInWithEmailAndPassword
+    ).not.toHaveBeenCalled();
+  });
+
+  test("login maps invalid credential Firebase errors", async () => {
+    signInWithEmailAndPassword.mockRejectedValue({
+      code: "auth/invalid-credential",
+    });
+
+    await expect(
+      authService.login({
+        email: "daniel@example.com",
+        password: "wrongpassword",
+      })
+    ).rejects.toMatchObject({
+      code: "auth/invalid-credential",
+      message: "Invalid email or password.",
+    });
+  });
+
+  test("login maps invalid email Firebase errors", async () => {
+    signInWithEmailAndPassword.mockRejectedValue({
+      code: "auth/invalid-email",
+    });
+
+    await expect(
+      authService.login({
+        email: "not-an-email",
+        password: "password123",
+      })
+    ).rejects.toMatchObject({
+      code: "auth/invalid-email",
+      message: "Please enter a valid email address.",
+    });
+  });
+
+  test("login maps disabled account Firebase errors", async () => {
+    signInWithEmailAndPassword.mockRejectedValue({
+      code: "auth/user-disabled",
+    });
+
+    await expect(
+      authService.login({
+        email: "daniel@example.com",
+        password: "password123",
+      })
+    ).rejects.toMatchObject({
+      code: "auth/user-disabled",
+      message: "This account has been disabled.",
+    });
+  });
+
+  test("login maps too many requests Firebase errors", async () => {
+    signInWithEmailAndPassword.mockRejectedValue({
+      code: "auth/too-many-requests",
+    });
+
+    await expect(
+      authService.login({
+        email: "daniel@example.com",
+        password: "password123",
+      })
+    ).rejects.toMatchObject({
+      code: "auth/too-many-requests",
+      message:
+        "Too many login attempts. Please try again later.",
+    });
+  });
+
+  test("login maps network Firebase errors", async () => {
+    signInWithEmailAndPassword.mockRejectedValue({
+      code: "auth/network-request-failed",
+    });
+
+    await expect(
+      authService.login({
+        email: "daniel@example.com",
+        password: "password123",
+      })
+    ).rejects.toMatchObject({
+      code: "auth/network-request-failed",
+      message:
+        "Unable to reach the authentication service. Please try again.",
+    });
+  });
+
+  test("login maps unknown Firebase errors to a fallback application error", async () => {
+    signInWithEmailAndPassword.mockRejectedValue({
+      code: "auth/something-unexpected",
+    });
+
+    await expect(
+      authService.login({
+        email: "daniel@example.com",
+        password: "password123",
+      })
+    ).rejects.toMatchObject({
+      code: "auth/something-unexpected",
+      message: "Login failed. Please try again.",
+    });
+  });
+
   test("register creates Firebase user, application profile, and signs out", async () => {
     const firebaseUser = {
       uid: "user-123",
@@ -557,6 +694,19 @@ describe("authService", () => {
 
     expect(result).toEqual({
       success: true,
+    });
+  });
+
+  test("logout maps Firebase sign-out errors", async () => {
+    signOut.mockRejectedValue({
+      code: "auth/network-request-failed",
+    });
+
+    await expect(
+      authService.logout()
+    ).rejects.toMatchObject({
+      code: "auth/network-request-failed",
+      message: "Logout failed. Please try again.",
     });
   });
 });

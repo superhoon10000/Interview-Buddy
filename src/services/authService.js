@@ -79,6 +79,35 @@ async function rollbackRegistration(user) {
   }
 }
 
+function createLoginError(error) {
+  const messages = {
+    "auth/invalid-credential":
+      "Invalid email or password.",
+    "auth/user-not-found":
+      "Invalid email or password.",
+    "auth/wrong-password":
+      "Invalid email or password.",
+    "auth/invalid-email":
+      "Please enter a valid email address.",
+    "auth/user-disabled":
+      "This account has been disabled.",
+    "auth/too-many-requests":
+      "Too many login attempts. Please try again later.",
+    "auth/network-request-failed":
+      "Unable to reach the authentication service. Please try again.",
+  };
+
+  const loginError = new Error(
+    messages[error?.code] ||
+      "Login failed. Please try again."
+  );
+
+  loginError.code =
+    error?.code || "auth/login-failed";
+
+  return loginError;
+}
+
 function createRegistrationError(error) {
   const messages = {
     "auth/email-already-in-use":
@@ -112,16 +141,26 @@ export const authService = {
 
     const { email, password } = credentials;
 
-    if (!email || !password) {
-      throw new Error("Email and password are required.");
+    const normalizedEmail = email?.trim();
+
+    if (!normalizedEmail || !password) {
+      throw new Error(
+        "Email and password are required."
+      );
     }
 
-    const userCredential =
-      await signInWithEmailAndPassword(
-        auth,
-        email.trim(),
-        password
-      );
+    let userCredential;
+
+    try {
+      userCredential =
+        await signInWithEmailAndPassword(
+          auth,
+          normalizedEmail,
+          password
+        );
+    } catch (error) {
+      throw createLoginError(error);
+    }
 
     return {
       authenticated: true,
@@ -258,7 +297,18 @@ export const authService = {
   },
 
   async logout() {
-    await signOut(auth);
+    try {
+      await signOut(auth);
+    } catch (error) {
+      const logoutError = new Error(
+        "Logout failed. Please try again."
+      );
+
+      logoutError.code =
+        error?.code || "auth/logout-failed";
+
+      throw logoutError;
+    }
 
     return {
       success: true,
