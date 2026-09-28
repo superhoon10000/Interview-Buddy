@@ -4,10 +4,16 @@ import "./App.css";
 
 import { PAGES } from "./utils/constants";
 import AppRoutes from "./utils/routes";
+import { useAuth } from "./context/AuthContext";
 
 function App() {
   const navigate = useNavigate();
   const location = useLocation();
+
+  const { user, loading } = useAuth();
+
+  console.log("Auth loading:", loading);
+  console.log("Current User:", user);
 
   // The URL now determines which page is active.
   const currentPage = location.pathname;

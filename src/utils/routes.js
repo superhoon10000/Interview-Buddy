@@ -2,6 +2,7 @@ import React from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 
 import { PAGES } from "./constants";
+import ProtectedRoute from "../components/common/protectedRoute";
 
 import LoginPage from "../pages/LoginPage";
 import RegisterPage from "../pages/RegisterPage";
@@ -67,10 +68,13 @@ function AppRoutes({
       <Route
         path={PAGES.DASHBOARD}
         element={
+          <ProtectedRoute>
+
           <DashboardPage
             {...commonProps}
             onSelectMode={onSelectMode}
-          />
+            />
+          </ProtectedRoute>
         }
       />
 
