@@ -12,6 +12,17 @@ import {
 import AppRoutes from "./routes";
 import { PAGES } from "./constants";
 
+//Mock authContext for useAuth, its testing correctness of route so fake user is appropriate
+jest.mock("../context/AuthContext", () => ({
+  useAuth: () => ({
+    user: {
+      uid: "test-user",
+      email: "test@example.com",
+    },
+    loading: false,
+  }),
+}));
+
 jest.mock(
   "../pages/LoginPage",
   () => () => <div>Login Route</div>

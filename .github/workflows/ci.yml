@@ -1,5 +1,7 @@
+# CI PIPELINE - Test both from /src and /server
 name: CI Pipeline
 
+# Whenever we PR w/ main or merge it (push to main).
 on:
   push:
     branches:
@@ -9,37 +11,44 @@ on:
     branches:
       - main
 
-
 jobs:
   build-and-test:
-
     runs-on: ubuntu-latest
 
     steps:
-
-      # Checkout repository code
+        # Checkout repo
       - name: Checkout repository
         uses: actions/checkout@v4
 
-
-      # Install Node.js
+        # Setup Node
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 24
           cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            server/package-lock.json
 
+        # Match CI environment
+      - name: Use npm 11
+        run: npm install -g npm@11.11.0
 
-      # Install dependencies
-      - name: Install dependencies
+      # Frontend
+      - name: Install frontend dependencies
         run: npm ci
 
-
-      # Run automated tests
-      - name: Run tests
+      - name: Run frontend tests
         run: npm test -- --watchAll=false
 
-
-      # Verify production build
       - name: Build React application
         run: npm run build
+
+      # Backend
+      - name: Install server dependencies
+        working-directory: ./server
+        run: npm ci
+
+      - name: Run server tests
+        working-directory: ./server
+        run: npm test -- --watchAll=false
