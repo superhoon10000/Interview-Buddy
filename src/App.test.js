@@ -6,13 +6,29 @@ import {
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 
-import App from "./App";
+jest.mock("./context/AuthContext", () => ({
+  useAuth: jest.fn(),
+}));
 
 jest.mock("./config/firebase", () => ({
+  __esModule: true,
   auth: {
     currentUser: null,
   },
+  default: {},
 }));
+
+import { useAuth } from "./context/AuthContext";
+
+//App imports all routes, including SettingsPage, even though tests arent testing that.
+//Mock it for now.  Preferable to not give real firebase credentials (thru Settings)
+jest.mock("./pages/SettingsPage", () => {
+  return function MockSettingsPage() {
+    return <div>Settings Page</div>;
+  };
+});
+
+import App from "./App";
 
 function renderAtRoute(route) {
   return render(
@@ -23,6 +39,19 @@ function renderAtRoute(route) {
 }
 
 describe("Interview Buddy application routing", () => {
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+
+    useAuth.mockReturnValue({
+      user: {
+        uid: "test-user",
+        email: "test@example.com",
+      },
+      loading: false,
+    });
+  });
+
   test("the base URL redirects to the login page", async () => {
     renderAtRoute("/");
 

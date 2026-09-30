@@ -16,6 +16,18 @@ jest.mock("../services", () => ({
   },
 }));
 
+//Allows page to render normally while preventing firebase from initializing during testing
+jest.mock("../config/firebase", () => ({
+  __esModule: true,
+  auth: {
+    currentUser: {
+      uid: "test-user",
+      email: "test@example.com",
+    },
+  },
+  default: {},
+}));
+
 describe("InterviewSetupPage", () => {
   let onNavigate;
   let onStartInterview;

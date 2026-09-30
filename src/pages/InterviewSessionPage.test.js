@@ -6,6 +6,13 @@ import InterviewSessionPage from "./InterviewSessionPage";
 import { aiService, interviewService } from "../services";
 import { PAGES } from "../utils/constants";
 
+//Mock PageLayout since tests are not checking sidebar authentication at all.
+jest.mock("../components/layout/PageLayout", () => {
+  return function MockPageLayout({ children }) {
+    return <div>{children}</div>;
+  };
+});
+
 jest.mock("../services", () => ({
   aiService: {
     evaluateAnswer: jest.fn(),
