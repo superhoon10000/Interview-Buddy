@@ -48,6 +48,12 @@ jobs:
       - name: Install frontend dependencies
         run: npm ci
 
+      - name: Run login tests
+        run: npm test -- --watchAll=false --runTestsByPath src/services/authService.test.js
+      
+      - name: Run interview Setup tests
+        run: npm test -- --watchAll=false --runTestsByPath src/pages/InterviewSetupPage.test.js
+      
       - name: Run frontend tests
         run: npm test -- --watchAll=false
 
@@ -62,3 +68,5 @@ jobs:
       - name: Run server tests
         working-directory: ./server
         run: npm test -- --watchAll=false
+
+   
