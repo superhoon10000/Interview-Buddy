@@ -49,7 +49,7 @@ jobs:
         run: npm ci
 
       - name: Run login tests
-        run: npm test -- --watchAll=false --runTestsByPath src/services/authService.js
+        run: npm test -- --watchAll=false --runTestsByPath src/services/authService.test.js
       
       - name: Run interview Setup tests
         run: npm test -- --watchAll=false --runTestsByPath src/pages/InterviewSetupPage.test.js
