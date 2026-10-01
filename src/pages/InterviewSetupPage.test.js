@@ -10,6 +10,13 @@ import InterviewSetupPage from "./InterviewSetupPage";
 import { interviewService } from "../services";
 import { PAGES } from "../utils/constants";
 
+
+jest.mock("../services/authService", () => ({
+  authService: {
+    logout: jest.fn(),
+  },
+}));
+
 jest.mock("../services", () => ({
   interviewService: {
     startSession: jest.fn(),
