@@ -20,6 +20,16 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+        # Generate unique build ID
+      - name: Generate build version
+        shell: bash
+        run: |
+          SHORT_SHA="${GITHUB_SHA::7}"
+          BUILD_VERSION="IB-build-${GITHUB_RUN_NUMBER}.${GITHUB_RUN_ATTEMPT}-${SHORT_SHA}"
+          echo "BUILD_VERSION=$BUILD_VERSION" >> "$GITHUB_ENV"
+          echo "Build version: $BUILD_VERSION"
+          echo "### Build version: \`$BUILD_VERSION\`" >> "$GITHUB_STEP_SUMMARY"
+
         # Setup Node
       - name: Setup Node.js
         uses: actions/setup-node@v4
