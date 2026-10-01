@@ -14,10 +14,6 @@ const PROVIDERS = {
 
 const MAX_RETRIES = 2;
 
-// Use no delay during automated tests so the test suite stays fast.
-const RETRY_DELAY_MS =
-  process.env.NODE_ENV === "test" ? 0 : 500;
-
 function getActiveProvider() {
   const activeProviderName = process.env.AI_PROVIDER || "anthropic";
   const provider = PROVIDERS[activeProviderName];
@@ -33,34 +29,22 @@ function getActiveProvider() {
   return provider;
 }
 
-/**
- * Wait before making another AI request.
- *
- * @param {number} ms
- * @returns {Promise<void>}
- */
 function wait(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-/**
- * Determine whether an AI-provider error is worth retrying.
- *
- * Retry:
- * - rate limits
- * - temporary provider/server failures
- * - malformed AI responses
- * - network-type failures without a status code
- *
- * Do not retry known configuration problems.
- *
- * @param {Error} error
- * @returns {boolean}
- */
+function getRetryDelay(retryNumber) {
+  if (process.env.NODE_ENV === "test") {
+    return 0;
+  }
+
+  return 500 * retryNumber;
+}
+
 function isRetryableError(error) {
   const message = String(error?.message || "");
 
-  // These are configuration problems, so retrying will not fix them.
+  // Configuration problems will not be fixed by retrying.
   if (
     message.includes("AI configuration was not found") ||
     message.includes("Anthropic API key is missing")
@@ -68,33 +52,18 @@ function isRetryableError(error) {
     return false;
   }
 
-  const status = error?.statusCode || error?.status;
+  const rawStatus = error?.statusCode ?? error?.status;
 
-  // Network-type errors may not have an HTTP status.
-  if (!status) {
+  // Network-style failures may not contain an HTTP status code.
+  if (rawStatus === undefined || rawStatus === null) {
     return true;
   }
 
-  return (
-    status === 429 ||
-    status === 500 ||
-    status === 502 ||
-    status === 503 ||
-    status === 504
-  );
+  const status = Number(rawStatus);
+
+  return [429, 500, 502, 503, 504].includes(status);
 }
 
-/**
- * Call the configured AI provider and retry up to two times
- * after the initial request fails.
- *
- * Total maximum attempts:
- * 1 initial attempt + 2 retries = 3 attempts.
- *
- * @param {Object} provider
- * @param {Object} params
- * @returns {Promise<Object>}
- */
 async function generateWithRetry(provider, params) {
   let lastError;
 
@@ -104,28 +73,21 @@ async function generateWithRetry(provider, params) {
     } catch (error) {
       lastError = error;
 
+      if (!isRetryableError(error)) {
+        throw error;
+      }
+
       const retriesRemaining = MAX_RETRIES - attempt;
 
       console.warn(
         `AI evaluation attempt ${attempt + 1} failed: ${error.message}`
       );
 
-      // Stop immediately if the error should not be retried.
-      if (!isRetryableError(error)) {
-        throw error;
-      }
-
-      // Stop after the final allowed attempt.
       if (retriesRemaining <= 0) {
         break;
       }
 
-      // Simple increasing delay:
-      // first retry = 500 ms
-      // second retry = 1000 ms
-      const delay = RETRY_DELAY_MS * (attempt + 1);
-
-      await wait(delay);
+      await wait(getRetryDelay(attempt + 1));
     }
   }
 

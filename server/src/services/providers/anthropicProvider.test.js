@@ -4,7 +4,9 @@ jest.mock(
   "@anthropic-ai/sdk",
   () =>
     jest.fn().mockImplementation(() => ({
-      messages: { create: mockCreate },
+      messages: {
+        create: mockCreate,
+      },
     })),
   { virtual: true }
 );
@@ -15,13 +17,16 @@ jest.mock("../../config/aiConfig", () => ({
 
 const Anthropic = require("@anthropic-ai/sdk");
 const { getAiConfig } = require("../../config/aiConfig");
-const { generateEvaluation } = require("./anthropicProvider");
+const {
+  generateEvaluation,
+} = require("./anthropicProvider");
 
 const question = {
   id: "q1",
   mode: "Code Style",
   prompt: "Write a function.",
-  referenceAnswer: "A correct implementation with an explanation.",
+  referenceAnswer:
+    "A correct implementation with an explanation.",
   gradingCriteria: [
     {
       name: "Correctness",
@@ -31,7 +36,8 @@ const question = {
     {
       name: "Explanation",
       weight: 40,
-      description: "The solution is explained clearly.",
+      description:
+        "The solution is explained clearly.",
     },
   ],
 };
@@ -79,6 +85,7 @@ describe("anthropicProvider.generateEvaluation", () => {
     });
 
     expect(getAiConfig).toHaveBeenCalledTimes(1);
+
     expect(Anthropic).toHaveBeenCalledWith({
       apiKey: "test-key",
     });
@@ -119,6 +126,7 @@ describe("anthropicProvider.generateEvaluation", () => {
 
     expect(result.score).toBe(85);
     expect(result.feedback).toBe("Good answer.");
+
     expect(result.criterionResults).toEqual([
       {
         name: "Correctness",
@@ -140,7 +148,8 @@ describe("anthropicProvider.generateEvaluation", () => {
       content: [
         {
           type: "text",
-          text: '```json\n{"feedback":"Decent.","strengths":[],"weaknesses":[],"suggestions":[],"criterionResults":[{"name":"Correctness","awardedPoints":40,"feedback":"ok"},{"name":"Explanation","awardedPoints":20,"feedback":"ok"}]}\n```',
+          text:
+            '```json\n{"feedback":"Decent.","strengths":[],"weaknesses":[],"suggestions":[],"criterionResults":[{"name":"Correctness","awardedPoints":40,"feedback":"ok"},{"name":"Explanation","awardedPoints":20,"feedback":"ok"}]}\n```',
         },
       ],
     });
@@ -187,12 +196,116 @@ describe("anthropicProvider.generateEvaluation", () => {
         candidateResponse: "test",
         gradingCriteria: question.gradingCriteria,
       })
-    ).rejects.toThrow("did not match the expected evaluation shape");
+    ).rejects.toMatchObject({
+      message:
+        "Anthropic response did not match the expected evaluation shape.",
+      statusCode: 502,
+    });
+  });
+
+  it("returns a controlled error for invalid JSON", async () => {
+    mockCreate.mockResolvedValue({
+      content: [
+        {
+          type: "text",
+          text: "this is not valid json",
+        },
+      ],
+    });
+
+    await expect(
+      generateEvaluation({
+        question,
+        candidateResponse: "test",
+        gradingCriteria: question.gradingCriteria,
+      })
+    ).rejects.toMatchObject({
+      message:
+        "Anthropic response did not match the expected evaluation shape.",
+      statusCode: 502,
+    });
+  });
+
+  it("returns a controlled error for an unexpected provider response", async () => {
+    mockCreate.mockResolvedValue({
+      content: [],
+    });
+
+    await expect(
+      generateEvaluation({
+        question,
+        candidateResponse: "test",
+        gradingCriteria: question.gradingCriteria,
+      })
+    ).rejects.toMatchObject({
+      message:
+        "Anthropic response did not match the expected evaluation shape.",
+      statusCode: 502,
+    });
+  });
+
+  it("rejects structured output missing required overall feedback", async () => {
+    mockCreate.mockResolvedValue({
+      content: [
+        {
+          type: "text",
+          text: JSON.stringify({
+            strengths: [],
+            weaknesses: [],
+            suggestions: [],
+            criterionResults: [
+              {
+                name: "Correctness",
+                awardedPoints: 50,
+                feedback: "Good.",
+              },
+              {
+                name: "Explanation",
+                awardedPoints: 30,
+                feedback: "Clear.",
+              },
+            ],
+          }),
+        },
+      ],
+    });
+
+    await expect(
+      generateEvaluation({
+        question,
+        candidateResponse: "test",
+        gradingCriteria: question.gradingCriteria,
+      })
+    ).rejects.toMatchObject({
+      message:
+        "Anthropic response did not match the expected evaluation shape.",
+      statusCode: 502,
+    });
+  });
+
+  it("propagates provider network failures as promise rejections", async () => {
+    const networkError = new Error(
+      "Network unavailable"
+    );
+
+    networkError.code = "ECONNRESET";
+
+    mockCreate.mockRejectedValue(networkError);
+
+    await expect(
+      generateEvaluation({
+        question,
+        candidateResponse: "test",
+        gradingCriteria: question.gradingCriteria,
+      })
+    ).rejects.toThrow("Network unavailable");
   });
 
   it("fails when the Firestore AI configuration cannot be loaded", async () => {
     getAiConfig.mockRejectedValue(
-      new Error("Anthropic API key is missing from Firestore configuration.")
+      new Error(
+        "Anthropic API key is missing from Firestore configuration."
+      )
     );
 
     await expect(
