@@ -1,4 +1,5 @@
 import React from "react";
+import { useAuth } from "../context/AuthContext";
 import {
   render,
   screen,
@@ -12,15 +13,8 @@ import {
 import AppRoutes from "./routes";
 import { PAGES } from "./constants";
 
-//Mock authContext for useAuth, its testing correctness of route so fake user is appropriate
 jest.mock("../context/AuthContext", () => ({
-  useAuth: () => ({
-    user: {
-      uid: "test-user",
-      email: "test@example.com",
-    },
-    loading: false,
-  }),
+  useAuth: jest.fn(),
 }));
 
 jest.mock(
@@ -132,6 +126,17 @@ function renderRoute(path) {
 }
 
 describe("AppRoutes", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+
+    useAuth.mockReturnValue({
+      user: {
+        uid: "test-user",
+        email: "test@example.com",
+      },
+      loading: false,
+    });
+  });
   test.each([
     [PAGES.LOGIN, "Login Route"],
     [PAGES.REGISTER, "Register Route"],
@@ -201,4 +206,78 @@ describe("AppRoutes", () => {
       PAGES.DASHBOARD
     );
   });
+  test.each([
+    PAGES.DASHBOARD,
+    PAGES.INTERVIEW_SETUP,
+    PAGES.INTERVIEW,
+    PAGES.SESSION_RESULTS,
+    PAGES.HISTORY,
+    PAGES.LEADERBOARD,
+    PAGES.ANALYTICS,
+    PAGES.SETTINGS,
+    PAGES.CHANGE_PASSWORD,
+  ])(
+    "redirects an unauthenticated user from %s to login",
+    async (path) => {
+      useAuth.mockReturnValue({
+        user: null,
+        loading: false,
+      });
+
+      renderRoute(path);
+
+      await waitFor(() => {
+        expect(
+          screen.getByText("Login Route")
+        ).toBeInTheDocument();
+      });
+
+      expect(
+        screen.getByTestId("current-location")
+      ).toHaveTextContent(PAGES.LOGIN);
+    }
+  );
+  test("does not redirect while authentication is still loading", () => {
+    useAuth.mockReturnValue({
+      user: null,
+      loading: true,
+    });
+
+    renderRoute(PAGES.DASHBOARD);
+
+    expect(
+      screen.getByText("Loading...")
+    ).toBeInTheDocument();
+
+    expect(
+      screen.queryByText("Login Route")
+    ).not.toBeInTheDocument();
+
+    expect(
+      screen.getByTestId("current-location")
+    ).toHaveTextContent(PAGES.DASHBOARD);
+  });
+  test.each([
+    [PAGES.LOGIN, "Login Route"],
+    [PAGES.REGISTER, "Register Route"],
+    [PAGES.FORGOT_PASSWORD, "Forgot Password Route"],
+  ])(
+    "allows an unauthenticated user to access public route %s",
+    (path, expectedPage) => {
+      useAuth.mockReturnValue({
+        user: null,
+        loading: false,
+      });
+
+      renderRoute(path);
+
+      expect(
+        screen.getByText(expectedPage)
+      ).toBeInTheDocument();
+
+      expect(
+        screen.getByTestId("current-location")
+      ).toHaveTextContent(path);
+    }
+  );
 });
