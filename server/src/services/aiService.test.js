@@ -26,10 +26,12 @@ const question = {
 
 describe("aiService.generateEvaluation", () => {
   const originalProvider = process.env.AI_PROVIDER;
+  const originalNodeEnv = process.env.NODE_ENV;
 
   beforeEach(() => {
     jest.clearAllMocks();
     process.env.AI_PROVIDER = "anthropic";
+    process.env.NODE_ENV = "test";
   });
 
   afterAll(() => {
@@ -37,6 +39,12 @@ describe("aiService.generateEvaluation", () => {
       delete process.env.AI_PROVIDER;
     } else {
       process.env.AI_PROVIDER = originalProvider;
+    }
+
+    if (originalNodeEnv === undefined) {
+      delete process.env.NODE_ENV;
+    } else {
+      process.env.NODE_ENV = originalNodeEnv;
     }
   });
 
@@ -75,6 +83,8 @@ describe("aiService.generateEvaluation", () => {
       candidateResponse: "A closure is...",
       gradingCriteria: question.gradingCriteria,
     });
+
+    expect(anthropicProvider.generateEvaluation).toHaveBeenCalledTimes(1);
     expect(result).toEqual(expected);
   });
 
@@ -85,7 +95,13 @@ describe("aiService.generateEvaluation", () => {
           id: "q2",
           prompt: "Test",
           referenceAnswer: "Reference",
-          gradingCriteria: [{ name: "Only", weight: 100, description: "x" }],
+          gradingCriteria: [
+            {
+              name: "Only",
+              weight: 100,
+              description: "x",
+            },
+          ],
         },
         candidateResponse: "Answer",
       })
@@ -103,12 +119,97 @@ describe("aiService.generateEvaluation", () => {
         candidateResponse: "test",
       })
     ).rejects.toThrow("Unknown AI_PROVIDER");
+
+    expect(anthropicProvider.generateEvaluation).not.toHaveBeenCalled();
   });
 
-  it("propagates provider errors instead of swallowing them", async () => {
-    anthropicProvider.generateEvaluation.mockRejectedValue(
-      new Error("Anthropic response did not match the expected evaluation shape.")
-    );
+  it("retries once after a provider failure and then succeeds", async () => {
+    const expected = {
+      score: 85,
+      feedback: "Solid answer.",
+      strengths: ["Accurate definition"],
+      weaknesses: [],
+      suggestions: ["Add an example"],
+      criterionResults: [
+        {
+          name: "Accuracy",
+          awardedPoints: 55,
+          maxPoints: 60,
+          feedback: "Accurate.",
+        },
+        {
+          name: "Clarity",
+          awardedPoints: 30,
+          maxPoints: 40,
+          feedback: "Mostly clear.",
+        },
+      ],
+    };
+
+    const temporaryError = new Error("Temporary provider failure");
+    temporaryError.statusCode = 503;
+
+    anthropicProvider.generateEvaluation
+      .mockRejectedValueOnce(temporaryError)
+      .mockResolvedValueOnce(expected);
+
+    const result = await aiService.generateEvaluation({
+      question,
+      candidateResponse: "test",
+    });
+
+    expect(anthropicProvider.generateEvaluation).toHaveBeenCalledTimes(2);
+    expect(result).toEqual(expected);
+  });
+
+  it("retries twice after failures and succeeds on the third attempt", async () => {
+    const expected = {
+      score: 80,
+      feedback: "Good answer.",
+      strengths: ["Good understanding"],
+      weaknesses: ["Needs more detail"],
+      suggestions: ["Add an example"],
+      criterionResults: [
+        {
+          name: "Accuracy",
+          awardedPoints: 50,
+          maxPoints: 60,
+          feedback: "Mostly accurate.",
+        },
+        {
+          name: "Clarity",
+          awardedPoints: 30,
+          maxPoints: 40,
+          feedback: "Clear.",
+        },
+      ],
+    };
+
+    const firstError = new Error("First temporary failure");
+    firstError.statusCode = 503;
+
+    const secondError = new Error("Second temporary failure");
+    secondError.statusCode = 502;
+
+    anthropicProvider.generateEvaluation
+      .mockRejectedValueOnce(firstError)
+      .mockRejectedValueOnce(secondError)
+      .mockResolvedValueOnce(expected);
+
+    const result = await aiService.generateEvaluation({
+      question,
+      candidateResponse: "test",
+    });
+
+    expect(anthropicProvider.generateEvaluation).toHaveBeenCalledTimes(3);
+    expect(result).toEqual(expected);
+  });
+
+  it("returns a safe error after the initial attempt and two retries fail", async () => {
+    const providerError = new Error("Anthropic service unavailable");
+    providerError.statusCode = 503;
+
+    anthropicProvider.generateEvaluation.mockRejectedValue(providerError);
 
     await expect(
       aiService.generateEvaluation({
@@ -116,7 +217,30 @@ describe("aiService.generateEvaluation", () => {
         candidateResponse: "test",
       })
     ).rejects.toThrow(
-      "Anthropic response did not match the expected evaluation shape."
+      "AI evaluation is currently unavailable. Please try again."
     );
+
+    expect(anthropicProvider.generateEvaluation).toHaveBeenCalledTimes(3);
+  });
+
+  it("does not retry non-retryable configuration errors", async () => {
+    const configurationError = new Error(
+      "Anthropic API key is missing."
+    );
+
+    configurationError.statusCode = 500;
+
+    anthropicProvider.generateEvaluation.mockRejectedValue(
+      configurationError
+    );
+
+    await expect(
+      aiService.generateEvaluation({
+        question,
+        candidateResponse: "test",
+      })
+    ).rejects.toThrow("Anthropic API key is missing.");
+
+    expect(anthropicProvider.generateEvaluation).toHaveBeenCalledTimes(1);
   });
 });
