@@ -89,11 +89,13 @@ function AppRoutes({
       <Route
         path={PAGES.INTERVIEW_SETUP}
         element={
-          <InterviewSetupPage
-            {...commonProps}
-            selectedMode={selectedMode}
-            onStartInterview={onStartInterview}
-          />
+          <ProtectedRoute>
+            <InterviewSetupPage
+              {...commonProps}
+              selectedMode={selectedMode}
+              onStartInterview={onStartInterview}
+            />
+          </ProtectedRoute>
         }
       />
 
@@ -101,12 +103,14 @@ function AppRoutes({
       <Route
         path={PAGES.INTERVIEW}
         element={
-          <InterviewSessionPage
-            {...commonProps}
-            selectedMode={selectedMode}
-            setupData={setupData}
-            onEndInterview={onEndInterview}
-          />
+          <ProtectedRoute>
+            <InterviewSessionPage
+              {...commonProps}
+              selectedMode={selectedMode}
+              setupData={setupData}
+              onEndInterview={onEndInterview}
+            />
+          </ProtectedRoute>
         }
       />
 
@@ -114,39 +118,55 @@ function AppRoutes({
       <Route
         path={PAGES.SESSION_RESULTS}
         element={
-          <SessionResultsPage
-            {...commonProps}
-            sessionResult={sessionResult}
-          />
+          <ProtectedRoute>
+            <SessionResultsPage
+              {...commonProps}
+              sessionResult={sessionResult}
+            />
+          </ProtectedRoute>
         }
       />
 
       {/* History */}
       <Route
         path={PAGES.HISTORY}
-        element={<HistoryPage {...commonProps} />}
+        element={
+          <ProtectedRoute>
+            <HistoryPage {...commonProps} />
+          </ProtectedRoute>
+        }
       />
 
       {/* Leaderboard */}
       <Route
         path={PAGES.LEADERBOARD}
-        element={<LeaderboardPage {...commonProps} />}
+        element={
+          <ProtectedRoute>
+            <LeaderboardPage {...commonProps} />
+          </ProtectedRoute>
+        }
       />
 
       {/* Analytics */}
       <Route
         path={PAGES.ANALYTICS}
-        element={<AnalyticsPage {...commonProps} />}
+        element={
+          <ProtectedRoute>
+            <AnalyticsPage {...commonProps} />
+          </ProtectedRoute>
+        }
       />
 
       {/* Settings */}
       <Route
         path={PAGES.SETTINGS}
         element={
-          <SettingsPage
-            {...commonProps}
-            onAccountDeleted={onAccountDeleted}
-          />
+          <ProtectedRoute>
+            <SettingsPage
+              {...commonProps}
+              onAccountDeleted={onAccountDeleted}
+            />
+          </ProtectedRoute>
         }
       />
 
@@ -154,9 +174,13 @@ function AppRoutes({
       <Route
         path={PAGES.CHANGE_PASSWORD}
         element={
-          <ChangePasswordPage
-            onBackToSettings={() => onNavigate(PAGES.SETTINGS)}
-          />
+          <ProtectedRoute>
+            <ChangePasswordPage
+              onBackToSettings={() =>
+                onNavigate(PAGES.SETTINGS)
+              }
+            />
+          </ProtectedRoute>
         }
       />
 

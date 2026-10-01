@@ -114,5 +114,56 @@ describe("requireAuth middleware", () => {
     });
 
     expect(next).not.toHaveBeenCalled();
+    expect(verifyIdToken).toHaveBeenCalledWith(
+      "invalid-token"
+    );
+  });
+
+  it("rejects a malformed authorization header", async () => {
+    const req = {
+      get: jest.fn().mockReturnValue(
+        "Basic abc123"
+      ),
+    };
+
+    const res = createResponse();
+    const next = jest.fn();
+
+    await requireAuth(req, res, next);
+
+    expect(res.statusCode).toBe(401);
+
+    expect(res.payload).toEqual({
+      error: "Authentication is required.",
+      code: "auth-token-required",
+    });
+
+    expect(verifyIdToken).not.toHaveBeenCalled();
+    expect(next).not.toHaveBeenCalled();
+  });
+
+  it("defaults missing email and verification fields safely", async () => {
+    verifyIdToken.mockResolvedValue({
+      uid: "user-123",
+    });
+
+    const req = {
+      get: jest.fn().mockReturnValue(
+        "Bearer valid-token"
+      ),
+    };
+
+    const res = createResponse();
+    const next = jest.fn();
+
+    await requireAuth(req, res, next);
+
+    expect(req.user).toEqual({
+      uid: "user-123",
+      email: "",
+      emailVerified: false,
+    });
+
+    expect(next).toHaveBeenCalledTimes(1);
   });
 });

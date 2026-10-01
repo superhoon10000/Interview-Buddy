@@ -417,6 +417,111 @@ describe("users routes", () => {
         code: "username-already-exists",
       });
     });
+
+    //Security testing
+    it("uses the authenticated user's uid instead of a client supplied uid", async () => {
+      userRepository.updateProfile.mockResolvedValue({
+        uid: "user-123",
+        displayName: "New Name",
+      });
+
+      const req = {
+        user: {
+          uid: "user-123",
+        },
+        body: {
+          uid: "different-user",
+          displayName: "New Name",
+        },
+      };
+
+      const res = createResponse();
+      const next = jest.fn();
+
+      await handler(req, res, next);
+
+      expect(
+        userRepository.updateProfile
+      ).toHaveBeenCalledWith("user-123", {
+        displayName: "New Name",
+      });
+
+      expect(res.statusCode).toBe(200);
+      expect(next).not.toHaveBeenCalled();
+    });
+
+    //Tests that a client cannot sneak protected/arbitrary fields into persistence
+    it("filters unsupported profile fields before persistence", async () => {
+      userRepository.updateProfile.mockResolvedValue({
+        uid: "user-123",
+        displayName: "New Name",
+      });
+
+      const req = {
+        user: {
+          uid: "user-123",
+        },
+        body: {
+          displayName: "New Name",
+          email: "changed@example.com",
+          uid: "different-user",
+          createdAt: "fake-created-date",
+          updatedAt: "fake-updated-date",
+          role: "admin",
+        },
+      };
+
+      const res = createResponse();
+      const next = jest.fn();
+
+      await handler(req, res, next);
+
+      expect(
+        userRepository.updateProfile
+      ).toHaveBeenCalledWith("user-123", {
+        displayName: "New Name",
+      });
+
+      expect(
+        userRepository.updateProfile
+      ).not.toHaveBeenCalledWith(
+        "different-user",
+        expect.anything()
+      );
+
+      expect(res.statusCode).toBe(200);
+      expect(next).not.toHaveBeenCalled();
+    });
+
+    //Ensures that normalization exists
+    it("normalizes supported profile fields before persistence", async () => {
+      userRepository.updateProfile.mockResolvedValue({
+        uid: "user-123",
+        username: "newname",
+        displayName: "New Name",
+      });
+
+      const req = {
+        user: {
+          uid: "user-123",
+        },
+        body: {
+          username: "  newname  ",
+          displayName: "  New Name  ",
+        },
+      };
+
+      const res = createResponse();
+
+      await handler(req, res, jest.fn());
+
+      expect(
+        userRepository.updateProfile
+      ).toHaveBeenCalledWith("user-123", {
+        username: "newname",
+        displayName: "New Name",
+      });
+    });
   });
 
   describe("GET /api/users/settings", () => {
@@ -613,6 +718,67 @@ describe("users routes", () => {
       await handler(req, res, jest.fn());
 
       expect(res.statusCode).toBe(404);
+    });
+
+    it("uses the authenticated user's uid instead of a client supplied uid", async () => {
+      userRepository.updateSettings.mockResolvedValue({
+        theme: "dark",
+      });
+
+      const req = {
+        user: {
+          uid: "user-123",
+        },
+        body: {
+          uid: "different-user",
+          theme: "dark",
+        },
+      };
+
+      const res = createResponse();
+      const next = jest.fn();
+
+      await handler(req, res, next);
+
+      expect(
+        userRepository.updateSettings
+      ).toHaveBeenCalledWith("user-123", {
+        theme: "dark",
+      });
+
+      expect(res.statusCode).toBe(200);
+      expect(next).not.toHaveBeenCalled();
+    });
+
+    it("filters unsupported settings before persistence", async () => {
+      userRepository.updateSettings.mockResolvedValue({
+        theme: "dark",
+        notifications: true,
+      });
+
+      const req = {
+        user: {
+          uid: "user-123",
+        },
+        body: {
+          theme: "dark",
+          notifications: true,
+          uid: "different-user",
+          role: "admin",
+          language: "en",
+        },
+      };
+
+      const res = createResponse();
+
+      await handler(req, res, jest.fn());
+
+      expect(
+        userRepository.updateSettings
+      ).toHaveBeenCalledWith("user-123", {
+        theme: "dark",
+        notifications: true,
+      });
     });
   });
 });
