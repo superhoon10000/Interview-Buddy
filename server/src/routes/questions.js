@@ -1,5 +1,6 @@
 const express = require("express");
 const {
+  buildQuestionSetupOptions,
   parseSelectedTags,
   selectQuestions,
 } = require("../services/questionSelection");
@@ -36,6 +37,24 @@ function createQuestionRouter({ questionRepository }) {
   }
 
   const router = express.Router();
+
+  router.get("/options", async (req, res, next) => {
+    try {
+      const mode = String(req.query.mode || "").trim();
+      if (!ALLOWED_MODES.has(mode)) {
+        return res.status(400).json({
+          error:
+            "A valid mode is required: Quiz Style, Code Style, or Theoretical Style.",
+        });
+      }
+
+      const questions = await questionRepository.findByMode(mode);
+
+      return res.json(buildQuestionSetupOptions(questions));
+    } catch (error) {
+      return next(error);
+    }
+  });
 
   router.get("/", async (req, res, next) => {
     try {

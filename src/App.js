@@ -50,6 +50,7 @@ function App() {
   ] = useState({
     jobRole: "",
     experienceLevel: "",
+    tags: [],
     practiceGoals: "",
     questionCount: 10,
   });

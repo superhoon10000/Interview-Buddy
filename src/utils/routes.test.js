@@ -71,7 +71,7 @@ function createRouteProps() {
     setupData: {
       jobRole: "Software Engineer",
       experienceLevel: "Intermediate",
-      practiceGoals: "Technical interview practice",
+      tags: ["technical interview practice"],
     },
 
     sessionResult: {

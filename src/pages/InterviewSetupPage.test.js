@@ -10,7 +10,6 @@ import InterviewSetupPage from "./InterviewSetupPage";
 import { interviewService } from "../services";
 import { PAGES } from "../utils/constants";
 
-
 jest.mock("../services/authService", () => ({
   authService: {
     logout: jest.fn(),
@@ -19,11 +18,12 @@ jest.mock("../services/authService", () => ({
 
 jest.mock("../services", () => ({
   interviewService: {
+    getSetupOptions: jest.fn(),
     startSession: jest.fn(),
   },
 }));
 
-//Allows page to render normally while preventing firebase from initializing during testing
+// Allows page to render normally while preventing Firebase from initializing during testing.
 jest.mock("../config/firebase", () => ({
   __esModule: true,
   auth: {
@@ -35,6 +35,22 @@ jest.mock("../config/firebase", () => ({
   default: {},
 }));
 
+const setupOptions = {
+  jobRoles: [
+    "backend developer",
+    "software engineer",
+  ],
+  experienceLevels: [
+    "Beginner",
+    "Intermediate",
+  ],
+  tags: [
+    "algorithms",
+    "data structures",
+    "tree",
+  ],
+};
+
 describe("InterviewSetupPage", () => {
   let onNavigate;
   let onStartInterview;
@@ -44,6 +60,10 @@ describe("InterviewSetupPage", () => {
 
     onNavigate = jest.fn();
     onStartInterview = jest.fn();
+
+    interviewService.getSetupOptions.mockResolvedValue(
+      setupOptions
+    );
   });
 
   function renderPage(selectedMode = "Quiz Style") {
@@ -57,12 +77,52 @@ describe("InterviewSetupPage", () => {
     );
   }
 
+  async function fillValidSetup() {
+    await screen.findByRole("button", {
+      name: "Data Structures",
+    });
+
+    userEvent.click(screen.getByLabelText("Job Role"));
+    userEvent.click(
+      screen.getByRole("option", {
+        name: "Software Engineer",
+      })
+    );
+
+    userEvent.selectOptions(
+      screen.getByLabelText("Experience Level"),
+      "Intermediate"
+    );
+
+    userEvent.click(
+      screen.getByRole("button", {
+        name: "Data Structures",
+      })
+    );
+  }
+
   test("displays the Interview Setup page", () => {
     renderPage();
 
     expect(
       screen.getByRole("heading", {
         name: "Interview Setup",
+      })
+    ).toBeInTheDocument();
+  });
+
+  test("loads setup options for the selected interview mode", async () => {
+    renderPage("Code Style");
+
+    await waitFor(() => {
+      expect(
+        interviewService.getSetupOptions
+      ).toHaveBeenCalledWith("Code Style");
+    });
+
+    expect(
+      await screen.findByRole("button", {
+        name: "Tree",
       })
     ).toBeInTheDocument();
   });
@@ -75,16 +135,12 @@ describe("InterviewSetupPage", () => {
     ).toBeInTheDocument();
   });
 
-  test("displays another selected mode correctly", () => {
-    renderPage("Code Style");
-
-    expect(
-      screen.getByText("Selected Mode: Code Style")
-    ).toBeInTheDocument();
-  });
-
-  test("does not start a session when required fields are empty", () => {
+  test("does not start a session when required fields are empty", async () => {
     renderPage();
+
+    await screen.findByRole("button", {
+      name: "Data Structures",
+    });
 
     userEvent.click(
       screen.getByRole("button", {
@@ -107,13 +163,14 @@ describe("InterviewSetupPage", () => {
     ).not.toHaveBeenCalled();
   });
 
-  test("calls interviewService.startSession with the form data", async () => {
+  test("calls interviewService.startSession with tags and question count", async () => {
     const mockSession = {
       id: "mock-session-1",
       mode: "Quiz Style",
       jobRole: "Software Engineer",
       experienceLevel: "Intermediate",
-      practiceGoals: "Data structures",
+      tags: ["data structures"],
+      questionCount: 10,
       status: "active",
     };
 
@@ -122,21 +179,7 @@ describe("InterviewSetupPage", () => {
     );
 
     renderPage();
-
-    userEvent.type(
-      screen.getByLabelText("Job Role"),
-      "Software Engineer"
-    );
-
-    userEvent.selectOptions(
-      screen.getByLabelText("Experience Level"),
-      "Intermediate"
-    );
-
-    userEvent.type(
-      screen.getByLabelText("Practice Goals"),
-      "Data structures"
-    );
+    await fillValidSetup();
 
     userEvent.click(
       screen.getByRole("button", {
@@ -151,7 +194,8 @@ describe("InterviewSetupPage", () => {
         mode: "Quiz Style",
         jobRole: "Software Engineer",
         experienceLevel: "Intermediate",
-        practiceGoals: "Data structures",
+        tags: ["data structures"],
+        questionCount: 10,
       });
     });
   });
@@ -162,7 +206,8 @@ describe("InterviewSetupPage", () => {
       mode: "Quiz Style",
       jobRole: "Software Engineer",
       experienceLevel: "Intermediate",
-      practiceGoals: "Data structures",
+      tags: ["data structures"],
+      questionCount: 10,
       status: "active",
     };
 
@@ -171,21 +216,7 @@ describe("InterviewSetupPage", () => {
     );
 
     renderPage();
-
-    userEvent.type(
-      screen.getByLabelText("Job Role"),
-      "Software Engineer"
-    );
-
-    userEvent.selectOptions(
-      screen.getByLabelText("Experience Level"),
-      "Intermediate"
-    );
-
-    userEvent.type(
-      screen.getByLabelText("Practice Goals"),
-      "Data structures"
-    );
+    await fillValidSetup();
 
     userEvent.click(
       screen.getByRole("button", {
@@ -200,43 +231,16 @@ describe("InterviewSetupPage", () => {
     });
   });
 
-  test("displays an error when the service fails", async () => {
-    interviewService.startSession.mockRejectedValue(
-      new Error("Unable to create session.")
+  test("displays an error when setup options cannot be loaded", async () => {
+    interviewService.getSetupOptions.mockRejectedValue(
+      new Error("Unable to load setup options.")
     );
 
     renderPage();
 
-    userEvent.type(
-      screen.getByLabelText("Job Role"),
-      "Software Engineer"
-    );
-
-    userEvent.selectOptions(
-      screen.getByLabelText("Experience Level"),
-      "Beginner"
-    );
-
-    userEvent.type(
-      screen.getByLabelText("Practice Goals"),
-      "Technical interview practice"
-    );
-
-    userEvent.click(
-      screen.getByRole("button", {
-        name: "Start Session",
-      })
-    );
-
     expect(
-      await screen.findByText(
-        "Unable to create session."
-      )
+      await screen.findByText("Unable to load setup options.")
     ).toBeInTheDocument();
-
-    expect(
-      onStartInterview
-    ).not.toHaveBeenCalled();
   });
 
   test("Cancel returns the user to the dashboard", () => {

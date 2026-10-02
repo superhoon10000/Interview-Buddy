@@ -28,7 +28,7 @@ describe("InterviewSessionPage AI evaluation", () => {
     id: "mock-session-1",
     jobRole: "Software Engineer",
     experienceLevel: "Intermediate",
-    practiceGoals: "Algorithms",
+    tags: ["algorithms"],
   };
 
   beforeEach(() => {
@@ -76,6 +76,14 @@ describe("InterviewSessionPage AI evaluation", () => {
     expect(
       await screen.findByText("Write a function that reverses an array.")
     ).toBeInTheDocument();
+
+    expect(interviewService.getQuestions).toHaveBeenCalledWith({
+      mode: "Code Style",
+      jobRole: "Software Engineer",
+      experienceLevel: "Intermediate",
+      tags: ["algorithms"],
+      limit: 10,
+    });
 
     userEvent.type(
       screen.getByPlaceholderText("Type your answer here..."),

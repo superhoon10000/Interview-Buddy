@@ -28,6 +28,19 @@ function validateMode(mode) {
   }
 }
 
+function normalizeTags(value) {
+  const values = Array.isArray(value) ? value : [value];
+
+  return [
+    ...new Set(
+      values
+        .flatMap((entry) => String(entry || "").split(","))
+        .map((tag) => tag.trim())
+        .filter(Boolean)
+    ),
+  ];
+}
+
 async function readJsonResponse(response) {
   let payload = null;
 
@@ -62,6 +75,8 @@ export const interviewService = {
       mode,
       jobRole,
       experienceLevel,
+      tags,
+      // Kept as a compatibility fallback for older callers/tests.
       practiceGoals,
       codingLanguage,
       questionCount = 10,
@@ -69,13 +84,18 @@ export const interviewService = {
 
     validateMode(mode);
 
+    const selectedTags = normalizeTags(tags);
+    const normalizedTags = selectedTags.length > 0
+      ? selectedTags
+      : normalizeTags(practiceGoals);
+
     if (
       !jobRole ||
       !experienceLevel ||
-      !practiceGoals
+      normalizedTags.length === 0
     ) {
       throw new Error(
-        "Job role, experience level, and practice goals are required."
+        "Job role, experience level, and at least one tag are required."
       );
     }
 
@@ -92,18 +112,47 @@ export const interviewService = {
       );
     }
 
-    // Temporary mock session.
-    // Backend persistence can replace this later.
+    // Session persistence can replace this mock object later. The important
+    // integration contract is that selected tags stay structured as an array.
     return {
       id: `mock-session-${Date.now()}`,
       mode,
       jobRole,
       experienceLevel,
-      practiceGoals,
+      tags: normalizedTags,
+      // Preserve the old field while other prototype code is still being
+      // migrated. New question retrieval uses tags.
+      practiceGoals: normalizedTags.join(", "),
       codingLanguage: codingLanguage || null,
       questionCount: normalizedQuestionCount,
       status: "active",
       startedAt: new Date().toISOString(),
+    };
+  },
+
+  /**
+   * Retrieve the available setup values from the backend/Firestore question
+   * metadata for the currently selected interview mode.
+   */
+  async getSetupOptions(mode) {
+    validateMode(mode);
+
+    const params = new URLSearchParams({ mode });
+    const response = await fetch(
+      `${API_BASE_URL}/questions/options?${params.toString()}`
+    );
+    const payload = await readJsonResponse(response);
+
+    return {
+      jobRoles: Array.isArray(payload?.jobRoles)
+        ? payload.jobRoles
+        : [],
+      experienceLevels: Array.isArray(payload?.experienceLevels)
+        ? payload.experienceLevels
+        : [],
+      tags: Array.isArray(payload?.tags)
+        ? payload.tags
+        : [],
     };
   },
 
@@ -115,17 +164,33 @@ export const interviewService = {
     mode,
     jobRole = "",
     experienceLevel = "",
+    tags,
+    // Compatibility fallback for sessions created before the tag contract.
     practiceGoals = "",
     limit = 10,
   } = {}) {
     validateMode(mode);
 
+    const selectedTags = normalizeTags(tags);
+    const normalizedTags = selectedTags.length > 0
+      ? selectedTags
+      : normalizeTags(practiceGoals);
+
+    if (!jobRole || !experienceLevel || normalizedTags.length === 0) {
+      throw new Error(
+        "Job role, experience level, and at least one tag are required."
+      );
+    }
+
     const params = new URLSearchParams({
       mode,
       jobRole,
       experienceLevel,
-      practiceGoals,
       limit: String(limit),
+    });
+
+    normalizedTags.forEach((tag) => {
+      params.append("tags", tag);
     });
 
     const response = await fetch(
