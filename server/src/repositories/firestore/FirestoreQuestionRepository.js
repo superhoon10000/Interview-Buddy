@@ -22,7 +22,6 @@ class FirestoreQuestionRepository extends QuestionRepository {
     const snapshot = await this.db
       .collection("questions")
       .where("mode", "==", mode)
-      .limit(100)
       .get();
 
     return snapshot.docs.map((document) => ({
