@@ -1,55 +1,50 @@
-.searchableDropdown {
+/* Interview Setup controls. Kept separate so the eventual database-backed
+   option source can change without coupling those changes to global styles. */
+
+.jobRoleCombobox {
   position: relative;
   width: 100%;
 }
 
-.searchableDropdown .textInput {
+.jobRoleCombobox .textInput {
   width: 100%;
 }
 
-.dropdownMenu {
+.jobRoleDropdown {
   position: absolute;
   top: calc(100% + 6px);
   left: 0;
   right: 0;
-  z-index: 20;
-
-  max-height: 220px;
+  z-index: 30;
+  max-height: 230px;
   overflow-y: auto;
-
   background: var(--bg-panel);
   border: 2px solid var(--border-input);
   border-radius: 12px;
-
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+  box-shadow: var(--panel-shadow);
 }
 
-.dropdownOption {
+.jobRoleOption {
   display: block;
   width: 100%;
   padding: 12px 14px;
-
-  border: none;
-  border-bottom: 1px solid var(--border-panel);
   background: transparent;
-
   color: var(--text-primary);
   text-align: left;
-  font: inherit;
-
-  cursor: pointer;
+  border-bottom: 1px solid var(--border-panel);
 }
 
-.dropdownOption:last-child {
+.jobRoleOption:last-child {
   border-bottom: none;
 }
 
-.dropdownOption:hover,
-.dropdownOption:focus {
+.jobRoleOption:hover,
+.jobRoleOption:focus-visible {
   background: var(--bg-chip);
+  outline: none;
 }
 
-.dropdownEmpty {
+.jobRoleEmpty {
   padding: 12px 14px;
   color: var(--text-secondary);
   font-weight: 400;
@@ -57,7 +52,107 @@
 
 .fieldHint {
   color: var(--text-secondary);
-  font-size: 0.85rem;
+  font-size: 0.88rem;
   font-weight: 400;
-  line-height: 1.4;
+  line-height: 1.45;
+}
+
+.practiceGoalFieldset {
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  color: var(--text-primary);
+}
+
+.practiceGoalFieldset legend {
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.practiceGoalFieldset > .fieldHint {
+  display: block;
+  margin-bottom: 10px;
+}
+
+.practiceGoalSelector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  max-height: 245px;
+  overflow-y: auto;
+  padding: 14px;
+  background: var(--bg-muted);
+  border: 2px solid var(--border-input);
+  border-radius: 14px;
+}
+
+.practiceGoalPill {
+  padding: 9px 13px;
+  border: 2px solid var(--border-input);
+  border-radius: 999px;
+  background: var(--bg-panel);
+  color: var(--text-primary);
+  font-weight: 600;
+  line-height: 1.1;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    transform 0.15s ease;
+}
+
+.practiceGoalPill:hover {
+  background: var(--bg-chip);
+  transform: translateY(-1px);
+}
+
+.practiceGoalPill:focus-visible {
+  outline: 3px solid var(--border-input);
+  outline-offset: 2px;
+}
+
+.practiceGoalPill.selected {
+  background: var(--primary-button-bg);
+  border-color: var(--primary-button-bg);
+  color: white;
+}
+
+.selectionSummary {
+  margin-top: 9px;
+  color: var(--text-secondary);
+  font-size: 0.88rem;
+}
+
+.questionCountField {
+  max-width: 340px;
+}
+
+.questionCountControl {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.questionCountInput {
+  width: 105px;
+}
+
+.questionCountLimit {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  font-weight: 400;
+}
+
+.setupActionRow {
+  margin-top: 4px;
+}
+
+@media (max-width: 600px) {
+  .practiceGoalSelector {
+    max-height: 300px;
+  }
+
+  .questionCountControl {
+    align-items: flex-start;
+    flex-direction: column;
+  }
 }
