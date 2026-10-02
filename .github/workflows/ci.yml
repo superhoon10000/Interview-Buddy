@@ -48,6 +48,10 @@ jobs:
       - name: Install frontend dependencies
         run: npm ci
 
+      # Run lint on frontend code
+      - name: Run frontend lint
+        run: npm run lint
+
       - name: Run login tests
         run: npm test -- --watchAll=false --runTestsByPath src/services/authService.test.js
       
@@ -64,6 +68,11 @@ jobs:
       - name: Install server dependencies
         working-directory: ./server
         run: npm ci
+
+      # Run lint on backend code
+      - name: Run server lint
+        working-directory: ./server
+        run: npm run lint
 
       - name: Run server tests
         working-directory: ./server
