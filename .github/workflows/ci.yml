@@ -48,6 +48,9 @@ jobs:
       - name: Install frontend dependencies
         run: npm ci
 
+      - name: run login page test
+        run:  npm test -- --watchAll=false --runTestsByPath src/pages/LoginPage.test.js
+
       - name: Run login tests
         run: npm test -- --watchAll=false --runTestsByPath src/services/authService.test.js
       

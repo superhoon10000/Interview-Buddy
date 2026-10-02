@@ -16,6 +16,11 @@ function LoginPage({ onLogin, onGoToRegister, loginMessage }) {
       setError("Please enter both email and password.")
       return;
     }
+
+    if (!email.includes("@")) {
+       setError("Please enter a valid email");
+      return;
+    }
     setLoading(true);
 
     try {
