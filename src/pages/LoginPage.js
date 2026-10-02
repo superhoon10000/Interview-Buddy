@@ -6,8 +6,18 @@ import { PAGES } from "../utils/constants";
 function LoginPage({ onLogin, onGoToRegister, loginMessage }) {
   const [email, setEmail] = useState("");
   const [password,setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
+    setError("");
+
+    if(!email.trim() || !password) {
+      setError("Please enter both email and password.")
+      return;
+    }
+    setLoading(true);
+
     try {
       const result = await authService.login({
         email,
@@ -21,10 +31,16 @@ function LoginPage({ onLogin, onGoToRegister, loginMessage }) {
 
     } catch (error) {
       console.error("Login failed:", error);
+      setError(error.message || "Login Failed. Please try again.")
+    }finally{
+      setLoading(false);
     }
   };
 
   const handleGoogleLogin = async () => {
+    setError("");
+    setLoading(true);
+
     try {
       const result = await authService.loginWithGoogle();
       if(result.authenticated) {
@@ -33,6 +49,9 @@ function LoginPage({ onLogin, onGoToRegister, loginMessage }) {
       }
     } catch (error){
       console.error("Google login failed:", error);
+      setError(error.message || "Google login failed. Please try again.");
+    }finally{
+      setLoading(false);
     }
   };
 
@@ -95,9 +114,19 @@ function LoginPage({ onLogin, onGoToRegister, loginMessage }) {
                    />
           </div>
 
-          <button className="primaryButton" onClick={handleLogin}>
-            Login to Workspace &rarr;
-          </button>
+          {error && (
+            <p role="alert" style={{ color: "red" }}>
+              {error}
+              </p>
+          )}
+
+          <button
+           className="primaryButton"
+           type="button"
+           onClick={handleLogin}
+           disabled={loading}>
+           {loading ? "Logging in...": <>Login to Workspace &rarr;</>}
+           </button>
 
           <div className="divider">
             <span className="dividerText">OR</span>
@@ -107,7 +136,9 @@ function LoginPage({ onLogin, onGoToRegister, loginMessage }) {
             <button className="socialButton" 
             type="button"
             onClick={handleGoogleLogin}
+            disabled={loading}
             >
+
             <span style={{ color: 'gold' }}>&#9679;</span> Google
             </button>
           </div>
