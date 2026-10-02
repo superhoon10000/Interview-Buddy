@@ -51,6 +51,8 @@ jobs:
       # Run lint on frontend code
       - name: Run frontend lint
         run: npm run lint
+      - name: run login page test
+        run:  npm test -- --watchAll=false --runTestsByPath src/pages/LoginPage.test.js
 
       - name: Run login tests
         run: npm test -- --watchAll=false --runTestsByPath src/services/authService.test.js

@@ -14,13 +14,17 @@ export const INTERVIEW_MODES = Object.freeze({
 });
 
 const VALID_MODES = Object.values(INTERVIEW_MODES);
+
 const API_BASE_URL = (
-  process.env.REACT_APP_API_BASE_URL || "http://localhost:5001/api"
+  process.env.REACT_APP_API_BASE_URL ||
+  "http://localhost:5001/api"
 ).replace(/\/$/, "");
 
 function validateMode(mode) {
   if (!VALID_MODES.includes(mode)) {
-    throw new Error(`Invalid interview mode: ${mode || "none"}`);
+    throw new Error(
+      `Invalid interview mode: ${mode || "none"}`
+    );
   }
 }
 
@@ -30,7 +34,8 @@ async function readJsonResponse(response) {
   try {
     payload = await response.json();
   } catch (error) {
-    // Leave payload as null so the caller still receives a useful HTTP error.
+    // Leave payload as null so the caller still
+    // receives a useful HTTP error.
   }
 
   if (!response.ok) {
@@ -38,6 +43,7 @@ async function readJsonResponse(response) {
       payload?.error ||
       payload?.message ||
       `Interview service request failed (${response.status}).`;
+
     throw new Error(message);
   }
 
@@ -47,7 +53,9 @@ async function readJsonResponse(response) {
 export const interviewService = {
   async startSession(configuration) {
     if (!configuration) {
-      throw new Error("Interview configuration is required.");
+      throw new Error(
+        "Interview configuration is required."
+      );
     }
 
     const {
@@ -56,17 +64,36 @@ export const interviewService = {
       experienceLevel,
       practiceGoals,
       codingLanguage,
+      questionCount = 10,
     } = configuration;
 
     validateMode(mode);
 
-    if (!jobRole || !experienceLevel || !practiceGoals) {
+    if (
+      !jobRole ||
+      !experienceLevel ||
+      !practiceGoals
+    ) {
       throw new Error(
         "Job role, experience level, and practice goals are required."
       );
     }
 
-    // Sprint 1 mock session. The backend will create/persist this later.
+    const normalizedQuestionCount =
+      Number(questionCount);
+
+    if (
+      !Number.isInteger(normalizedQuestionCount) ||
+      normalizedQuestionCount < 1 ||
+      normalizedQuestionCount > 20
+    ) {
+      throw new Error(
+        "Question count must be an integer between 1 and 20."
+      );
+    }
+
+    // Temporary mock session.
+    // Backend persistence can replace this later.
     return {
       id: `mock-session-${Date.now()}`,
       mode,
@@ -74,14 +101,15 @@ export const interviewService = {
       experienceLevel,
       practiceGoals,
       codingLanguage: codingLanguage || null,
+      questionCount: normalizedQuestionCount,
       status: "active",
       startedAt: new Date().toISOString(),
     };
   },
 
   /**
-   * Retrieve a set of interview questions through the backend Application
-   * Layer. The browser never connects to Firestore directly.
+   * Retrieve interview questions through the backend.
+   * The browser does not connect directly to Firestore.
    */
   async getQuestions({
     mode,
@@ -103,33 +131,43 @@ export const interviewService = {
     const response = await fetch(
       `${API_BASE_URL}/questions?${params.toString()}`
     );
-    const payload = await readJsonResponse(response);
 
-    return Array.isArray(payload?.questions) ? payload.questions : [];
+    const payload =
+      await readJsonResponse(response);
+
+    return Array.isArray(payload?.questions)
+      ? payload.questions
+      : [];
   },
 
   /**
-   * Validate a Quiz Style answer on the server. Correct answers stay in
-   * Firestore/the backend and are not included in the question payload sent to
-   * React.
+   * Validate a Quiz Style answer on the server.
    */
   async checkQuizAnswer(questionId, answer) {
     if (!questionId) {
-      throw new Error("Question ID is required.");
+      throw new Error(
+        "Question ID is required."
+      );
     }
 
     if (!answer || !String(answer).trim()) {
-      throw new Error("An answer is required.");
+      throw new Error(
+        "An answer is required."
+      );
     }
 
     const response = await fetch(
-      `${API_BASE_URL}/questions/${encodeURIComponent(questionId)}/check`,
+      `${API_BASE_URL}/questions/${encodeURIComponent(
+        questionId
+      )}/check`,
       {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ answer }),
+        body: JSON.stringify({
+          answer,
+        }),
       }
     );
 
@@ -137,21 +175,28 @@ export const interviewService = {
   },
 
   /**
-   * Retained for the service contract established by the updated prototype.
-   * Session-specific retrieval can replace this mock once session persistence
-   * moves into the backend Application Layer.
+   * Retained for the service contract established by
+   * the prototype.
    */
   async getQuestion(sessionId) {
     if (!sessionId) {
-      throw new Error("Session ID is required.");
+      throw new Error(
+        "Session ID is required."
+      );
     }
 
     return null;
   },
 
-  async submitAnswer(sessionId, questionId, answer) {
+  async submitAnswer(
+    sessionId,
+    questionId,
+    answer
+  ) {
     if (!sessionId || !questionId) {
-      throw new Error("Session ID and question ID are required.");
+      throw new Error(
+        "Session ID and question ID are required."
+      );
     }
 
     if (
@@ -159,10 +204,11 @@ export const interviewService = {
       answer === null ||
       String(answer).trim() === ""
     ) {
-      throw new Error("An answer is required.");
+      throw new Error(
+        "An answer is required."
+      );
     }
 
-    // Future: forward to the backend, which coordinates AI evaluation/storage.
     return {
       success: true,
       sessionId,
@@ -172,10 +218,11 @@ export const interviewService = {
 
   async endSession(sessionId) {
     if (!sessionId) {
-      throw new Error("Session ID is required.");
+      throw new Error(
+        "Session ID is required."
+      );
     }
 
-    // Future: backend persists results and performs scoring/ranking updates.
     return {
       sessionId,
       status: "completed",
