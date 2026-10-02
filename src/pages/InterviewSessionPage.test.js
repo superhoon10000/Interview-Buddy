@@ -59,7 +59,41 @@ describe("InterviewSessionPage AI evaluation", () => {
       ],
     });
   });
+  test("uses the question count selected on the setup page when loading questions", async () => {
+    const setupWithQuestionCount = {
+      id: "mock-session-1",
+      jobRole: "Software Engineer",
+      experienceLevel: "Intermediate",
+      tags: ["algorithms"],
+      questionCount: 20,
+    };
 
+    render(
+      <InterviewSessionPage
+        currentPage={PAGES.INTERVIEW}
+        onNavigate={jest.fn()}
+        selectedMode="Code Style"
+        setupData={setupWithQuestionCount}
+        onEndInterview={jest.fn()}
+      />
+    );
+
+    expect(
+      await screen.findByText(
+        "Write a function that reverses an array."
+      )
+    ).toBeInTheDocument();
+
+    expect(
+      interviewService.getQuestions
+    ).toHaveBeenCalledWith({
+      mode: "Code Style",
+      jobRole: "Software Engineer",
+      experienceLevel: "Intermediate",
+      tags: ["algorithms"],
+      limit: 20,
+    });
+  });
   test("submits Code Style answers through aiService and stores structured results", async () => {
     const onEndInterview = jest.fn();
 

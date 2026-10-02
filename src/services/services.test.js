@@ -8,6 +8,72 @@ import { leaderboardService } from "./leaderboardService";
 import { aiService } from "./aiService";
 
 describe("interviewService", () => {
+  test("startSession preserves the selected question count", async () => {
+    const result =
+      await interviewService.startSession({
+        mode: INTERVIEW_MODES.QUIZ,
+        jobRole: "Software Engineer",
+        experienceLevel: "Intermediate",
+        tags: [
+          "algorithms",
+          "data structures",
+        ],
+        questionCount: 20,
+      });
+
+    expect(
+      result.questionCount
+    ).toBe(20);
+
+    expect(result.tags).toEqual([
+      "algorithms",
+      "data structures",
+    ]);
+
+    expect(
+      result.practiceGoals
+    ).toBe(
+      "algorithms, data structures"
+    );
+  });
+
+  test("startSession defaults to 10 questions when no count is provided", async () => {
+    const result =
+      await interviewService.startSession({
+        mode: INTERVIEW_MODES.QUIZ,
+        jobRole: "Software Engineer",
+        experienceLevel: "Intermediate",
+        tags: ["algorithms"],
+      });
+
+    expect(
+      result.questionCount
+    ).toBe(10);
+  });
+
+  test.each([
+    0,
+    21,
+    1.5,
+  ])(
+    "startSession rejects invalid question count %s",
+    async (questionCount) => {
+      await expect(
+        interviewService.startSession({
+          mode:
+            INTERVIEW_MODES.QUIZ,
+          jobRole:
+            "Software Engineer",
+          experienceLevel:
+            "Intermediate",
+          tags: ["algorithms"],
+          questionCount,
+        })
+      ).rejects.toThrow(
+        "Question count must be an integer between 1 and 20."
+      );
+    }
+  );
   test("startSession creates an active Quiz Style session", async () => {
     const result = await interviewService.startSession({
       mode: INTERVIEW_MODES.QUIZ,
