@@ -1,4 +1,5 @@
 const {
+  buildQuestionSetupOptions,
   parseSelectedTags,
   selectQuestions,
 } = require("./questionSelection");
@@ -10,6 +11,65 @@ describe("questionSelection", () => {
       "bfs",
       "queue",
     ]);
+  });
+
+  test("builds setup options with ordered experience levels and tags by frequency", () => {
+    const result = buildQuestionSetupOptions([
+      {
+        active: true,
+        jobRoles: ["software engineer", "backend developer"],
+        experienceLevels: ["Intermediate"],
+        tags: ["tree", "bfs"],
+      },
+      {
+        active: true,
+        jobRoles: ["Software Engineer"],
+        experienceLevels: ["Experienced", "Veteran"],
+        tags: ["tree", "BFS", "queue"],
+      },
+      {
+        active: true,
+        jobRoles: ["backend developer"],
+        experienceLevels: ["Beginner"],
+        tags: ["tree", "arrays"],
+      },
+      {
+        active: false,
+        jobRoles: ["frontend developer"],
+        experienceLevels: ["Beginner"],
+        tags: ["css", "tree"],
+      },
+    ]);
+
+    expect(result).toEqual({
+      jobRoles: ["backend developer", "software engineer"],
+      experienceLevels: [
+        "Beginner",
+        "Intermediate",
+        "Experienced",
+        "Veteran",
+      ],
+      tags: ["tree", "bfs", "arrays", "queue"],
+    });
+  });
+
+  test("counts a tag at most once per question when ordering by frequency", () => {
+    const result = buildQuestionSetupOptions([
+      {
+        active: true,
+        jobRoles: ["software engineer"],
+        experienceLevels: ["Intermediate"],
+        tags: ["tree", "TREE", "bfs"],
+      },
+      {
+        active: true,
+        jobRoles: ["software engineer"],
+        experienceLevels: ["Intermediate"],
+        tags: ["bfs"],
+      },
+    ]);
+
+    expect(result.tags).toEqual(["bfs", "tree"]);
   });
 
   test("requires role, experience level, and at least one matching tag", () => {
@@ -110,6 +170,42 @@ describe("questionSelection", () => {
     ]);
   });
 
+  test("uses priority as a tie-breaker when tag matches are equal", () => {
+    const questions = [
+      {
+        id: "low-priority",
+        active: true,
+        jobRoles: ["software engineer"],
+        experienceLevels: ["Intermediate"],
+        tags: ["tree"],
+        priority: 1,
+      },
+      {
+        id: "high-priority",
+        active: true,
+        jobRoles: ["software engineer"],
+        experienceLevels: ["Intermediate"],
+        tags: ["tree"],
+        priority: 10,
+      },
+    ];
+
+    const result = selectQuestions(
+      questions,
+      {
+        jobRole: "software engineer",
+        experienceLevel: "Intermediate",
+        tags: ["tree"],
+      },
+      2
+    );
+
+    expect(result.map((question) => question.id)).toEqual([
+      "high-priority",
+      "low-priority",
+    ]);
+  });
+
   test("applies the final question limit after tag ranking", () => {
     const questions = [
       {
@@ -141,5 +237,41 @@ describe("questionSelection", () => {
     );
 
     expect(result.map((question) => question.id)).toEqual(["two-tags"]);
+  });
+
+  test("returns no questions when required setup values are missing", () => {
+    const questions = [
+      {
+        id: "question-1",
+        active: true,
+        jobRoles: ["software engineer"],
+        experienceLevels: ["Intermediate"],
+        tags: ["tree"],
+      },
+    ];
+
+    expect(
+      selectQuestions(questions, {
+        jobRole: "",
+        experienceLevel: "Intermediate",
+        tags: ["tree"],
+      })
+    ).toEqual([]);
+
+    expect(
+      selectQuestions(questions, {
+        jobRole: "software engineer",
+        experienceLevel: "",
+        tags: ["tree"],
+      })
+    ).toEqual([]);
+
+    expect(
+      selectQuestions(questions, {
+        jobRole: "software engineer",
+        experienceLevel: "Intermediate",
+        tags: [],
+      })
+    ).toEqual([]);
   });
 });

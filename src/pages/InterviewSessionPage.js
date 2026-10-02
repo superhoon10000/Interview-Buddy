@@ -118,8 +118,10 @@ function InterviewSessionPage({
             jobRole: setupData.jobRole,
             experienceLevel:
               setupData.experienceLevel,
-            practiceGoals:
-              setupData.practiceGoals,
+            tags:
+              Array.isArray(setupData.tags) && setupData.tags.length > 0
+                ? setupData.tags
+                : setupData.practiceGoals,
 
             // Use the amount selected on
             // InterviewSetupPage.
@@ -148,6 +150,7 @@ function InterviewSessionPage({
       selectedMode,
       setupData.experienceLevel,
       setupData.jobRole,
+      setupData.tags,
       setupData.practiceGoals,
       setupData.questionCount,
     ]);
@@ -512,8 +515,9 @@ function InterviewSessionPage({
           <strong>
             Practice Goals:
           </strong>{" "}
-          {setupData.practiceGoals ||
-            "Not provided"}
+          {Array.isArray(setupData.tags) && setupData.tags.length > 0
+            ? setupData.tags.join(", ")
+            : setupData.practiceGoals || "Not provided"}
         </p>
 
         <p>

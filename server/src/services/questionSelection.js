@@ -1,3 +1,10 @@
+const EXPERIENCE_LEVEL_ORDER = {
+  beginner: 1,
+  intermediate: 2,
+  experienced: 3,
+  veteran: 4,
+};
+
 function normalize(value) {
   return String(value || "").trim().toLowerCase();
 }
@@ -8,6 +15,23 @@ function normalizeArray(values) {
   }
 
   return values.map(normalize).filter(Boolean);
+}
+
+function alphabeticalSort(a, b) {
+  return a.localeCompare(b, undefined, { sensitivity: "base" });
+}
+
+function experienceLevelSort(a, b) {
+  const aOrder =
+    EXPERIENCE_LEVEL_ORDER[normalize(a)] ?? Number.MAX_SAFE_INTEGER;
+  const bOrder =
+    EXPERIENCE_LEVEL_ORDER[normalize(b)] ?? Number.MAX_SAFE_INTEGER;
+
+  if (aOrder !== bOrder) {
+    return aOrder - bOrder;
+  }
+
+  return alphabeticalSort(a, b);
 }
 
 /**
@@ -48,6 +72,99 @@ function matchesRequiredSetup(question, setup) {
   const experienceLevels = new Set(normalizeArray(question.experienceLevels));
 
   return jobRoles.has(jobRole) && experienceLevels.has(experienceLevel);
+}
+
+function collectUniqueValues(
+  questions,
+  field,
+  sortFunction = alphabeticalSort
+) {
+  const seen = new Set();
+  const values = [];
+
+  questions.forEach((question) => {
+    const entries = Array.isArray(question[field]) ? question[field] : [];
+
+    entries.forEach((entry) => {
+      const value = String(entry || "").trim();
+      const key = normalize(value);
+
+      if (value && !seen.has(key)) {
+        seen.add(key);
+        values.push(value);
+      }
+    });
+  });
+
+  return values.sort(sortFunction);
+}
+
+/**
+ * Order tags by how many active questions contain them. A tag is counted at
+ * most once per question. Tags with the same frequency are sorted
+ * alphabetically so the order remains deterministic.
+ */
+function collectTagsByFrequency(questions) {
+  const tagCounts = new Map();
+  const displayValues = new Map();
+
+  questions.forEach((question) => {
+    const tags = Array.isArray(question.tags) ? question.tags : [];
+    const tagsInQuestion = new Set();
+
+    tags.forEach((entry) => {
+      const value = String(entry || "").trim();
+      const key = normalize(value);
+
+      if (!key) {
+        return;
+      }
+
+      if (!displayValues.has(key)) {
+        displayValues.set(key, value);
+      }
+
+      tagsInQuestion.add(key);
+    });
+
+    tagsInQuestion.forEach((key) => {
+      tagCounts.set(key, (tagCounts.get(key) || 0) + 1);
+    });
+  });
+
+  return [...tagCounts.keys()]
+    .sort((a, b) => {
+      const countDifference = tagCounts.get(b) - tagCounts.get(a);
+
+      if (countDifference !== 0) {
+        return countDifference;
+      }
+
+      return alphabeticalSort(displayValues.get(a), displayValues.get(b));
+    })
+    .map((key) => displayValues.get(key));
+}
+
+/**
+ * Build the setup-page options from active questions for a selected mode.
+ * The repository already limits the input to the requested mode, so this
+ * function only extracts the role, experience, and tag metadata available in
+ * those stored questions.
+ */
+function buildQuestionSetupOptions(questions) {
+  const activeQuestions = questions.filter(
+    (question) => question.active !== false
+  );
+
+  return {
+    jobRoles: collectUniqueValues(activeQuestions, "jobRoles"),
+    experienceLevels: collectUniqueValues(
+      activeQuestions,
+      "experienceLevels",
+      experienceLevelSort
+    ),
+    tags: collectTagsByFrequency(activeQuestions),
+  };
 }
 
 /**
@@ -99,6 +216,7 @@ function selectQuestions(questions, setup, limit = 10) {
 }
 
 module.exports = {
+  buildQuestionSetupOptions,
   parseSelectedTags,
   selectQuestions,
 };

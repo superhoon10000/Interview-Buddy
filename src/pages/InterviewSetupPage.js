@@ -1,11 +1,7 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import PageLayout from "../components/layout/PageLayout";
 import { PAGES } from "../utils/constants";
 import { interviewService } from "../services";
-import {
-  mockJobRoles,
-  mockPracticeGoalTags,
-} from "../data/mockInterviewSetup";
 
 const DEFAULT_QUESTION_COUNT = 10;
 const MAX_QUESTION_COUNT = 20;
@@ -28,15 +24,73 @@ function InterviewSetupPage({
   const [isJobRoleDropdownOpen, setIsJobRoleDropdownOpen] = useState(false);
 
   const [experienceLevel, setExperienceLevel] = useState("");
-
   const [selectedPracticeGoals, setSelectedPracticeGoals] = useState([]);
-
   const [questionCount, setQuestionCount] = useState(DEFAULT_QUESTION_COUNT);
+
+  const [setupOptions, setSetupOptions] = useState({
+    jobRoles: [],
+    experienceLevels: [],
+    tags: [],
+  });
+  const [isLoadingOptions, setIsLoadingOptions] = useState(true);
+  const [optionsError, setOptionsError] = useState("");
 
   const [errorMessage, setErrorMessage] = useState("");
   const [isStartingSession, setIsStartingSession] = useState(false);
 
-  const filteredJobRoles = mockJobRoles.filter((role) =>
+  useEffect(() => {
+    let isCurrent = true;
+
+    async function loadSetupOptions() {
+      if (!selectedMode) {
+        if (isCurrent) {
+          setSetupOptions({
+            jobRoles: [],
+            experienceLevels: [],
+            tags: [],
+          });
+          setOptionsError("Select an interview mode before configuring a session.");
+          setIsLoadingOptions(false);
+        }
+        return;
+      }
+
+      setIsLoadingOptions(true);
+      setOptionsError("");
+
+      try {
+        const options = await interviewService.getSetupOptions(selectedMode);
+
+        if (isCurrent) {
+          setSetupOptions(options);
+        }
+      } catch (error) {
+        if (isCurrent) {
+          setSetupOptions({
+            jobRoles: [],
+            experienceLevels: [],
+            tags: [],
+          });
+          setOptionsError(
+            error.message ||
+              "Unable to load interview setup options from Firebase."
+          );
+        }
+      } finally {
+        if (isCurrent) {
+          setIsLoadingOptions(false);
+        }
+      }
+    }
+
+    loadSetupOptions();
+
+    return () => {
+      isCurrent = false;
+    };
+  }, [selectedMode]);
+
+  const filteredJobRoles = setupOptions.jobRoles.filter((role) =>
     role.toLowerCase().includes(jobRoleQuery.trim().toLowerCase())
   );
 
@@ -130,11 +184,7 @@ function InterviewSetupPage({
         mode: selectedMode,
         jobRole,
         experienceLevel,
-
-        // Existing backend logic expects practiceGoals as text,
-        // so selected tags are joined before being passed along.
-        practiceGoals: selectedPracticeGoals.join(", "),
-
+        tags: selectedPracticeGoals,
         questionCount: parsedQuestionCount,
       });
 
@@ -170,6 +220,18 @@ function InterviewSetupPage({
           and how many questions you want in this session.
         </p>
 
+        {isLoadingOptions && (
+          <p className="fieldHint" role="status">
+            Loading available setup options from Firebase...
+          </p>
+        )}
+
+        {optionsError && (
+          <p className="formError" role="alert">
+            {optionsError}
+          </p>
+        )}
+
         <form
           className="setupForm"
           onSubmit={handleSubmit}
@@ -191,6 +253,7 @@ function InterviewSetupPage({
                 placeholder="Search available job roles"
                 value={jobRoleQuery}
                 autoComplete="off"
+                disabled={isLoadingOptions || Boolean(optionsError)}
                 onChange={handleJobRoleChange}
                 onFocus={() =>
                   setIsJobRoleDropdownOpen(true)
@@ -199,7 +262,7 @@ function InterviewSetupPage({
                 onKeyDown={handleJobRoleKeyDown}
               />
 
-              {isJobRoleDropdownOpen && (
+              {isJobRoleDropdownOpen && !isLoadingOptions && !optionsError && (
                 <div
                   id="jobRoleOptions"
                   className="jobRoleDropdown"
@@ -238,7 +301,7 @@ function InterviewSetupPage({
 
             <span className="fieldHint">
               Start typing to filter the list. Only a role
-              from the available options can be used.
+              from Firebase can be used.
             </span>
           </div>
 
@@ -248,6 +311,7 @@ function InterviewSetupPage({
             <select
               className="textInput"
               value={experienceLevel}
+              disabled={isLoadingOptions || Boolean(optionsError)}
               onChange={(event) => {
                 setExperienceLevel(event.target.value);
                 setErrorMessage("");
@@ -257,25 +321,18 @@ function InterviewSetupPage({
                 Select experience level
               </option>
 
-              <option value="Beginner">
-                Beginner
-              </option>
-
-              <option value="Intermediate">
-                Intermediate
-              </option>
-
-              <option value="Experienced">
-                Experienced
-              </option>
-
-              <option value="Veteran">
-                Veteran
-              </option>
+              {setupOptions.experienceLevels.map((level) => (
+                <option key={level} value={level}>
+                  {formatOptionLabel(level)}
+                </option>
+              ))}
             </select>
           </label>
 
-          <fieldset className="practiceGoalFieldset">
+          <fieldset
+            className="practiceGoalFieldset"
+            disabled={isLoadingOptions || Boolean(optionsError)}
+          >
             <legend>
               Practice Goals
             </legend>
@@ -286,7 +343,7 @@ function InterviewSetupPage({
             </p>
 
             <div className="practiceGoalSelector">
-              {mockPracticeGoalTags.map((tag) => {
+              {setupOptions.tags.map((tag) => {
                 const isSelected =
                   selectedPracticeGoals.includes(tag);
 
@@ -361,7 +418,11 @@ function InterviewSetupPage({
             <button
               type="submit"
               className="primaryButton"
-              disabled={isStartingSession}
+              disabled={
+                isStartingSession ||
+                isLoadingOptions ||
+                Boolean(optionsError)
+              }
             >
               {isStartingSession
                 ? "Starting Session..."
