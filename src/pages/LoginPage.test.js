@@ -60,3 +60,10 @@ test("displays error when email is invalid", () => {
     screen.getByText("Please enter a valid email")
   ).toBeInTheDocument();
 });
+
+
+test("Rejects malicioous looking email"), () => {
+  renderLoginPage();
+
+  
+}
