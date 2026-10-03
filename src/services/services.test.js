@@ -8,12 +8,78 @@ import { leaderboardService } from "./leaderboardService";
 import { aiService } from "./aiService";
 
 describe("interviewService", () => {
+  test("startSession preserves the selected question count", async () => {
+    const result =
+      await interviewService.startSession({
+        mode: INTERVIEW_MODES.QUIZ,
+        jobRole: "Software Engineer",
+        experienceLevel: "Intermediate",
+        tags: [
+          "algorithms",
+          "data structures",
+        ],
+        questionCount: 20,
+      });
+
+    expect(
+      result.questionCount
+    ).toBe(20);
+
+    expect(result.tags).toEqual([
+      "algorithms",
+      "data structures",
+    ]);
+
+    expect(
+      result.practiceGoals
+    ).toBe(
+      "algorithms, data structures"
+    );
+  });
+
+  test("startSession defaults to 10 questions when no count is provided", async () => {
+    const result =
+      await interviewService.startSession({
+        mode: INTERVIEW_MODES.QUIZ,
+        jobRole: "Software Engineer",
+        experienceLevel: "Intermediate",
+        tags: ["algorithms"],
+      });
+
+    expect(
+      result.questionCount
+    ).toBe(10);
+  });
+
+  test.each([
+    0,
+    21,
+    1.5,
+  ])(
+    "startSession rejects invalid question count %s",
+    async (questionCount) => {
+      await expect(
+        interviewService.startSession({
+          mode:
+            INTERVIEW_MODES.QUIZ,
+          jobRole:
+            "Software Engineer",
+          experienceLevel:
+            "Intermediate",
+          tags: ["algorithms"],
+          questionCount,
+        })
+      ).rejects.toThrow(
+        "Question count must be an integer between 1 and 20."
+      );
+    }
+  );
   test("startSession creates an active Quiz Style session", async () => {
     const result = await interviewService.startSession({
       mode: INTERVIEW_MODES.QUIZ,
       jobRole: "Software Engineer",
       experienceLevel: "Intermediate",
-      practiceGoals: "Data structures",
+      tags: ["data structures"],
     });
 
     expect(result).toEqual(
@@ -21,7 +87,7 @@ describe("interviewService", () => {
         mode: "Quiz Style",
         jobRole: "Software Engineer",
         experienceLevel: "Intermediate",
-        practiceGoals: "Data structures",
+        tags: ["data structures"],
         codingLanguage: null,
         status: "active",
       })
@@ -39,7 +105,7 @@ describe("interviewService", () => {
       mode: INTERVIEW_MODES.CODE,
       jobRole: "Backend Developer",
       experienceLevel: "Experienced",
-      practiceGoals: "Algorithms",
+      tags: ["algorithms"],
       codingLanguage: "Java",
     });
 
@@ -52,7 +118,7 @@ describe("interviewService", () => {
       mode: INTERVIEW_MODES.THEORETICAL,
       jobRole: "Software Engineer",
       experienceLevel: "Beginner",
-      practiceGoals: "Computer science concepts",
+      tags: ["computer science concepts"],
     });
 
     expect(result.mode).toBe("Theoretical Style");
@@ -65,7 +131,7 @@ describe("interviewService", () => {
         mode: "Invalid Mode",
         jobRole: "Developer",
         experienceLevel: "Beginner",
-        practiceGoals: "Practice",
+        tags: ["practice"],
       })
     ).rejects.toThrow("Invalid interview mode");
   });
@@ -76,11 +142,59 @@ describe("interviewService", () => {
         mode: INTERVIEW_MODES.QUIZ,
         jobRole: "",
         experienceLevel: "Beginner",
-        practiceGoals: "Practice",
+        tags: ["practice"],
       })
     ).rejects.toThrow(
-      "Job role, experience level, and practice goals are required."
+      "Job role, experience level, and at least one tag are required."
     );
+  });
+
+  test("getSetupOptions retrieves mode-specific metadata from the backend", async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        jobRoles: ["software engineer"],
+        experienceLevels: ["Intermediate"],
+        tags: ["tree", "bfs"],
+      }),
+    });
+
+    const result = await interviewService.getSetupOptions(
+      INTERVIEW_MODES.CODE
+    );
+
+    expect(global.fetch).toHaveBeenCalledWith(
+      "http://localhost:5001/api/questions/options?mode=Code+Style"
+    );
+    expect(result.tags).toEqual(["tree", "bfs"]);
+  });
+
+  test("getQuestions sends selected tags and the frontend limit to the backend", async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        questions: [{ id: "code-tree-1" }],
+      }),
+    });
+
+    const result = await interviewService.getQuestions({
+      mode: INTERVIEW_MODES.CODE,
+      jobRole: "Software Engineer",
+      experienceLevel: "Intermediate",
+      tags: ["tree", "bfs"],
+      limit: 10,
+    });
+
+    const requestUrl = global.fetch.mock.calls[0][0];
+    const url = new URL(requestUrl);
+
+    expect(url.pathname).toBe("/api/questions");
+    expect(url.searchParams.get("mode")).toBe("Code Style");
+    expect(url.searchParams.get("jobRole")).toBe("Software Engineer");
+    expect(url.searchParams.get("experienceLevel")).toBe("Intermediate");
+    expect(url.searchParams.getAll("tags")).toEqual(["tree", "bfs"]);
+    expect(url.searchParams.get("limit")).toBe("10");
+    expect(result).toEqual([{ id: "code-tree-1" }]);
   });
 
   test("getQuestion requires a session ID", async () => {

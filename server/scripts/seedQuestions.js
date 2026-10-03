@@ -24,6 +24,23 @@ function validateQuestion(question) {
     );
   }
 
+  if (!Array.isArray(question.tags) || question.tags.length === 0) {
+    throw new Error(`Question ${question.id} requires at least one tag.`);
+  }
+
+  if (
+    !Array.isArray(question.experienceLevels) ||
+    question.experienceLevels.length === 0
+  ) {
+    throw new Error(
+      `Question ${question.id} requires at least one experience level.`
+    );
+  }
+
+  if (!Array.isArray(question.jobRoles) || question.jobRoles.length === 0) {
+    throw new Error(`Question ${question.id} requires at least one job role.`);
+  }
+
   if (question.mode === "Quiz Style") {
     if (!Array.isArray(question.options) || question.options.length < 2) {
       throw new Error(

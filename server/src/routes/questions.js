@@ -1,4 +1,9 @@
 const express = require("express");
+const {
+  buildQuestionSetupOptions,
+  parseSelectedTags,
+  selectQuestions,
+} = require("../services/questionSelection");
 
 const ALLOWED_MODES = new Set([
   "Quiz Style",
@@ -8,51 +13,6 @@ const ALLOWED_MODES = new Set([
 
 function normalize(value) {
   return String(value || "").trim().toLowerCase();
-}
-
-function tokenize(value) {
-  return normalize(value)
-    .split(/[^a-z0-9+#.]+/i)
-    .map((token) => token.trim())
-    .filter((token) => token.length >= 2);
-}
-
-function relevanceScore(question, setup) {
-  let score = Number(question.priority || 0);
-
-  const experienceLevel = normalize(setup.experienceLevel);
-  const allowedExperienceLevels = (question.experienceLevels || []).map(normalize);
-  if (
-    experienceLevel &&
-    (allowedExperienceLevels.length === 0 ||
-      allowedExperienceLevels.includes(experienceLevel))
-  ) {
-    score += 4;
-  }
-
-  const jobRole = normalize(setup.jobRole);
-  const jobRoles = (question.jobRoles || []).map(normalize);
-  if (
-    jobRole &&
-    jobRoles.some((role) => jobRole.includes(role) || role.includes(jobRole))
-  ) {
-    score += 3;
-  }
-
-  const goalTokens = new Set(tokenize(setup.practiceGoals));
-  const questionTokens = new Set([
-    ...(question.tags || []).flatMap(tokenize),
-    ...tokenize(question.topic),
-    ...tokenize(question.prompt),
-  ]);
-
-  for (const token of goalTokens) {
-    if (questionTokens.has(token)) {
-      score += 1;
-    }
-  }
-
-  return score;
 }
 
 function toPublicQuestion(question) {
@@ -78,6 +38,24 @@ function createQuestionRouter({ questionRepository }) {
 
   const router = express.Router();
 
+  router.get("/options", async (req, res, next) => {
+    try {
+      const mode = String(req.query.mode || "").trim();
+      if (!ALLOWED_MODES.has(mode)) {
+        return res.status(400).json({
+          error:
+            "A valid mode is required: Quiz Style, Code Style, or Theoretical Style.",
+        });
+      }
+
+      const questions = await questionRepository.findByMode(mode);
+
+      return res.json(buildQuestionSetupOptions(questions));
+    } catch (error) {
+      return next(error);
+    }
+  });
+
   router.get("/", async (req, res, next) => {
     try {
       const mode = String(req.query.mode || "").trim();
@@ -88,32 +66,37 @@ function createQuestionRouter({ questionRepository }) {
         });
       }
 
+      const jobRole = String(req.query.jobRole || "").trim();
+      const experienceLevel = String(req.query.experienceLevel || "").trim();
+      const tags = parseSelectedTags(req.query.tags);
+
+      if (!jobRole || !experienceLevel || tags.length === 0) {
+        return res.status(400).json({
+          error:
+            "Job role, experience level, and at least one tag are required.",
+        });
+      }
+
       const requestedLimit = Number.parseInt(req.query.limit, 10);
       const limit = Number.isFinite(requestedLimit)
         ? Math.min(Math.max(requestedLimit, 1), 20)
         : 10;
 
-      // Database querying is delegated to the repository. Relevance ranking is
-      // application behavior, so it remains here and is database-agnostic.
+      // Firestore access stays behind the repository. The Application Layer
+      // applies the setup/tag matching rules to the stored question metadata.
       const questions = await questionRepository.findByMode(mode);
 
-      const setup = {
-        jobRole: req.query.jobRole,
-        experienceLevel: req.query.experienceLevel,
-        practiceGoals: req.query.practiceGoals,
-      };
+      const selectedQuestions = selectQuestions(
+        questions,
+        {
+          jobRole,
+          experienceLevel,
+          tags,
+        },
+        limit
+      ).map(toPublicQuestion);
 
-      const ranked = questions
-        .filter((question) => question.active !== false)
-        .map((question) => ({
-          question,
-          score: relevanceScore(question, setup),
-        }))
-        .sort((a, b) => b.score - a.score)
-        .slice(0, limit)
-        .map(({ question }) => toPublicQuestion(question));
-
-      return res.json({ questions: ranked });
+      return res.json({ questions: selectedQuestions });
     } catch (error) {
       return next(error);
     }

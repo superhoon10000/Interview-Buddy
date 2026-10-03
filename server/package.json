@@ -7,7 +7,8 @@
     "start": "node src/index.js",
     "dev": "nodemon src/index.js",
     "seed": "node scripts/seedQuestions.js",
-    "test": "jest"
+    "test": "jest",
+    "lint": "eslint src"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.126.0",
@@ -17,6 +18,9 @@
     "firebase-admin": "^13.0.0"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.5",
+    "eslint": "^9.39.5",
+    "globals": "^17.13.0",
     "jest": "^30.5.1",
     "nodemon": "^3.1.0"
   }

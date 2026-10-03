@@ -1,32 +1,64 @@
-import React, { useEffect, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import React, {
+  useEffect,
+  useState,
+} from "react";
+
+import {
+  useLocation,
+  useNavigate,
+} from "react-router-dom";
+
 import "./App.css";
 
 import { PAGES } from "./utils/constants";
+
 import AppRoutes from "./utils/routes";
+
 import { useAuth } from "./context/AuthContext";
 
 function App() {
   const navigate = useNavigate();
+
   const location = useLocation();
 
-  const { user, loading } = useAuth();
+  const {
+    user,
+    loading,
+  } = useAuth();
 
-  console.log("Auth loading:", loading);
-  console.log("Current User:", user);
+  console.log(
+    "Auth loading:",
+    loading
+  );
 
-  // The URL now determines which page is active.
-  const currentPage = location.pathname;
+  console.log(
+    "Current User:",
+    user
+  );
 
-  const [selectedMode, setSelectedMode] = useState("");
+  const currentPage =
+    location.pathname;
 
-  const [setupData, setSetupData] = useState({
+  const [
+    selectedMode,
+    setSelectedMode,
+  ] = useState("");
+
+  const [
+    setupData,
+    setSetupData,
+  ] = useState({
     jobRole: "",
     experienceLevel: "",
+    tags: [],
     practiceGoals: "",
+    questionCount: 10,
   });
 
-  const [sessionResult, setSessionResult] = useState({
+  const [
+    sessionResult,
+    setSessionResult,
+  ] = useState({
     mode: "Quiz Style",
     date: "May 4, 2026",
     score: "0%",
@@ -36,13 +68,16 @@ function App() {
     answerSubmitted: false,
   });
 
-  // Banner shown on the login page after account deletion.
-  const [loginMessage, setLoginMessage] = useState("");
+  const [
+    loginMessage,
+    setLoginMessage,
+  ] = useState("");
 
-  // Clear the login banner when leaving the login page.
-  // This also works when using browser Back/Forward buttons.
   useEffect(() => {
-    if (currentPage !== PAGES.LOGIN) {
+    if (
+      currentPage !==
+      PAGES.LOGIN
+    ) {
       setLoginMessage("");
     }
   }, [currentPage]);
@@ -63,38 +98,87 @@ function App() {
     });
 
     setSelectedMode("");
-    setLoginMessage("Your account has been successfully deleted.");
 
-    navigate(PAGES.LOGIN, { replace: true });
+    setLoginMessage(
+      "Your account has been successfully deleted."
+    );
+
+    navigate(
+      PAGES.LOGIN,
+      {
+        replace: true,
+      }
+    );
   }
 
-  function handleSelectMode(modeName) {
-    setSelectedMode(modeName);
-    navigate(PAGES.INTERVIEW_SETUP);
+  function handleSelectMode(
+    modeName
+  ) {
+    setSelectedMode(
+      modeName
+    );
+
+    navigate(
+      PAGES.INTERVIEW_SETUP
+    );
   }
 
-  function handleStartInterview(sessionData) {
-    setSetupData(sessionData);
-    navigate(PAGES.INTERVIEW);
+  function handleStartInterview(
+    sessionData
+  ) {
+    setSetupData(
+      sessionData
+    );
+
+    navigate(
+      PAGES.INTERVIEW
+    );
   }
 
-  function handleEndInterview(resultData) {
-    setSessionResult(resultData);
-    navigate(PAGES.SESSION_RESULTS);
+  function handleEndInterview(
+    resultData
+  ) {
+    setSessionResult(
+      resultData
+    );
+
+    navigate(
+      PAGES.SESSION_RESULTS
+    );
   }
 
   return (
     <AppRoutes
-      currentPage={currentPage}
-      onNavigate={handleNavigate}
-      onSelectMode={handleSelectMode}
-      onStartInterview={handleStartInterview}
-      onEndInterview={handleEndInterview}
-      onAccountDeleted={handleAccountDeleted}
-      loginMessage={loginMessage}
-      selectedMode={selectedMode}
-      setupData={setupData}
-      sessionResult={sessionResult}
+      currentPage={
+        currentPage
+      }
+      onNavigate={
+        handleNavigate
+      }
+      onSelectMode={
+        handleSelectMode
+      }
+      onStartInterview={
+        handleStartInterview
+      }
+      onEndInterview={
+        handleEndInterview
+      }
+      onAccountDeleted={
+        handleAccountDeleted
+      }
+      loginMessage={
+        loginMessage
+      }
+      selectedMode={
+        selectedMode
+      }
+      setupData={
+        setupData
+      }
+      sessionResult={
+        sessionResult
+      }
     />
   );
 }
