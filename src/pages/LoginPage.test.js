@@ -62,8 +62,27 @@ test("displays error when email is invalid", () => {
 });
 
 
-test("Rejects malicioous looking email"), () => {
+test("Rejects malicioous looking email", () => {
   renderLoginPage();
 
+  const emailInput = screen.getByPlaceholderText("Email");
+  const passwordInput = screen.getByPlaceholderText("Password");
   
-}
+  fireEvent.change(emailInput, {
+    target: { value: "' OR '1'='1" },
+  });
+
+  fireEvent.change(passwordInput, {
+    target: { value: "password123" },
+  });
+
+  const loginButton = screen.getByRole("button", {
+    name: /login to workspace/i,
+  });
+
+  fireEvent.click(loginButton);
+
+  expect(
+    screen.getByText("Please enter a valid email address")
+  ).toBeInTheDocument();
+});
