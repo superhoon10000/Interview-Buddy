@@ -52,27 +52,37 @@ class FirestoreQuestionRepository extends QuestionRepository {
       return 0;
     }
 
-    const batch = this.db.batch();
+    // Firestore batched writes have a finite operation limit. The expanded
+    // Interview Buddy seed contains 1,500 questions, so writing the entire
+    // seed in one batch would fail. Keep each commit comfortably below the
+    // platform limit and continue until every question has been upserted.
+    const batchSize = 400;
 
-    for (const question of questions) {
-      const { id, ...data } = question;
-      const reference = this.db.collection("questions").doc(id);
+    for (let start = 0; start < questions.length; start += batchSize) {
+      const batch = this.db.batch();
+      const chunk = questions.slice(start, start + batchSize);
 
-      const updatedAt = this.admin?.firestore?.FieldValue?.serverTimestamp
-        ? this.admin.firestore.FieldValue.serverTimestamp()
-        : new Date().toISOString();
+      for (const question of chunk) {
+        const { id, ...data } = question;
+        const reference = this.db.collection("questions").doc(id);
 
-      batch.set(
-        reference,
-        {
-          ...data,
-          updatedAt,
-        },
-        { merge: true }
-      );
+        const updatedAt = this.admin?.firestore?.FieldValue?.serverTimestamp
+          ? this.admin.firestore.FieldValue.serverTimestamp()
+          : new Date().toISOString();
+
+        batch.set(
+          reference,
+          {
+            ...data,
+            updatedAt,
+          },
+          { merge: true }
+        );
+      }
+
+      await batch.commit();
     }
 
-    await batch.commit();
     return questions.length;
   }
 }
