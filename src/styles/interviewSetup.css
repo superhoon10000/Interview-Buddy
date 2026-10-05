@@ -113,7 +113,7 @@
 .practiceGoalPill.selected {
   background: var(--primary-button-bg);
   border-color: var(--primary-button-bg);
-  color: white;
+  color: var(--primary-button-text);
 }
 
 .selectionSummary {
