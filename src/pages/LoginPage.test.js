@@ -86,3 +86,17 @@ test("Rejects malicioous looking email", () => {
     screen.getByText("Please enter a valid email address")
   ).toBeInTheDocument();
 });
+
+test("handles stored XSS input in username", () => {
+  const maliciousInput = '<script>alert("Hacked!")</script>';
+
+  render(<RegisterPage />);
+
+  const usernameInput = screen.getByLabelText(/username/i);
+
+  fireEvent.change(usernameInput, {
+    target: { value: maliciousInput },
+  });
+
+  expect(usernameInput.value).toBe(maliciousInput);
+});
