@@ -688,14 +688,98 @@ function InterviewSessionPage({
   }
 
   function renderWrittenAnswerArea() {
+    const trimmedAnswer =
+      writtenAnswer.trim();
+
+    const wordCount =
+      trimmedAnswer
+        ? trimmedAnswer
+            .split(/\s+/)
+            .length
+        : 0;
+
+    const placeholder =
+      isTheoretical
+        ? "Explain your answer clearly. Include the main concept, your reasoning, and an example when relevant."
+        : "Type your answer here...";
+
     return (
       <div className="sessionWrittenResponse">
-        <label
-          className="sessionResponseLabel"
-          htmlFor="interviewAnswer"
-        >
-          Your Response
-        </label>
+        <div className="sessionResponseHeading">
+          <div>
+            <label
+              className="sessionResponseLabel"
+              htmlFor="interviewAnswer"
+            >
+              Your Response
+            </label>
+
+            {isTheoretical && (
+              <p className="sessionResponseDescription">
+                Answer as if you were explaining the concept
+                directly to an interviewer.
+              </p>
+            )}
+          </div>
+
+          {isTheoretical && (
+            <span className="sessionResponseTypeBadge">
+              Written Response
+            </span>
+          )}
+        </div>
+
+        {isTheoretical && (
+          <div className="sessionAnswerGuidance">
+            <div className="sessionGuidanceItem">
+              <span className="sessionGuidanceNumber">
+                1
+              </span>
+
+              <div>
+                <strong>
+                  Define the concept
+                </strong>
+
+                <span>
+                  Start with a clear and direct explanation.
+                </span>
+              </div>
+            </div>
+
+            <div className="sessionGuidanceItem">
+              <span className="sessionGuidanceNumber">
+                2
+              </span>
+
+              <div>
+                <strong>
+                  Explain your reasoning
+                </strong>
+
+                <span>
+                  Describe why it works or why it matters.
+                </span>
+              </div>
+            </div>
+
+            <div className="sessionGuidanceItem">
+              <span className="sessionGuidanceNumber">
+                3
+              </span>
+
+              <div>
+                <strong>
+                  Add context
+                </strong>
+
+                <span>
+                  Use an example, tradeoff, or use case when helpful.
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
 
         <textarea
           id="interviewAnswer"
@@ -703,8 +787,12 @@ function InterviewSessionPage({
             isCode
               ? " sessionAnswerTextarea--code"
               : ""
+          }${
+            isTheoretical
+              ? " sessionAnswerTextarea--theoretical"
+              : ""
           }`}
-          placeholder="Type your answer here..."
+          placeholder={placeholder}
           value={
             writtenAnswer
           }
@@ -726,26 +814,33 @@ function InterviewSessionPage({
         />
 
         <div className="sessionResponseMeta">
-          <span>
-            {
-              writtenAnswer.length
-            }{" "}
-            characters
-          </span>
+          <div className="sessionResponseStats">
+            {isTheoretical && (
+              <span>
+                {wordCount}{" "}
+                {wordCount === 1
+                  ? "word"
+                  : "words"}
+              </span>
+            )}
+
+            <span>
+              {writtenAnswer.length}{" "}
+              characters
+            </span>
+          </div>
 
           {isCode && (
             <span>
               Code is evaluated as
-              written interview
-              content.
+              written interview content.
             </span>
           )}
 
           {isTheoretical && (
             <span>
               Focus on clarity,
-              accuracy, and
-              explanation.
+              accuracy, and explanation.
             </span>
           )}
         </div>

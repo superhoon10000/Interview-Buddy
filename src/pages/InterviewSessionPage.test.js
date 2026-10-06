@@ -1,9 +1,11 @@
 import React from "react";
+
 import {
   render,
   screen,
   waitFor,
 } from "@testing-library/react";
+
 import userEvent from "@testing-library/user-event";
 
 import InterviewSessionPage from "./InterviewSessionPage";
@@ -16,13 +18,17 @@ import {
 import { PAGES } from "../utils/constants";
 
 
+/* ============================================================
+   MOCKS
+   ============================================================ */
+
 /*
- * InterviewSessionPage behavior is what
- * we want to test here.
+ * InterviewSessionPage is the component
+ * being tested here.
  *
- * PageLayout itself is tested elsewhere,
+ * PageLayout has its own responsibilities,
  * so mocking it keeps these tests focused
- * on the interview session.
+ * on interview-session behavior.
  */
 jest.mock(
   "../components/layout/PageLayout",
@@ -56,9 +62,17 @@ jest.mock("../services", () => ({
 }));
 
 
+/* ============================================================
+   TEST SUITE
+   ============================================================ */
+
 describe(
   "InterviewSessionPage",
   () => {
+    /* ========================================================
+       SHARED TEST DATA
+       ======================================================== */
+
     const defaultSetupData = {
       id:
         "mock-session-1",
@@ -73,7 +87,8 @@ describe(
         "algorithms",
       ],
 
-      questionCount: 10,
+      questionCount:
+        10,
     };
 
 
@@ -147,9 +162,33 @@ describe(
     };
 
 
+    const theoreticalQuestion = {
+      id:
+        "theoretical-test-001",
+
+      mode:
+        "Theoretical Style",
+
+      prompt:
+        "Explain the difference between authentication and authorization.",
+
+      options: [],
+
+      topic:
+        "Security",
+
+      difficulty:
+        "Intermediate",
+    };
+
+
     let onNavigate;
     let onEndInterview;
 
+
+    /* ========================================================
+       TEST SETUP
+       ======================================================== */
 
     beforeEach(() => {
       jest.clearAllMocks();
@@ -162,10 +201,11 @@ describe(
 
 
       /*
-       * Default question result.
+       * Code Style is the default question
+       * returned by the mocked service.
        *
-       * Individual tests override this
-       * when they need Quiz questions.
+       * Quiz and Theoretical tests override
+       * this when needed.
        */
       interviewService
         .getQuestions
@@ -174,6 +214,9 @@ describe(
         ]);
 
 
+      /*
+       * Default Quiz answer result.
+       */
       interviewService
         .checkQuizAnswer
         .mockResolvedValue({
@@ -188,6 +231,10 @@ describe(
         });
 
 
+      /*
+       * Default AI response used by both
+       * Code Style and Theoretical Style.
+       */
       aiService
         .evaluateAnswer
         .mockResolvedValue({
@@ -227,6 +274,10 @@ describe(
         });
     });
 
+
+    /* ========================================================
+       HELPERS
+       ======================================================== */
 
     function renderPage({
       selectedMode =
@@ -279,6 +330,7 @@ describe(
           "Quiz Style",
       });
 
+
       expect(
         await screen.findByText(
           "Which data structure uses FIFO ordering?"
@@ -289,16 +341,14 @@ describe(
 
     async function selectQueueAnswer() {
       /*
-       * The visible option contains:
+       * The redesigned option contains
+       * both its letter and its answer:
        *
-       * A
-       * Queue
+       * A  Queue
        *
-       * so its accessible name may be
-       * "A Queue", not simply "Queue".
-       *
-       * Regex makes the test accurately
-       * match the redesigned UI.
+       * Using /queue/i keeps the test
+       * accurate regardless of the visible
+       * option letter.
        */
       const queueOption =
         screen.getByRole(
@@ -309,9 +359,11 @@ describe(
           }
         );
 
+
       userEvent.click(
         queueOption
       );
+
 
       await waitFor(() => {
         expect(
@@ -332,6 +384,7 @@ describe(
         )
       );
 
+
       await waitFor(() => {
         expect(
           interviewService
@@ -340,6 +393,10 @@ describe(
       });
     }
 
+
+    /* ========================================================
+       QUESTION LOADING
+       ======================================================== */
 
     test(
       "loads questions using the setup configuration",
@@ -350,6 +407,7 @@ describe(
           questionCount:
             20,
         };
+
 
         renderPage({
           selectedMode:
@@ -383,11 +441,16 @@ describe(
             "algorithms",
           ],
 
-          limit: 20,
+          limit:
+            20,
         });
       }
     );
 
+
+    /* ========================================================
+       QUIZ STYLE
+       ======================================================== */
 
     test(
       "starts the session progress at zero before any question is answered",
@@ -531,8 +594,8 @@ describe(
 
 
         /*
-         * Merely viewing question 1
-         * should still be 0%.
+         * Viewing Question 1 should
+         * not count as progress.
          */
         expect(
           progressBar
@@ -542,6 +605,13 @@ describe(
         );
 
 
+        expect(
+          screen.getByText(
+            "0% complete"
+          )
+        ).toBeInTheDocument();
+
+
         await selectQueueAnswer();
 
         await submitQuizAnswer();
@@ -549,7 +619,7 @@ describe(
 
         /*
          * One of two questions has now
-         * been completed.
+         * actually been completed.
          */
         await waitFor(() => {
           expect(
@@ -568,6 +638,10 @@ describe(
         ).toBeInTheDocument();
 
 
+        /*
+         * Moving forward should not count
+         * Question 2 as complete yet.
+         */
         userEvent.click(
           screen.getByRole(
             "button",
@@ -593,10 +667,6 @@ describe(
         ).toBeInTheDocument();
 
 
-        /*
-         * Simply moving to Question 2
-         * should NOT increase progress.
-         */
         expect(
           progressBar
         ).toHaveAttribute(
@@ -665,8 +735,8 @@ describe(
 
 
         /*
-         * The previous answer should be
-         * cleared when moving forward.
+         * The previous answer selection
+         * should be cleared.
          */
         expect(
           screen.getByRole(
@@ -693,9 +763,9 @@ describe(
 
 
         /*
-         * Wait until the feedback is
-         * visible so answeredQuestions
-         * has been updated.
+         * Waiting for feedback confirms
+         * that the submitted answer has
+         * been stored.
          */
         expect(
           await screen.findByText(
@@ -776,6 +846,10 @@ describe(
       }
     );
 
+
+    /* ========================================================
+       QUESTION LOADING ERRORS
+       ======================================================== */
 
     test(
       "shows an error when no matching questions are returned",
@@ -868,6 +942,10 @@ describe(
       }
     );
 
+
+    /* ========================================================
+       CODE STYLE
+       ======================================================== */
 
     test(
       "submits Code Style answers through aiService",
@@ -1003,7 +1081,7 @@ describe(
 
         /*
          * Failed evaluation should not
-         * mark the question complete.
+         * count the question as complete.
          */
         expect(
           screen.getByText(
@@ -1032,6 +1110,243 @@ describe(
             }
           )
         ).not.toBeInTheDocument();
+      }
+    );
+
+
+    /* ========================================================
+       THEORETICAL STYLE
+       ======================================================== */
+
+    test(
+      "submits Theoretical Style answers through aiService",
+      async () => {
+        interviewService
+          .getQuestions
+          .mockResolvedValue([
+            theoreticalQuestion,
+          ]);
+
+
+        renderPage({
+          selectedMode:
+            "Theoretical Style",
+        });
+
+
+        expect(
+          await screen.findByText(
+            "Explain the difference between authentication and authorization."
+          )
+        ).toBeInTheDocument();
+
+
+        const response =
+          "Authentication verifies who a user is, while authorization determines what that authenticated user is allowed to access.";
+
+
+        userEvent.type(
+          screen.getByLabelText(
+            "Your Response"
+          ),
+          response
+        );
+
+
+        userEvent.click(
+          screen.getByRole(
+            "button",
+            {
+              name:
+                "Submit",
+            }
+          )
+        );
+
+
+        await waitFor(() => {
+          expect(
+            aiService
+              .evaluateAnswer
+          ).toHaveBeenCalledWith({
+            questionId:
+              "theoretical-test-001",
+
+            userAnswer:
+              response,
+
+            sessionId:
+              "mock-session-1",
+
+            jobRole:
+              "Software Engineer",
+
+            experienceLevel:
+              "Intermediate",
+          });
+        });
+
+
+        expect(
+          await screen.findByText(
+            /Score:\s*88\/100/i
+          )
+        ).toBeInTheDocument();
+
+
+        expect(
+          screen.getByText(
+            "Correct approach with a minor explanation gap."
+          )
+        ).toBeInTheDocument();
+      }
+    );
+
+
+    test(
+      "requires a written answer before submitting a Theoretical question",
+      async () => {
+        interviewService
+          .getQuestions
+          .mockResolvedValue([
+            theoreticalQuestion,
+          ]);
+
+
+        renderPage({
+          selectedMode:
+            "Theoretical Style",
+        });
+
+
+        await screen.findByText(
+          "Explain the difference between authentication and authorization."
+        );
+
+
+        userEvent.click(
+          screen.getByRole(
+            "button",
+            {
+              name:
+                "Submit",
+            }
+          )
+        );
+
+
+        expect(
+          screen.getByText(
+            "Please enter an answer before submitting."
+          )
+        ).toBeInTheDocument();
+
+
+        expect(
+          aiService
+            .evaluateAnswer
+        ).not.toHaveBeenCalled();
+      }
+    );
+
+
+    test(
+      "counts a Theoretical question as complete after AI evaluation succeeds",
+      async () => {
+        interviewService
+          .getQuestions
+          .mockResolvedValue([
+            theoreticalQuestion,
+          ]);
+
+
+        renderPage({
+          selectedMode:
+            "Theoretical Style",
+        });
+
+
+        await screen.findByText(
+          "Explain the difference between authentication and authorization."
+        );
+
+
+        /*
+         * The question is visible, but it
+         * has not been completed yet.
+         */
+        expect(
+          screen.getByText(
+            "0% complete"
+          )
+        ).toBeInTheDocument();
+
+
+        expect(
+          screen.getByRole(
+            "progressbar",
+            {
+              name:
+                "Interview progress",
+            }
+          )
+        ).toHaveAttribute(
+          "aria-valuenow",
+          "0"
+        );
+
+
+        userEvent.type(
+          screen.getByLabelText(
+            "Your Response"
+          ),
+          "Authentication confirms identity while authorization controls permissions."
+        );
+
+
+        userEvent.click(
+          screen.getByRole(
+            "button",
+            {
+              name:
+                "Submit",
+            }
+          )
+        );
+
+
+        /*
+         * AI evaluation must finish before
+         * the question counts as completed.
+         */
+        await waitFor(() => {
+          expect(
+            screen.getByRole(
+              "progressbar",
+              {
+                name:
+                  "Interview progress",
+              }
+            )
+          ).toHaveAttribute(
+            "aria-valuenow",
+            "100"
+          );
+        });
+
+
+        expect(
+          screen.getByText(
+            "100% complete"
+          )
+        ).toBeInTheDocument();
+
+
+        expect(
+          await screen.findByText(
+            /Score:\s*88\/100/i
+          )
+        ).toBeInTheDocument();
       }
     );
   }

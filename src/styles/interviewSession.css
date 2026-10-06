@@ -1284,3 +1284,172 @@
     width: 100%;
   }
 }
+/* ============================================================
+   THEORETICAL RESPONSE
+   ============================================================ */
+
+.sessionResponseHeading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+
+  gap: var(--ib-space-3);
+}
+
+.sessionResponseDescription {
+  margin:
+    var(--ib-space-1)
+    0
+    0;
+
+  color:
+    var(--ib-text-secondary);
+
+  font-size:
+    var(--ib-font-size-xs);
+
+  line-height:
+    var(--ib-line-height-normal);
+}
+
+.sessionResponseTypeBadge {
+  flex-shrink: 0;
+
+  padding:
+    5px
+    8px;
+
+  border:
+    1px solid
+    var(--ib-accent-border);
+
+  border-radius:
+    var(--ib-radius-pill);
+
+  background:
+    var(--ib-accent-soft);
+
+  color:
+    var(--ib-accent-700);
+
+  font-size:
+    var(--ib-font-size-xs);
+
+  font-weight:
+    var(--ib-font-weight-semibold);
+}
+
+.sessionAnswerGuidance {
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      3,
+      minmax(0, 1fr)
+    );
+
+  gap: var(--ib-space-2);
+}
+
+.sessionGuidanceItem {
+  min-width: 0;
+
+  padding:
+    var(--ib-space-3);
+
+  display: flex;
+  align-items: flex-start;
+
+  gap: var(--ib-space-2);
+
+  border:
+    1px solid
+    var(--ib-border);
+
+  border-radius:
+    var(--ib-radius-sm);
+
+  background:
+    var(--ib-surface);
+}
+
+.sessionGuidanceNumber {
+  flex-shrink: 0;
+
+  width: 22px;
+  height: 22px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius:
+    var(--ib-radius-pill);
+
+  background:
+    var(--ib-accent-soft);
+
+  color:
+    var(--ib-accent-700);
+
+  font-size:
+    var(--ib-font-size-xs);
+
+  font-weight:
+    var(--ib-font-weight-bold);
+}
+
+.sessionGuidanceItem div {
+  min-width: 0;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 3px;
+}
+
+.sessionGuidanceItem strong {
+  color:
+    var(--ib-text);
+
+  font-size:
+    var(--ib-font-size-xs);
+
+  font-weight:
+    var(--ib-font-weight-semibold);
+}
+
+.sessionGuidanceItem span:not(
+  .sessionGuidanceNumber
+) {
+  color:
+    var(--ib-text-secondary);
+
+  font-size:
+    var(--ib-font-size-xs);
+
+  line-height:
+    var(--ib-line-height-normal);
+}
+
+.sessionAnswerTextarea--theoretical {
+  min-height: 260px;
+}
+
+.sessionResponseStats {
+  display: flex;
+
+  gap: var(--ib-space-3);
+}
+
+@media (max-width: 760px) {
+  .sessionAnswerGuidance {
+    grid-template-columns:
+      1fr;
+  }
+
+  .sessionResponseHeading {
+    flex-direction:
+      column;
+  }
+}
