@@ -1,6 +1,7 @@
 import React from "react";
 
 import {
+  fireEvent,
   render,
   screen,
   waitFor,
@@ -22,14 +23,6 @@ import { PAGES } from "../utils/constants";
    MOCKS
    ============================================================ */
 
-/*
- * InterviewSessionPage is the component
- * being tested here.
- *
- * PageLayout has its own responsibilities,
- * so mocking it keeps these tests focused
- * on interview-session behavior.
- */
 jest.mock(
   "../components/layout/PageLayout",
   () => {
@@ -60,6 +53,46 @@ jest.mock("../services", () => ({
       jest.fn(),
   },
 }));
+
+jest.mock(
+  "../components/interview/CodeEditor",
+  () => {
+    return function MockCodeEditor({
+      value,
+      onChange,
+      language,
+      disabled,
+      ariaLabel =
+        "Your Response",
+    }) {
+      return (
+        <textarea
+          aria-label={
+            ariaLabel
+          }
+
+          data-language={
+            language
+          }
+
+          value={
+            value
+          }
+
+          disabled={
+            disabled
+          }
+
+          onChange={(event) => {
+            onChange(
+              event.target.value
+            );
+          }}
+        />
+      );
+    };
+  }
+);
 
 
 /* ============================================================
@@ -201,8 +234,7 @@ describe(
 
 
       /*
-       * Code Style is the default question
-       * returned by the mocked service.
+       * Code Style is the default question.
        *
        * Quiz and Theoretical tests override
        * this when needed.
@@ -215,7 +247,7 @@ describe(
 
 
       /*
-       * Default Quiz answer result.
+       * Default Quiz result.
        */
       interviewService
         .checkQuizAnswer
@@ -232,8 +264,8 @@ describe(
 
 
       /*
-       * Default AI response used by both
-       * Code Style and Theoretical Style.
+       * Default AI result used for both
+       * Code and Theoretical responses.
        */
       aiService
         .evaluateAnswer
@@ -325,6 +357,7 @@ describe(
           questions
         );
 
+
       renderPage({
         selectedMode:
           "Quiz Style",
@@ -340,16 +373,6 @@ describe(
 
 
     async function selectQueueAnswer() {
-      /*
-       * The redesigned option contains
-       * both its letter and its answer:
-       *
-       * A  Queue
-       *
-       * Using /queue/i keeps the test
-       * accurate regardless of the visible
-       * option letter.
-       */
       const queueOption =
         screen.getByRole(
           "radio",
@@ -593,10 +616,6 @@ describe(
           );
 
 
-        /*
-         * Viewing Question 1 should
-         * not count as progress.
-         */
         expect(
           progressBar
         ).toHaveAttribute(
@@ -617,10 +636,6 @@ describe(
         await submitQuizAnswer();
 
 
-        /*
-         * One of two questions has now
-         * actually been completed.
-         */
         await waitFor(() => {
           expect(
             progressBar
@@ -638,10 +653,6 @@ describe(
         ).toBeInTheDocument();
 
 
-        /*
-         * Moving forward should not count
-         * Question 2 as complete yet.
-         */
         userEvent.click(
           screen.getByRole(
             "button",
@@ -734,10 +745,6 @@ describe(
         ).toBeInTheDocument();
 
 
-        /*
-         * The previous answer selection
-         * should be cleared.
-         */
         expect(
           screen.getByRole(
             "radio",
@@ -762,11 +769,6 @@ describe(
         await submitQuizAnswer();
 
 
-        /*
-         * Waiting for feedback confirms
-         * that the submitted answer has
-         * been stored.
-         */
         expect(
           await screen.findByText(
             "Correct Answer"
@@ -963,9 +965,14 @@ describe(
         ).toBeInTheDocument();
 
 
+        /*
+         * Use the accessible label rather
+         * than the placeholder because the
+         * Code UI now has a custom placeholder.
+         */
         userEvent.type(
-          screen.getByPlaceholderText(
-            "Type your answer here..."
+          screen.getByLabelText(
+            "Your Response"
           ),
           "reverse the array with a loop"
         );
@@ -1054,8 +1061,8 @@ describe(
 
 
         userEvent.type(
-          screen.getByPlaceholderText(
-            "Type your answer here..."
+          screen.getByLabelText(
+            "Your Response"
           ),
           "my attempted answer"
         );
@@ -1079,10 +1086,6 @@ describe(
         ).toBeInTheDocument();
 
 
-        /*
-         * Failed evaluation should not
-         * count the question as complete.
-         */
         expect(
           screen.getByText(
             "0% complete"
@@ -1110,6 +1113,282 @@ describe(
             }
           )
         ).not.toBeInTheDocument();
+      }
+    );
+
+
+    test(
+      "shows the Code Style response workspace with Python selected by default",
+      async () => {
+        renderPage({
+          selectedMode:
+            "Code Style",
+        });
+
+
+        expect(
+          await screen.findByText(
+            "Write a function that reverses an array."
+          )
+        ).toBeInTheDocument();
+
+
+        expect(
+          screen.getByText(
+            "Code Response"
+          )
+        ).toBeInTheDocument();
+
+
+        expect(
+          screen.getByText(
+            "Approach"
+          )
+        ).toBeInTheDocument();
+
+
+        expect(
+          screen.getByText(
+            "Implementation"
+          )
+        ).toBeInTheDocument();
+
+
+        expect(
+          screen.getByText(
+            "Complexity"
+          )
+        ).toBeInTheDocument();
+
+
+        expect(
+          screen.getByRole(
+            "combobox",
+            {
+              name:
+                "Programming Language",
+            }
+          )
+        ).toHaveValue(
+          "python"
+        );
+
+
+        expect(
+          screen.getByLabelText(
+            "Your Response"
+          )
+        ).toHaveAttribute(
+          "data-language",
+          "python"
+        );
+      }
+    );
+
+    test(
+      "allows the user to change the Code Style programming language",
+      async () => {
+        renderPage({
+          selectedMode:
+            "Code Style",
+        });
+
+
+        await screen.findByText(
+          "Write a function that reverses an array."
+        );
+
+
+        const languageSelect =
+          screen.getByRole(
+            "combobox",
+            {
+              name:
+                "Programming Language",
+            }
+          );
+
+
+        expect(
+          languageSelect
+        ).toHaveValue(
+          "python"
+        );
+
+
+        userEvent.selectOptions(
+          languageSelect,
+          "javascript"
+        );
+
+
+        expect(
+          languageSelect
+        ).toHaveValue(
+          "javascript"
+        );
+
+
+        expect(
+          screen.getByLabelText(
+            "Your Response"
+          )
+        ).toHaveAttribute(
+          "data-language",
+          "javascript"
+        );
+      }
+    );
+
+
+    test(
+      "requires a written response before submitting a Code question",
+      async () => {
+        renderPage({
+          selectedMode:
+            "Code Style",
+        });
+
+
+        await screen.findByText(
+          "Write a function that reverses an array."
+        );
+
+
+        userEvent.click(
+          screen.getByRole(
+            "button",
+            {
+              name:
+                "Submit",
+            }
+          )
+        );
+
+
+        expect(
+          screen.getByText(
+            "Please enter an answer before submitting."
+          )
+        ).toBeInTheDocument();
+
+
+        expect(
+          aiService
+            .evaluateAnswer
+        ).not.toHaveBeenCalled();
+      }
+    );
+
+
+    test(
+      "counts a Code question as complete only after AI evaluation succeeds",
+      async () => {
+        renderPage({
+          selectedMode:
+            "Code Style",
+        });
+
+
+        await screen.findByText(
+          "Write a function that reverses an array."
+        );
+
+
+        const progressBar =
+          screen.getByRole(
+            "progressbar",
+            {
+              name:
+                "Interview progress",
+            }
+          );
+
+
+        expect(
+          progressBar
+        ).toHaveAttribute(
+          "aria-valuenow",
+          "0"
+        );
+
+
+        /*
+         * fireEvent.change is used here
+         * because userEvent.type interprets
+         * { } as special keyboard syntax.
+         */
+        fireEvent.change(
+          screen.getByLabelText(
+            "Your Response"
+          ),
+          {
+            target: {
+              value:
+                "function reverse(arr) { return arr.reverse(); }",
+            },
+          }
+        );
+
+
+        expect(
+          screen.getByLabelText(
+            "Your Response"
+          )
+        ).toHaveValue(
+          "function reverse(arr) { return arr.reverse(); }"
+        );
+
+
+        userEvent.click(
+          screen.getByRole(
+            "button",
+            {
+              name:
+                "Submit",
+            }
+          )
+        );
+
+
+        await waitFor(() => {
+          expect(
+            aiService
+              .evaluateAnswer
+          ).toHaveBeenCalledWith(
+            expect.objectContaining({
+              questionId:
+                "code-test-001",
+
+              userAnswer:
+                "function reverse(arr) { return arr.reverse(); }",
+            })
+          );
+        });
+
+
+        await waitFor(() => {
+          expect(
+            progressBar
+          ).toHaveAttribute(
+            "aria-valuenow",
+            "100"
+          );
+        });
+
+
+        expect(
+          screen.getByText(
+            "100% complete"
+          )
+        ).toBeInTheDocument();
+
+
+        expect(
+          await screen.findByText(
+            /Score:\s*88\/100/i
+          )
+        ).toBeInTheDocument();
       }
     );
 
@@ -1271,10 +1550,6 @@ describe(
         );
 
 
-        /*
-         * The question is visible, but it
-         * has not been completed yet.
-         */
         expect(
           screen.getByText(
             "0% complete"
@@ -1315,10 +1590,6 @@ describe(
         );
 
 
-        /*
-         * AI evaluation must finish before
-         * the question counts as completed.
-         */
         await waitFor(() => {
           expect(
             screen.getByRole(

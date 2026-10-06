@@ -1453,3 +1453,373 @@
       column;
   }
 }
+/* ============================================================
+   CODE RESPONSE
+   ============================================================ */
+
+.sessionCodeGuidance {
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      3,
+      minmax(0, 1fr)
+    );
+
+  gap:
+    var(--ib-space-2);
+}
+
+
+.sessionCodeGuidanceItem {
+  padding:
+    var(--ib-space-3);
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 4px;
+
+  border:
+    1px solid
+    var(--ib-border);
+
+  border-radius:
+    var(--ib-radius-sm);
+
+  background:
+    var(--ib-surface);
+}
+
+
+.sessionCodeGuidanceItem strong {
+  color:
+    var(--ib-text);
+
+  font-size:
+    var(--ib-font-size-xs);
+
+  font-weight:
+    var(--ib-font-weight-semibold);
+}
+
+
+.sessionCodeGuidanceItem span {
+  color:
+    var(--ib-text-secondary);
+
+  font-size:
+    var(--ib-font-size-xs);
+
+  line-height:
+    var(--ib-line-height-normal);
+}
+
+
+/* ------------------------------------------------------------
+   Editor shell
+   ------------------------------------------------------------ */
+
+.sessionCodeEditor {
+  overflow: hidden;
+
+  border:
+    1px solid
+    var(--ib-border-strong);
+
+  border-radius:
+    var(--ib-radius-md);
+
+  background:
+    var(--ib-surface);
+
+  box-shadow:
+    var(--ib-shadow-xs);
+}
+
+
+.sessionCodeEditorHeader {
+  min-height: 38px;
+
+  padding:
+    0
+    var(--ib-space-3);
+
+  display: flex;
+  align-items: center;
+
+  gap:
+    var(--ib-space-3);
+
+  border-bottom:
+    1px solid
+    var(--ib-border);
+
+  background:
+    var(--ib-surface-subtle);
+
+  color:
+    var(--ib-text-secondary);
+
+  font-size:
+    var(--ib-font-size-xs);
+}
+
+
+.sessionCodeWindowDots {
+  display: flex;
+
+  gap: 5px;
+}
+
+
+.sessionCodeWindowDots span {
+  width: 8px;
+  height: 8px;
+
+  border-radius: 50%;
+
+  background:
+    var(--ib-border-strong);
+}
+
+
+.sessionCodeLanguageSelect {
+  margin-left: auto;
+
+  min-height: 28px;
+
+  padding:
+    4px
+    26px
+    4px
+    8px;
+
+  border:
+    1px solid
+    var(--ib-accent-border);
+
+  border-radius:
+    var(--ib-radius-sm);
+
+  background:
+    var(--ib-accent-soft);
+
+  color:
+    var(--ib-accent-700);
+
+  font-family: inherit;
+
+  font-size:
+    var(--ib-font-size-xs);
+
+  font-weight:
+    var(--ib-font-weight-semibold);
+
+  cursor: pointer;
+}
+
+
+.sessionCodeLanguageSelect:hover:not(:disabled) {
+  border-color:
+    var(--ib-accent);
+}
+
+
+.sessionCodeLanguageSelect:focus {
+  outline: none;
+
+  border-color:
+    var(--ib-accent);
+
+  box-shadow:
+    0 0 0 3px
+    var(--ib-focus-ring);
+}
+
+
+.sessionCodeLanguageSelect:disabled {
+  cursor: not-allowed;
+
+  opacity: 0.65;
+}
+
+
+/* ------------------------------------------------------------
+   CodeMirror
+   ------------------------------------------------------------ */
+
+.interviewCodeMirror {
+  width: 100%;
+
+  background:
+    var(--ib-surface);
+}
+
+
+.interviewCodeMirror .cm-editor {
+  min-height: 340px;
+
+  background:
+    var(--ib-surface);
+
+  color:
+    var(--ib-text);
+
+  font-family:
+    "SFMono-Regular",
+    Consolas,
+    "Liberation Mono",
+    Menlo,
+    monospace;
+
+  font-size: 0.84rem;
+}
+
+
+.interviewCodeMirror .cm-editor.cm-focused {
+  outline: none;
+}
+
+
+.interviewCodeMirror .cm-scroller {
+  min-height: 340px;
+
+  overflow: auto;
+
+  font-family:
+    "SFMono-Regular",
+    Consolas,
+    "Liberation Mono",
+    Menlo,
+    monospace;
+
+  line-height: 1.65;
+}
+
+
+.interviewCodeMirror .cm-content {
+  padding:
+    var(--ib-space-3)
+    0;
+}
+
+
+.interviewCodeMirror .cm-line {
+  padding:
+    0
+    var(--ib-space-3);
+}
+
+
+/* ------------------------------------------------------------
+   Line-number gutter
+   ------------------------------------------------------------ */
+
+.interviewCodeMirror .cm-gutters {
+  min-width: 44px;
+
+  border-right:
+    1px solid
+    var(--ib-border);
+
+  background:
+    var(--ib-surface-subtle);
+
+  color:
+    var(--ib-text-muted);
+}
+
+
+.interviewCodeMirror .cm-lineNumbers
+.cm-gutterElement {
+  padding:
+    0
+    10px
+    0
+    8px;
+
+  font-size:
+    0.75rem;
+}
+
+
+/* ------------------------------------------------------------
+   Active line
+   ------------------------------------------------------------ */
+
+.interviewCodeMirror
+.cm-activeLine {
+  background:
+    var(--ib-surface-muted);
+}
+
+
+.interviewCodeMirror
+.cm-activeLineGutter {
+  background:
+    var(--ib-accent-soft);
+
+  color:
+    var(--ib-accent-700);
+}
+
+
+/* ------------------------------------------------------------
+   Cursor / selection
+   ------------------------------------------------------------ */
+
+.interviewCodeMirror
+.cm-cursor {
+  border-left-color:
+    var(--ib-accent);
+}
+
+
+.interviewCodeMirror
+.cm-selectionBackground,
+.interviewCodeMirror
+.cm-content ::selection {
+  background:
+    var(--ib-focus-ring) !important;
+}
+
+
+/* ------------------------------------------------------------
+   Placeholder
+   ------------------------------------------------------------ */
+
+.interviewCodeMirror
+.cm-placeholder {
+  color:
+    var(--ib-text-muted);
+
+  font-style: normal;
+}
+
+
+/* ------------------------------------------------------------
+   Disabled/read-only state
+   ------------------------------------------------------------ */
+
+.interviewCodeMirror
+.cm-editor[aria-readonly="true"] {
+  opacity: 0.9;
+}
+
+
+/* ------------------------------------------------------------
+   Mobile
+   ------------------------------------------------------------ */
+
+@media (max-width: 760px) {
+  .sessionCodeGuidance {
+    grid-template-columns:
+      1fr;
+  }
+
+  .interviewCodeMirror .cm-editor,
+  .interviewCodeMirror .cm-scroller {
+    min-height: 280px;
+  }
+}

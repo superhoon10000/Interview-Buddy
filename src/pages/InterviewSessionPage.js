@@ -6,6 +6,9 @@ import React, {
 } from "react";
 
 import PageLayout from "../components/layout/PageLayout";
+
+import CodeEditor from "../components/interview/CodeEditor";
+
 import {
   aiService,
   interviewService,
@@ -120,6 +123,13 @@ function InterviewSessionPage({
     writtenAnswer,
     setWrittenAnswer,
   ] = useState("");
+
+  const [
+    codeLanguage,
+    setCodeLanguage,
+  ] = useState(
+    "python"
+  );
 
   const [
     isSubmitting,
@@ -698,10 +708,26 @@ function InterviewSessionPage({
             .length
         : 0;
 
-    const placeholder =
-      isTheoretical
-        ? "Explain your answer clearly. Include the main concept, your reasoning, and an example when relevant."
-        : "Type your answer here...";
+    const lineCount =
+      writtenAnswer
+        ? writtenAnswer
+            .split("\n")
+            .length
+        : 0;
+
+
+    function handleWrittenAnswerChange(
+      nextValue
+    ) {
+      setWrittenAnswer(
+        nextValue
+      );
+
+      setSubmissionError(
+        ""
+      );
+    }
+
 
     return (
       <div className="sessionWrittenResponse">
@@ -709,25 +735,54 @@ function InterviewSessionPage({
           <div>
             <label
               className="sessionResponseLabel"
-              htmlFor="interviewAnswer"
+              htmlFor={
+                isTheoretical
+                  ? "interviewAnswer"
+                  : undefined
+              }
             >
               Your Response
             </label>
 
+
             {isTheoretical && (
               <p className="sessionResponseDescription">
-                Answer as if you were explaining the concept
+                Answer as if you were
+                explaining the concept
                 directly to an interviewer.
               </p>
             )}
+
+
+            {isCode && (
+              <p className="sessionResponseDescription">
+                Explain your approach and
+                provide code or pseudocode
+                as you would during a
+                technical interview.
+              </p>
+            )}
           </div>
+
 
           {isTheoretical && (
             <span className="sessionResponseTypeBadge">
               Written Response
             </span>
           )}
+
+
+          {isCode && (
+            <span className="sessionResponseTypeBadge">
+              Code Response
+            </span>
+          )}
         </div>
+
+
+        {/* =========================
+            THEORETICAL GUIDANCE
+            ========================= */}
 
         {isTheoretical && (
           <div className="sessionAnswerGuidance">
@@ -742,10 +797,12 @@ function InterviewSessionPage({
                 </strong>
 
                 <span>
-                  Start with a clear and direct explanation.
+                  Start with a clear and
+                  direct explanation.
                 </span>
               </div>
             </div>
+
 
             <div className="sessionGuidanceItem">
               <span className="sessionGuidanceNumber">
@@ -758,10 +815,12 @@ function InterviewSessionPage({
                 </strong>
 
                 <span>
-                  Describe why it works or why it matters.
+                  Describe why it works or
+                  why it matters.
                 </span>
               </div>
             </div>
+
 
             <div className="sessionGuidanceItem">
               <span className="sessionGuidanceNumber">
@@ -774,44 +833,178 @@ function InterviewSessionPage({
                 </strong>
 
                 <span>
-                  Use an example, tradeoff, or use case when helpful.
+                  Use an example, tradeoff,
+                  or use case when helpful.
                 </span>
               </div>
             </div>
           </div>
         )}
 
-        <textarea
-          id="interviewAnswer"
-          className={`sessionAnswerTextarea${
-            isCode
-              ? " sessionAnswerTextarea--code"
-              : ""
-          }${
-            isTheoretical
-              ? " sessionAnswerTextarea--theoretical"
-              : ""
-          }`}
-          placeholder={placeholder}
-          value={
-            writtenAnswer
-          }
-          disabled={
-            Boolean(
-              evaluationResult
-            ) ||
-            isSubmitting
-          }
-          onChange={(event) => {
-            setWrittenAnswer(
-              event.target.value
-            );
 
-            setSubmissionError(
-              ""
-            );
-          }}
-        />
+        {/* =========================
+            CODE GUIDANCE
+            ========================= */}
+
+        {isCode && (
+          <div className="sessionCodeGuidance">
+            <div className="sessionCodeGuidanceItem">
+              <strong>
+                Approach
+              </strong>
+
+              <span>
+                Briefly explain how you plan
+                to solve the problem.
+              </span>
+            </div>
+
+
+            <div className="sessionCodeGuidanceItem">
+              <strong>
+                Implementation
+              </strong>
+
+              <span>
+                Write code or clear
+                pseudocode for your
+                solution.
+              </span>
+            </div>
+
+
+            <div className="sessionCodeGuidanceItem">
+              <strong>
+                Complexity
+              </strong>
+
+              <span>
+                Include time and space
+                complexity when relevant.
+              </span>
+            </div>
+          </div>
+        )}
+
+
+        {/* =========================
+            CODE EDITOR
+            ========================= */}
+
+        {isCode && (
+          <div className="sessionCodeEditor">
+            <div className="sessionCodeEditorHeader">
+              <div
+                className="sessionCodeWindowDots"
+                aria-hidden="true"
+              >
+                <span />
+                <span />
+                <span />
+              </div>
+
+              <span>
+                Interview Solution
+              </span>
+
+              <select
+                className="sessionCodeLanguageSelect"
+                aria-label="Programming Language"
+                value={
+                  codeLanguage
+                }
+                disabled={
+                  Boolean(
+                    evaluationResult
+                  ) ||
+                  isSubmitting
+                }
+                onChange={(event) => {
+                  setCodeLanguage(
+                    event.target.value
+                  );
+                }}
+              >
+                <option value="python">
+                  Python
+                </option>
+
+                <option value="javascript">
+                  JavaScript
+                </option>
+
+                <option value="java">
+                  Java
+                </option>
+
+                <option value="cpp">
+                  C++
+                </option>
+              </select>
+            </div>
+
+
+            <CodeEditor
+              value={
+                writtenAnswer
+              }
+
+              language={
+                codeLanguage
+              }
+
+              ariaLabel="Your Response"
+
+              disabled={
+                Boolean(
+                  evaluationResult
+                ) ||
+                isSubmitting
+              }
+
+              onChange={
+                handleWrittenAnswerChange
+              }
+            />
+          </div>
+        )}
+
+
+        {/* =========================
+            THEORETICAL TEXTAREA
+            ========================= */}
+
+        {isTheoretical && (
+          <textarea
+            id="interviewAnswer"
+
+            className="sessionAnswerTextarea sessionAnswerTextarea--theoretical"
+
+            placeholder="Explain your answer clearly. Include the main concept, your reasoning, and an example when relevant."
+
+            value={
+              writtenAnswer
+            }
+
+            disabled={
+              Boolean(
+                evaluationResult
+              ) ||
+              isSubmitting
+            }
+
+            onChange={(event) => {
+              handleWrittenAnswerChange(
+                event.target.value
+              );
+            }}
+          />
+        )}
+
+
+        {/* =========================
+            RESPONSE STATISTICS
+            ========================= */}
 
         <div className="sessionResponseMeta">
           <div className="sessionResponseStats">
@@ -824,18 +1017,31 @@ function InterviewSessionPage({
               </span>
             )}
 
+
+            {isCode && (
+              <span>
+                {lineCount}{" "}
+                {lineCount === 1
+                  ? "line"
+                  : "lines"}
+              </span>
+            )}
+
+
             <span>
               {writtenAnswer.length}{" "}
               characters
             </span>
           </div>
 
+
           {isCode && (
             <span>
-              Code is evaluated as
-              written interview content.
+              AI evaluates your response;
+              code is not executed.
             </span>
           )}
+
 
           {isTheoretical && (
             <span>
