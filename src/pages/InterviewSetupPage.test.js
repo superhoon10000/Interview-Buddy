@@ -165,7 +165,9 @@ describe("InterviewSetupPage", () => {
           "Job Role"
         )
       ).toBeEnabled();
+    });
 
+    await waitFor(() => {
       expect(
         screen.getByLabelText(
           "Experience Level"
@@ -228,7 +230,9 @@ describe("InterviewSetupPage", () => {
           "Experience Level"
         )
       ).toBeEnabled();
+    });
 
+    await waitFor(() => {
       expect(
         screen.queryByText(
           /loading available setup options from firebase/i
