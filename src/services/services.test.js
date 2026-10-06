@@ -1,3 +1,13 @@
+jest.mock("../config/firebase", () => ({
+  auth: {
+    currentUser: {
+      getIdToken: jest.fn(),
+    },
+  },
+}));
+
+import { auth } from "../config/firebase";
+
 import {
   interviewService,
   INTERVIEW_MODES,
@@ -6,6 +16,10 @@ import {
 import { historyService } from "./historyService";
 import { leaderboardService } from "./leaderboardService";
 import { aiService } from "./aiService";
+
+beforeEach(() => {
+  auth.currentUser.getIdToken.mockResolvedValue("test-id-token");
+});
 
 describe("interviewService", () => {
   test("startSession preserves the selected question count", async () => {
@@ -164,7 +178,12 @@ describe("interviewService", () => {
     );
 
     expect(global.fetch).toHaveBeenCalledWith(
-      "http://localhost:5001/api/questions/options?mode=Code+Style"
+      "http://localhost:5001/api/questions/options?mode=Code+Style",
+      {
+        headers: {
+          Authorization: "Bearer test-id-token",
+        },
+      }
     );
     expect(result.tags).toEqual(["tree", "bfs"]);
   });
@@ -186,7 +205,14 @@ describe("interviewService", () => {
     });
 
     const requestUrl = global.fetch.mock.calls[0][0];
+    const requestOptions = global.fetch.mock.calls[0][1];
     const url = new URL(requestUrl);
+
+    expect(requestOptions).toEqual({
+      headers: {
+        Authorization: "Bearer test-id-token",
+      },
+    });
 
     expect(url.pathname).toBe("/api/questions");
     expect(url.searchParams.get("mode")).toBe("Code Style");
@@ -381,7 +407,10 @@ describe("aiService", () => {
       "http://localhost:5001/api/evaluate",
       expect.objectContaining({
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer test-id-token",
+        },
       })
     );
 
