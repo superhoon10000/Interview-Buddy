@@ -1,3 +1,5 @@
+import { auth } from "../config/firebase";
+
 /**
  * React-facing AI evaluation service.
  *
@@ -9,6 +11,16 @@
 const API_BASE_URL = (
   process.env.REACT_APP_API_BASE_URL || "http://localhost:5001/api"
 ).replace(/\/$/, "");
+
+async function getIdToken() {
+  const user = auth.currentUser;
+
+  if (!user) {
+    throw new Error("Authenticated Firebase user is required.");
+  }
+
+  return user.getIdToken();
+}
 
 async function readJsonResponse(response) {
   let payload = null;
@@ -46,10 +58,13 @@ export const aiService = {
       throw new Error("User answer is required.");
     }
 
+    const idToken = await getIdToken();
+
     const response = await fetch(`${API_BASE_URL}/evaluate`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${idToken}`,
       },
       body: JSON.stringify({
         requestId: `evaluation-${Date.now()}`,
