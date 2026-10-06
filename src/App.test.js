@@ -145,12 +145,11 @@ describe("Interview Buddy application routing", () => {
   test("selecting Quiz Style navigates to interview setup", async () => {
     renderAtRoute("/dashboard");
 
-    const openModeButtons =
-      screen.getAllByRole("button", {
-        name: "Open Mode",
-      });
-
-    userEvent.click(openModeButtons[0]);
+    userEvent.click(
+      screen.getByRole("button", {
+        name: /start quiz/i,
+      })
+    );
 
     expect(
       await screen.findByRole("heading", {
@@ -168,12 +167,11 @@ describe("Interview Buddy application routing", () => {
   test("selecting Code Style preserves the selected mode", async () => {
     renderAtRoute("/dashboard");
 
-    const openModeButtons =
-      screen.getAllByRole("button", {
-        name: "Open Mode",
-      });
-
-    userEvent.click(openModeButtons[1]);
+    userEvent.click(
+      screen.getByRole("button", {
+        name: /start coding/i,
+      })
+    );
 
     expect(
       await screen.findByText(
@@ -185,12 +183,11 @@ describe("Interview Buddy application routing", () => {
   test("selecting Theoretical Style preserves the selected mode", async () => {
     renderAtRoute("/dashboard");
 
-    const openModeButtons =
-      screen.getAllByRole("button", {
-        name: "Open Mode",
-      });
-
-    userEvent.click(openModeButtons[2]);
+    userEvent.click(
+      screen.getByRole("button", {
+        name: /start review/i,
+      })
+    );
 
     expect(
       await screen.findByText(

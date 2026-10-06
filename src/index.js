@@ -7,6 +7,7 @@ import "./styles/designSystem.css";
 import "./styles/layout.css";
 import "./styles/pages.css";
 import "./styles/interviewSetup.css";
+import "./styles/dashboard.css";
 
 import App from "./App";
 
