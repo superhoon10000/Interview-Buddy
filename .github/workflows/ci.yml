@@ -59,7 +59,10 @@ jobs:
       
       - name: Run interview Setup tests
         run: npm test -- --watchAll=false --runTestsByPath src/pages/InterviewSetupPage.test.js
-      
+
+      - name: Run Interview Session tests
+        run: npm test -- --watchAll=false --runTestsByPath src/pages/InterviewSessionPage.test.js 
+
       - name: Run frontend tests
         run: npm test -- --watchAll=false
 

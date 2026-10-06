@@ -534,7 +534,7 @@
 
 .primaryButton {
   background: var(--primary-button-bg);
-  color: white;
+  color: var(--primary-button-text);
 }
 
 .primaryButton:hover {

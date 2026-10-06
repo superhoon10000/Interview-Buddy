@@ -146,31 +146,73 @@ export const interviewService = {
    * Retrieve the available setup values from the backend/Firestore question
    * metadata for the currently selected interview mode.
    */
-  async getSetupOptions(mode) {
+  async getSetupOptions(
+    mode,
+    {
+      jobRole = "",
+      experienceLevel = "",
+    } = {}
+  ) {
     validateMode(mode);
 
-    const idToken = await getIdToken();
-    const params = new URLSearchParams({ mode });
+    const idToken =
+      await getIdToken();
+
+    const params =
+      new URLSearchParams({
+        mode,
+      });
+
+    if (jobRole) {
+      params.set(
+        "jobRole",
+        jobRole
+      );
+    }
+
+    if (experienceLevel) {
+      params.set(
+        "experienceLevel",
+        experienceLevel
+      );
+    }
+
     const response = await fetch(
       `${API_BASE_URL}/questions/options?${params.toString()}`,
       {
         headers: {
-          Authorization: `Bearer ${idToken}`,
+          Authorization:
+            `Bearer ${idToken}`,
         },
       }
     );
-    const payload = await readJsonResponse(response);
+
+    const payload =
+      await readJsonResponse(
+        response
+      );
 
     return {
-      jobRoles: Array.isArray(payload?.jobRoles)
-        ? payload.jobRoles
-        : [],
-      experienceLevels: Array.isArray(payload?.experienceLevels)
-        ? payload.experienceLevels
-        : [],
-      tags: Array.isArray(payload?.tags)
-        ? payload.tags
-        : [],
+      jobRoles:
+        Array.isArray(
+          payload?.jobRoles
+        )
+          ? payload.jobRoles
+          : [],
+
+      experienceLevels:
+        Array.isArray(
+          payload?.experienceLevels
+        )
+          ? payload.experienceLevels
+          : [],
+
+      tags:
+        Array.isArray(
+          payload?.tags
+        )
+          ? payload.tags
+          : [],
     };
   },
 

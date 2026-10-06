@@ -4,21 +4,62 @@ import {
   screen,
 } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { MemoryRouter } from "react-router-dom";
+import {
+  MemoryRouter,
+} from "react-router-dom";
+import {
+  useAuth,
+} from "./context/AuthContext";
+import App from "./App";
 
-jest.mock("./context/AuthContext", () => ({
-  useAuth: jest.fn(),
-}));
+jest.mock(
+  "./context/AuthContext",
+  () => ({
+    useAuth: jest.fn(),
+  })
+);
 
-jest.mock("./config/firebase", () => ({
-  __esModule: true,
-  auth: {
-    currentUser: null,
-  },
-  default: {},
-}));
+jest.mock(
+  "./config/firebase",
+  () => ({
+    __esModule: true,
+    auth: {
+      currentUser: null,
+    },
+    default: {},
+  })
+);
 
-import { useAuth } from "./context/AuthContext";
+// App imports all routes, including SettingsPage.
+// Mock it because these routing tests do not need
+// the real settings/Firebase behavior.
+jest.mock(
+  "./pages/SettingsPage",
+  () => {
+    return function MockSettingsPage() {
+      return (
+        <div>
+          Settings Page
+        </div>
+      );
+    };
+  }
+);
+
+// App also imports the interview session route.
+// Mock CodeEditor so App routing tests do not load
+// CodeMirror's ESM dependencies in Jest.
+jest.mock(
+  "./components/interview/CodeEditor",
+  () => ({
+    __esModule: true,
+    default:
+      function MockCodeEditor() {
+        return null;
+      },
+  })
+);
+
 
 //App imports all routes, including SettingsPage, even though tests arent testing that.
 //Mock it for now.  Preferable to not give real firebase credentials (thru Settings)
@@ -28,7 +69,6 @@ jest.mock("./pages/SettingsPage", () => {
   };
 });
 
-import App from "./App";
 
 function renderAtRoute(route) {
   return render(
@@ -145,12 +185,11 @@ describe("Interview Buddy application routing", () => {
   test("selecting Quiz Style navigates to interview setup", async () => {
     renderAtRoute("/dashboard");
 
-    const openModeButtons =
-      screen.getAllByRole("button", {
-        name: "Open Mode",
-      });
-
-    userEvent.click(openModeButtons[0]);
+    userEvent.click(
+      screen.getByRole("button", {
+        name: /start quiz/i,
+      })
+    );
 
     expect(
       await screen.findByRole("heading", {
@@ -168,12 +207,11 @@ describe("Interview Buddy application routing", () => {
   test("selecting Code Style preserves the selected mode", async () => {
     renderAtRoute("/dashboard");
 
-    const openModeButtons =
-      screen.getAllByRole("button", {
-        name: "Open Mode",
-      });
-
-    userEvent.click(openModeButtons[1]);
+    userEvent.click(
+      screen.getByRole("button", {
+        name: /start coding/i,
+      })
+    );
 
     expect(
       await screen.findByText(
@@ -185,12 +223,11 @@ describe("Interview Buddy application routing", () => {
   test("selecting Theoretical Style preserves the selected mode", async () => {
     renderAtRoute("/dashboard");
 
-    const openModeButtons =
-      screen.getAllByRole("button", {
-        name: "Open Mode",
-      });
-
-    userEvent.click(openModeButtons[2]);
+    userEvent.click(
+      screen.getByRole("button", {
+        name: /start review/i,
+      })
+    );
 
     expect(
       await screen.findByText(
