@@ -32,6 +32,7 @@ app.get("/api/health", (req, res) => {
 
 app.use(
   "/api/questions",
+  requireAuth,
   createQuestionRouter({
     questionRepository,
   })
@@ -39,6 +40,7 @@ app.use(
 
 app.use(
   "/api/evaluate",
+  requireAuth,
   createEvaluateRouter({
     questionRepository,
     evaluationRepository,

@@ -1,3 +1,5 @@
+import { auth } from "../config/firebase";
+
 /**
  * React-facing interview/session service facade.
  *
@@ -19,6 +21,16 @@ const API_BASE_URL = (
   process.env.REACT_APP_API_BASE_URL ||
   "http://localhost:5001/api"
 ).replace(/\/$/, "");
+
+async function getIdToken() {
+  const user = auth.currentUser;
+
+  if (!user) {
+    throw new Error("Authenticated Firebase user is required.");
+  }
+
+  return user.getIdToken();
+}
 
 function validateMode(mode) {
   if (!VALID_MODES.includes(mode)) {
@@ -137,9 +149,15 @@ export const interviewService = {
   async getSetupOptions(mode) {
     validateMode(mode);
 
+    const idToken = await getIdToken();
     const params = new URLSearchParams({ mode });
     const response = await fetch(
-      `${API_BASE_URL}/questions/options?${params.toString()}`
+      `${API_BASE_URL}/questions/options?${params.toString()}`,
+      {
+        headers: {
+          Authorization: `Bearer ${idToken}`,
+        },
+      }
     );
     const payload = await readJsonResponse(response);
 
@@ -193,8 +211,14 @@ export const interviewService = {
       params.append("tags", tag);
     });
 
+    const idToken = await getIdToken();
     const response = await fetch(
-      `${API_BASE_URL}/questions?${params.toString()}`
+      `${API_BASE_URL}/questions?${params.toString()}`,
+      {
+        headers: {
+          Authorization: `Bearer ${idToken}`,
+        },
+      }
     );
 
     const payload =
@@ -221,6 +245,7 @@ export const interviewService = {
       );
     }
 
+    const idToken = await getIdToken();
     const response = await fetch(
       `${API_BASE_URL}/questions/${encodeURIComponent(
         questionId
@@ -229,6 +254,7 @@ export const interviewService = {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${idToken}`,
         },
         body: JSON.stringify({
           answer,
