@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { authService } from "../services/authService.js";
 import { Link } from "react-router-dom";
 import { PAGES } from "../utils/constants";
+import BrandLogo from "../components/common/BrandLogo.js";
 
 function LoginPage({ onLogin, onGoToRegister, loginMessage }) {
   const [email, setEmail] = useState("");
@@ -66,7 +67,7 @@ function LoginPage({ onLogin, onGoToRegister, loginMessage }) {
     <div className="loginPage">
       <div className="loginCard">
         <div className="loginHeader">
-          <img src="/IBlogo.jpg" alt="Interview Buiddy logo" className="loginLogo" />
+          <BrandLogo className="loginLogo" />
           <h1 className="loginTitle">Interview Buddy</h1>
           <p className="loginSubtitle">
             Technical Interview Excellence

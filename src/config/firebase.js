@@ -12,10 +12,6 @@ const firebaseConfig = {
 
 const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 
-console.log(
-  "Firebase API key loaded: ",
-  !!process.env.REACT_APP_FIREBASE_API_KEY,
-);
 export const auth = getAuth(app);
 
 export default app;

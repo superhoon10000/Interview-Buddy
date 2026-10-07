@@ -40,7 +40,9 @@ function createQuestionRouter({ questionRepository }) {
 
   router.get("/options", async (req, res, next) => {
     try {
-      const mode = String(req.query.mode || "").trim();
+      const mode =
+        String(req.query.mode || "").trim();
+
       if (!ALLOWED_MODES.has(mode)) {
         return res.status(400).json({
           error:
@@ -48,9 +50,115 @@ function createQuestionRouter({ questionRepository }) {
         });
       }
 
-      const questions = await questionRepository.findByMode(mode);
+      const jobRole =
+        String(
+          req.query.jobRole || ""
+        ).trim();
 
-      return res.json(buildQuestionSetupOptions(questions));
+      const experienceLevel =
+        String(
+          req.query.experienceLevel || ""
+        ).trim();
+
+      /*
+      * Retrieve every question for the selected mode.
+      *
+      * The repository handles Firebase access.
+      */
+      const questions =
+        await questionRepository.findByMode(
+          mode
+        );
+
+      /*
+      * Only active questions should contribute
+      * to setup options.
+      */
+      const activeQuestions =
+        questions.filter(
+          (question) =>
+            question.active !== false
+        );
+
+      /*
+      * Job-role choices are always calculated
+      * from every active question for this mode.
+      */
+      const allOptions =
+        buildQuestionSetupOptions(
+          activeQuestions
+        );
+
+      /*
+      * Once the user selects a role, narrow
+      * the available question pool to questions
+      * supporting that role.
+      */
+      const roleFilteredQuestions =
+        jobRole
+          ? activeQuestions.filter(
+              (question) =>
+                Array.isArray(
+                  question.jobRoles
+                ) &&
+                question.jobRoles.some(
+                  (role) =>
+                    normalize(role) ===
+                    normalize(jobRole)
+                )
+            )
+          : activeQuestions;
+
+      /*
+      * Experience levels should now reflect
+      * only the selected role.
+      */
+      const roleOptions =
+        buildQuestionSetupOptions(
+          roleFilteredQuestions
+        );
+
+      /*
+      * Once the user also chooses an experience
+      * level, narrow the pool again.
+      */
+      const fullyFilteredQuestions =
+        experienceLevel
+          ? roleFilteredQuestions.filter(
+              (question) =>
+                Array.isArray(
+                  question.experienceLevels
+                ) &&
+                question.experienceLevels.some(
+                  (level) =>
+                    normalize(level) ===
+                    normalize(
+                      experienceLevel
+                    )
+                )
+            )
+          : roleFilteredQuestions;
+
+      /*
+      * Practice goals now come only from
+      * questions that match the selected
+      * mode + role + experience level.
+      */
+      const filteredOptions =
+        buildQuestionSetupOptions(
+          fullyFilteredQuestions
+        );
+
+      return res.json({
+        jobRoles:
+          allOptions.jobRoles,
+
+        experienceLevels:
+          roleOptions.experienceLevels,
+
+        tags:
+          filteredOptions.tags,
+      });
     } catch (error) {
       return next(error);
     }

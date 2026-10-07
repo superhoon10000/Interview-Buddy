@@ -1,3 +1,5 @@
+import { auth } from "../config/firebase";
+
 /**
  * React-facing interview/session service facade.
  *
@@ -19,6 +21,16 @@ const API_BASE_URL = (
   process.env.REACT_APP_API_BASE_URL ||
   "http://localhost:5001/api"
 ).replace(/\/$/, "");
+
+async function getIdToken() {
+  const user = auth.currentUser;
+
+  if (!user) {
+    throw new Error("Authenticated Firebase user is required.");
+  }
+
+  return user.getIdToken();
+}
 
 function validateMode(mode) {
   if (!VALID_MODES.includes(mode)) {
@@ -134,25 +146,73 @@ export const interviewService = {
    * Retrieve the available setup values from the backend/Firestore question
    * metadata for the currently selected interview mode.
    */
-  async getSetupOptions(mode) {
+  async getSetupOptions(
+    mode,
+    {
+      jobRole = "",
+      experienceLevel = "",
+    } = {}
+  ) {
     validateMode(mode);
 
-    const params = new URLSearchParams({ mode });
+    const idToken =
+      await getIdToken();
+
+    const params =
+      new URLSearchParams({
+        mode,
+      });
+
+    if (jobRole) {
+      params.set(
+        "jobRole",
+        jobRole
+      );
+    }
+
+    if (experienceLevel) {
+      params.set(
+        "experienceLevel",
+        experienceLevel
+      );
+    }
+
     const response = await fetch(
-      `${API_BASE_URL}/questions/options?${params.toString()}`
+      `${API_BASE_URL}/questions/options?${params.toString()}`,
+      {
+        headers: {
+          Authorization:
+            `Bearer ${idToken}`,
+        },
+      }
     );
-    const payload = await readJsonResponse(response);
+
+    const payload =
+      await readJsonResponse(
+        response
+      );
 
     return {
-      jobRoles: Array.isArray(payload?.jobRoles)
-        ? payload.jobRoles
-        : [],
-      experienceLevels: Array.isArray(payload?.experienceLevels)
-        ? payload.experienceLevels
-        : [],
-      tags: Array.isArray(payload?.tags)
-        ? payload.tags
-        : [],
+      jobRoles:
+        Array.isArray(
+          payload?.jobRoles
+        )
+          ? payload.jobRoles
+          : [],
+
+      experienceLevels:
+        Array.isArray(
+          payload?.experienceLevels
+        )
+          ? payload.experienceLevels
+          : [],
+
+      tags:
+        Array.isArray(
+          payload?.tags
+        )
+          ? payload.tags
+          : [],
     };
   },
 
@@ -193,8 +253,14 @@ export const interviewService = {
       params.append("tags", tag);
     });
 
+    const idToken = await getIdToken();
     const response = await fetch(
-      `${API_BASE_URL}/questions?${params.toString()}`
+      `${API_BASE_URL}/questions?${params.toString()}`,
+      {
+        headers: {
+          Authorization: `Bearer ${idToken}`,
+        },
+      }
     );
 
     const payload =
@@ -221,6 +287,7 @@ export const interviewService = {
       );
     }
 
+    const idToken = await getIdToken();
     const response = await fetch(
       `${API_BASE_URL}/questions/${encodeURIComponent(
         questionId
@@ -229,6 +296,7 @@ export const interviewService = {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${idToken}`,
         },
         body: JSON.stringify({
           answer,
