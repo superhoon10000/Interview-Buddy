@@ -1,3 +1,18 @@
+
+import {
+  createUserWithEmailAndPassword,
+  deleteUser,
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
+  signInWithPopup,
+  signOut,
+  updateProfile,
+} from "firebase/auth";
+
+import { authService } from "./authService";
+
+global.fetch = jest.fn();
+
 jest.mock("firebase/auth", () => ({
   GoogleAuthProvider: jest.fn(() => ({
     providerId: "google.com",
@@ -16,20 +31,6 @@ jest.mock("../config/firebase", () => ({
     currentUser: null,
   },
 }));
-
-import {
-  createUserWithEmailAndPassword,
-  deleteUser,
-  onAuthStateChanged,
-  signInWithEmailAndPassword,
-  signInWithPopup,
-  signOut,
-  updateProfile,
-} from "firebase/auth";
-
-import { authService } from "./authService";
-
-global.fetch = jest.fn();
 
 describe("authService", () => {
   beforeEach(() => {

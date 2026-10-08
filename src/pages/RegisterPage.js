@@ -8,9 +8,17 @@ const [password, setPassword] = useState("");
 const [error, setError] = useState("");
 const [loading, setLoading] = useState(false);
 
+const htmlTagPattern = /<[^>]*>/i;
+
 const handleRegister = async () => {
   setError("");
   setLoading(true);
+
+  if(htmlTagPattern.test(username)) {
+  setError("Username contains invalid characters.");
+  setLoading(false);
+  return;
+  }
 
   try {
     const result = await authService.register({
