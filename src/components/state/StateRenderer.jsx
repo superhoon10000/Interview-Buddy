@@ -5,27 +5,24 @@ import SubmittingState from "./SubmittingState";
 
 function StateRenderer({
   status,
-  data,
+  data = [],
   error,
   children,
-  empty
+  empty,
 }) {
-
-  if(status === "submitting") {
+  if (status === "submitting") {
     return <SubmittingState />;
   }
 
-  if(status === "loading"){
+  if (status === "loading") {
     return <LoadingState />;
   }
 
-  if(status === "error"){
-    return (
-      <ErrorState message={error}/>
-    );
+  if (status === "error") {
+    return <ErrorState message={error} />;
   }
 
-  if(empty && data.length === 0){
+  if (empty && data.length === 0) {
     return <EmptyState />;
   }
 

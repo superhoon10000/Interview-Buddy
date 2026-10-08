@@ -9,6 +9,10 @@ import PageLayout from "../components/layout/PageLayout";
 
 import CodeEditor from "../components/interview/CodeEditor";
 
+import LoadingState from "../components/state/LoadingState";
+import ErrorState from "../components/state/ErrorState";
+import SubmittingState from "../components/state/SubmittingState";
+
 import {
   aiService,
   interviewService,
@@ -172,6 +176,22 @@ function InterviewSessionPage({
   const isTheoretical =
     selectedMode ===
     "Theoretical Style";
+
+  const submissionMessage =
+    useMemo(() => {
+      if (isQuiz) {
+        return "Checking answer...";
+      }
+
+      if (isCode) {
+        return "Evaluating solution...";
+      }
+
+      return "Evaluating response...";
+    }, [
+      isQuiz,
+      isCode,
+    ]);
 
   const questionCount =
     questions.length;
@@ -536,9 +556,14 @@ function InterviewSessionPage({
         ]
       );
     } catch (error) {
+      const fallbackMessage =
+        isQuiz
+          ? "Unable to check your answer. Please try again."
+          : "Unable to evaluate your response. Please try again.";
+
       setSubmissionError(
-        error.message ||
-          "Unable to evaluate your answer. Please try again."
+        error?.message ||
+          fallbackMessage
       );
     } finally {
       setIsSubmitting(false);
@@ -647,6 +672,11 @@ function InterviewSessionPage({
                 className={`sessionQuizOption${
                   isSelected
                     ? " selected"
+                    : ""
+                }${
+                  isSubmitting ||
+                  evaluationResult
+                    ? " disabled"
                     : ""
                 }`}
               >
@@ -1290,84 +1320,36 @@ function InterviewSessionPage({
     );
   }
 
-  if (
-    isLoadingQuestions
-  ) {
+  if (isLoadingQuestions) {
     return (
       <PageLayout
         title="Interview Session"
         subtitle="Preparing your practice session."
-        currentPage={
-          currentPage
-        }
-        onNavigate={
-          onNavigate
-        }
+        currentPage={currentPage}
+        onNavigate={onNavigate}
       >
-        <div
-          className="sessionLoadingCard ib-card"
-          role="status"
-        >
-          <div className="sessionLoadingSpinner" />
-
-          <h2>
-            Loading interview
-            questions
-          </h2>
-
-          <p>
-            Finding questions
-            that match your role,
-            experience level, and
-            practice goals.
-          </p>
-        </div>
+        <LoadingState
+          title="Loading interview questions"
+          message="Finding questions that match your role, experience level, and practice goals."
+        />
       </PageLayout>
     );
   }
 
-  if (
-    questionLoadError
-  ) {
+  if (questionLoadError) {
     return (
       <PageLayout
         title="Interview Session"
         subtitle="We could not start your session."
-        currentPage={
-          currentPage
-        }
-        onNavigate={
-          onNavigate
-        }
+        currentPage={currentPage}
+        onNavigate={onNavigate}
       >
-        <div className="sessionErrorCard ib-card">
-          <div className="sessionErrorIcon">
-            !
-          </div>
-
-          <div>
-            <h2>
-              Questions could
-              not be loaded
-            </h2>
-
-            <p>
-              {
-                questionLoadError
-              }
-            </p>
-          </div>
-
-          <button
-            type="button"
-            className="ib-button ib-button--primary"
-            onClick={
-              loadQuestions
-            }
-          >
-            Retry Question Load
-          </button>
-        </div>
+        <ErrorState
+          title="Questions could not be loaded"
+          message={questionLoadError}
+          retry={loadQuestions}
+          retryLabel="Retry Question Load"
+        />
       </PageLayout>
     );
   }
@@ -1465,7 +1447,10 @@ function InterviewSessionPage({
           </div>
 
           {/* Question */}
-          <article className="sessionQuestionCard ib-card">
+          <article
+            className="sessionQuestionCard ib-card"
+            aria-busy={isSubmitting}
+          >
             <div className="sessionQuestionHeader">
               <div>
                 <span className="ib-eyebrow">
@@ -1521,10 +1506,14 @@ function InterviewSessionPage({
                 className="sessionSubmissionError"
                 role="alert"
               >
-                {
-                  submissionError
-                }
+                {submissionError}
               </div>
+            )}
+
+            {isSubmitting && (
+              <SubmittingState
+                message={submissionMessage}
+              />
             )}
 
             {renderQuizFeedback()}
@@ -1558,7 +1547,7 @@ function InterviewSessionPage({
                     }
                   >
                     {isSubmitting
-                      ? "Evaluating..."
+                      ? submissionMessage
                       : "Submit"}
                   </button>
                 )}
