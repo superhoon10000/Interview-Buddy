@@ -1,10 +1,3 @@
-jest.mock("../config/firebase", () => ({
-  auth: {
-    currentUser: {
-      getIdToken: jest.fn(),
-    },
-  },
-}));
 
 import { auth } from "../config/firebase";
 
@@ -16,6 +9,14 @@ import {
 import { historyService } from "./historyService";
 import { leaderboardService } from "./leaderboardService";
 import { aiService } from "./aiService";
+
+jest.mock("../config/firebase", () => ({
+  auth: {
+    currentUser: {
+      getIdToken: jest.fn(),
+    },
+  },
+}));
 
 beforeEach(() => {
   auth.currentUser.getIdToken.mockResolvedValue("test-id-token");

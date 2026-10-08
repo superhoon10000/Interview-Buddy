@@ -2,11 +2,13 @@ import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import LoginPage from "./LoginPage";
+import RegisterPage from "./RegisterPage";
 
 jest.mock("../services/authService.js", () => ({
   authService: {
     login: jest.fn(),
     loginWithGoogle: jest.fn(),
+    register: jest.fn(),
   },
 }));
 
@@ -62,7 +64,7 @@ test("displays error when email is invalid", () => {
 });
 
 
-test("Rejects malicioous looking email", () => {
+test("Rejects malicious looking email", () => {
   renderLoginPage();
 
   const emailInput = screen.getByPlaceholderText("Email");
@@ -83,16 +85,18 @@ test("Rejects malicioous looking email", () => {
   fireEvent.click(loginButton);
 
   expect(
-    screen.getByText("Please enter a valid email address")
+    screen.getByText("Please enter a valid email")
   ).toBeInTheDocument();
 });
 
 test("handles stored XSS input in username", () => {
-  const maliciousInput = '<script>alert("Hacked!")</script>';
-
-  render(<RegisterPage />);
-
-  const usernameInput = screen.getByLabelText(/username/i);
+  
+  render(<RegisterPage
+    onRegister={jest.fn()}
+    onGoToLogin={jest.fn()} />);
+    
+    const usernameInput = screen.getByPlaceholderText("Username");
+    const maliciousInput = '<script>alert("Hacked!")</script>';
 
   fireEvent.change(usernameInput, {
     target: { value: maliciousInput },
