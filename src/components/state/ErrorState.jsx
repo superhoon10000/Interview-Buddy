@@ -1,14 +1,33 @@
 export default function ErrorState({
-  message="Something went wrong",
-  retry
+  title,
+  message = "Something went wrong",
+  retry,
+  retryLabel = "Try Again",
 }) {
   return (
-    <div className="state error">
-      <p>{message}</p>
+    <div
+      className="state error ibStateCard ibStateCard--error ib-card"
+      role="alert"
+    >
+      <div
+        className="ibStateIcon"
+        aria-hidden="true"
+      >
+        !
+      </div>
+
+      <div className="ibStateContent">
+        {title && <h2>{title}</h2>}
+        <p>{message}</p>
+      </div>
 
       {retry && (
-        <button onClick={retry}>
-          Try Again
+        <button
+          type="button"
+          className="ib-button ib-button--primary"
+          onClick={retry}
+        >
+          {retryLabel}
         </button>
       )}
     </div>

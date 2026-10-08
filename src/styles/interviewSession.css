@@ -1196,7 +1196,313 @@
   font-size:
     var(--ib-font-size-sm);
 }
+/* ============================================================
+   SHARED ASYNC STATES
+   Loading / error / submitting presentation
+   ============================================================ */
 
+.ibStateCard {
+  width: 100%;
+  min-height: 220px;
+
+  padding:
+    var(--ib-space-8)
+    var(--ib-space-6);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: var(--ib-space-5);
+
+  text-align: left;
+}
+
+.ibStateContent {
+  max-width: 520px;
+}
+
+.ibStateContent h2 {
+  margin:
+    var(--ib-space-1)
+    0
+    var(--ib-space-2);
+
+  color:
+    var(--ib-text);
+
+  font-size:
+    var(--ib-font-size-xl);
+
+  font-weight:
+    var(--ib-font-weight-semibold);
+}
+
+.ibStateContent p {
+  margin: 0;
+
+  color:
+    var(--ib-text-secondary);
+
+  font-size:
+    var(--ib-font-size-sm);
+
+  line-height:
+    var(--ib-line-height-relaxed);
+}
+
+.ibStateSpinner,
+.ibSubmittingSpinner {
+  flex-shrink: 0;
+
+  border:
+    3px solid
+    var(--ib-border);
+
+  border-top-color:
+    var(--ib-accent);
+
+  border-radius:
+    var(--ib-radius-pill);
+
+  animation:
+    ibStateSpin
+    0.8s
+    linear
+    infinite;
+}
+
+.ibStateSpinner {
+  width: 42px;
+  height: 42px;
+}
+
+.ibStateIcon {
+  flex-shrink: 0;
+
+  width: 42px;
+  height: 42px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border:
+    1px solid
+    var(--ib-danger-border);
+
+  border-radius:
+    var(--ib-radius-pill);
+
+  background:
+    var(--ib-danger-soft);
+
+  color:
+    var(--ib-danger);
+
+  font-size:
+    var(--ib-font-size-lg);
+
+  font-weight:
+    var(--ib-font-weight-bold);
+}
+
+.ibStateCard--error {
+  flex-wrap: wrap;
+}
+
+.ibStateCard--error
+.ib-button {
+  margin-left:
+    var(--ib-space-3);
+}
+
+@keyframes ibStateSpin {
+  to {
+    transform:
+      rotate(360deg);
+  }
+}
+
+
+/* ============================================================
+   INLINE SUBMISSION STATUS
+   ============================================================ */
+
+.ibSubmittingState {
+  margin:
+    var(--ib-space-4)
+    var(--ib-space-5)
+    0;
+
+  padding:
+    var(--ib-space-3);
+
+  display: flex;
+  align-items: center;
+
+  gap:
+    var(--ib-space-3);
+
+  border:
+    1px solid
+    var(--ib-accent-border);
+
+  border-radius:
+    var(--ib-radius-sm);
+
+  background:
+    var(--ib-accent-soft);
+}
+
+.ibSubmittingSpinner {
+  width: 24px;
+  height: 24px;
+}
+
+.ibSubmittingState > div:last-child {
+  display: flex;
+  flex-direction: column;
+
+  gap: 2px;
+}
+
+.ibSubmittingState strong {
+  color:
+    var(--ib-text);
+
+  font-size:
+    var(--ib-font-size-sm);
+
+  font-weight:
+    var(--ib-font-weight-semibold);
+}
+
+.ibSubmittingState span {
+  color:
+    var(--ib-text-secondary);
+
+  font-size:
+    var(--ib-font-size-xs);
+
+  line-height:
+    var(--ib-line-height-normal);
+}
+
+
+/* ============================================================
+   SUBMISSION ERROR
+   ============================================================ */
+
+.sessionSubmissionError {
+  margin:
+    var(--ib-space-4)
+    var(--ib-space-5)
+    0;
+
+  padding:
+    var(--ib-space-3);
+
+  display: flex;
+  align-items: flex-start;
+
+  gap:
+    var(--ib-space-3);
+
+  border:
+    1px solid
+    var(--ib-danger-border);
+
+  border-radius:
+    var(--ib-radius-sm);
+
+  background:
+    var(--ib-danger-soft);
+
+  color:
+    var(--ib-danger);
+}
+
+.sessionSubmissionErrorIcon {
+  flex-shrink: 0;
+
+  width: 24px;
+  height: 24px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border:
+    1px solid
+    var(--ib-danger-border);
+
+  border-radius:
+    var(--ib-radius-pill);
+
+  font-size:
+    var(--ib-font-size-xs);
+
+  font-weight:
+    var(--ib-font-weight-bold);
+}
+
+.sessionSubmissionError > div:last-child {
+  display: flex;
+  flex-direction: column;
+
+  gap: 2px;
+}
+
+.sessionSubmissionError strong {
+  color:
+    var(--ib-danger);
+
+  font-size:
+    var(--ib-font-size-sm);
+
+  font-weight:
+    var(--ib-font-weight-semibold);
+}
+
+.sessionSubmissionError span {
+  color:
+    var(--ib-text-secondary);
+
+  font-size:
+    var(--ib-font-size-xs);
+
+  line-height:
+    var(--ib-line-height-normal);
+}
+
+
+/* ============================================================
+   DISABLED ANSWER STATES
+   ============================================================ */
+
+.sessionQuizOption.disabled {
+  cursor: not-allowed;
+
+  opacity: 0.72;
+}
+
+.sessionQuizOption.disabled:hover {
+  transform: none;
+
+  border-color:
+    var(--ib-border-strong);
+
+  box-shadow: none;
+}
+
+.sessionQuizOption.selected.disabled {
+  border-color:
+    var(--ib-accent);
+
+  background:
+    var(--ib-accent-soft);
+}
 
 /* ============================================================
    RESPONSIVE

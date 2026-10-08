@@ -1,9 +1,17 @@
-import Spinner from "../common/Spinner";
-
-export default function SubmittingState({message="Submitting..."}) {
+export default function SubmittingState({
+  message = "Submitting...",
+}) {
   return (
-    <div className="state submitting">
-      <Spinner />           
+    <div
+      className="state submitting ibSubmittingState"
+      role="status"
+      aria-live="polite"
+    >
+      <div
+        className="ibSubmittingSpinner"
+        aria-hidden="true"
+      />
+
       <p>{message}</p>
     </div>
   );
