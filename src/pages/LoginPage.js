@@ -1,160 +1,169 @@
-import React, { useState } from "react"; 
-import { authService } from "../services/authService.js";
+
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
+
+import AuthShell from "../components/auth/AuthShell";
+import { authService } from "../services/authService.js";
 import { PAGES } from "../utils/constants";
-import BrandLogo from "../components/common/BrandLogo.js";
 
 function LoginPage({ onLogin, onGoToRegister, loginMessage }) {
   const [email, setEmail] = useState("");
-  const [password,setPassword] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleLogin = async () => {
+  const handleLogin = async (event) => {
+    event.preventDefault();
+    if (loading) return;
+
     setError("");
 
-    if(!email.trim() || !password) {
-      setError("Please enter both email and password.")
+    if (!email.trim() || !password) {
+      setError("Please enter both email and password.");
       return;
     }
 
     if (!email.includes("@")) {
-       setError("Please enter a valid email");
+      setError("Please enter a valid email");
       return;
     }
+
     setLoading(true);
 
     try {
       const result = await authService.login({
-        email,
+        email: email.trim(),
         password,
       });
 
-      if (result.authenticated){
-        console.log("Login Successful:", result);
+      if (result.authenticated) {
         onLogin();
       }
-
-    } catch (error) {
-      console.error("Login failed:", error);
-      setError(error.message || "Login Failed. Please try again.")
-    }finally{
+    } catch (loginError) {
+      setError(loginError.message || "Login Failed. Please try again.");
+    } finally {
       setLoading(false);
     }
   };
 
   const handleGoogleLogin = async () => {
+    if (loading) return;
+
     setError("");
     setLoading(true);
 
     try {
       const result = await authService.loginWithGoogle();
-      if(result.authenticated) {
-        console.log("Google login successful:", result);
-         onLogin();
+
+      if (result.authenticated) {
+        onLogin();
       }
-    } catch (error){
-      console.error("Google login failed:", error);
-      setError(error.message || "Google login failed. Please try again.");
-    }finally{
+    } catch (loginError) {
+      setError(loginError.message || "Google login failed. Please try again.");
+    } finally {
       setLoading(false);
     }
   };
 
-  // 4. Render the UI
-  
   return (
-    <div className="loginPage">
-      <div className="loginCard">
-        <div className="loginHeader">
-          <BrandLogo className="loginLogo" />
-          <h1 className="loginTitle">Interview Buddy</h1>
-          <p className="loginSubtitle">
-            Technical Interview Excellence
-          </p>
+    <AuthShell
+      eyebrow="ACCOUNT ACCESS"
+      title="Welcome back"
+      subtitle="Sign in to continue practicing and tracking your progress."
+    >
+      {loginMessage && (
+        <p className="ib-auth-message ib-auth-message--success" role="status">
+          {loginMessage}
+        </p>
+      )}
+
+      <form className="ib-auth-form" onSubmit={handleLogin} noValidate>
+        <div className="ib-auth-field">
+          <label className="ib-label" htmlFor="ib-login-email">
+            Email address
+          </label>
+
+          <input
+            id="ib-login-email"
+            className="ib-input ib-auth-input"
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+            autoComplete="email"
+            disabled={loading}
+            required
+          />
         </div>
 
-        {/* UC15 — confirmation banner shown after account deletion. */}
-        {loginMessage && (
-          <p
-            style={{
-              backgroundColor: "#e6f4ea",
-              color: "#2e7d32",
-              padding: "10px 14px",
-              borderRadius: "8px",
-              marginBottom: "16px",
-              fontSize: "14px",
-              textAlign: "center",
-            }}
-          >
-            ✓ {loginMessage}
+        <div className="ib-auth-field">
+          <div className="ib-auth-field-heading">
+            <label className="ib-label" htmlFor="ib-login-password">
+              Password
+            </label>
+
+            <Link className="ib-auth-link" to={PAGES.FORGOT_PASSWORD}>
+              Forgot password?
+            </Link>
+          </div>
+
+          <input
+            id="ib-login-password"
+            className="ib-input ib-auth-input"
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            autoComplete="current-password"
+            disabled={loading}
+            required
+          />
+        </div>
+
+        {error && (
+          <p className="ib-auth-message ib-auth-message--error" role="alert">
+            {error}
           </p>
         )}
 
-          
+        <button
+          className="ib-button ib-button--primary ib-auth-action"
+          type="submit"
+          disabled={loading}
+        >
+          {loading ? "Logging in..." : "Login to Workspace"}
+          {!loading && <span aria-hidden="true">→</span>}
+        </button>
+      </form>
 
-        <div className="loginForm">
-          <div className="inputGroup">  
-          <label className="inputLabel">Email</label>
-              <input
-                className="textInput"
-                type="text"
-                placeholder="Email"
-                value={email}
-                onChange={(e)=> setEmail(e.target.value)}
-              />
-          </div>
-
-                  
-          <div className="inputGroup">
-            <div className="labelRow"> 
-               <label className="inputLabel">Password</label>
-               <Link to={PAGES.FORGOT_PASSWORD} className="forgotPasswordLink">Forgot Password</Link>
-            </div>
-                 <input
-                   className="textInput"
-                   type="password"
-                   placeholder="Password"
-                   value={password}
-                   onChange={(e)=> setPassword(e.target.value)}
-                   />
-          </div>
-
-          {error && (
-            <p role="alert" style={{ color: "red" }}>
-              {error}
-              </p>
-          )}
-
-          <button
-           className="primaryButton"
-           type="button"
-           onClick={handleLogin}
-           disabled={loading}>
-           {loading ? "Logging in...": <>Login to Workspace &rarr;</>}
-           </button>
-
-          <div className="divider">
-            <span className="dividerText">OR</span>
-          </div>
-          
-          <div className="socialButton"> 
-            <button className="socialButton" 
-            type="button"
-            onClick={handleGoogleLogin}
-            disabled={loading}
-            >
-
-            <span style={{ color: 'gold' }}>&#9679;</span> Google
-            </button>
-          </div>
-
-          <button className="textButton" onClick={onGoToRegister}>
-            Create Account
-          </button>
-        </div>
+      <div className="ib-auth-separator" aria-hidden="true">
+        <span>or continue with</span>
       </div>
-    </div>
+
+      <button
+        type="button"
+        className="ib-button ib-button--secondary ib-auth-action ib-auth-google-button"
+        onClick={handleGoogleLogin}
+        disabled={loading}
+      >
+        <span className="ib-auth-google-symbol" aria-hidden="true">
+          G
+        </span>
+        Continue with Google
+      </button>
+
+      <p className="ib-auth-switch">
+        New to Interview Buddy?{" "}
+        <button
+          type="button"
+          className="ib-auth-switch-button"
+          onClick={onGoToRegister}
+          disabled={loading}
+        >
+          Create Account
+        </button>
+      </p>
+    </AuthShell>
   );
 }
 
