@@ -4,6 +4,7 @@ const createQuestionRouter = require("./routes/questions");
 const createEvaluateRouter = require("./routes/evaluate");
 const createUserRouter = require("./routes/users");
 const requireAuth = require("./middleware/requireAuth");
+const getHealthPayload = require("./health");
 
 const {
   questionRepository,
@@ -24,10 +25,7 @@ app.use(
 app.use(express.json({ limit: "1mb" }));
 
 app.get("/api/health", (req, res) => {
-  res.json({
-    status: "ok",
-    service: "interview-buddy-api",
-  });
+  res.json(getHealthPayload());
 });
 
 app.use(
