@@ -1,19 +1,12 @@
+/** Public, non-sensitive deployment traceability for smoke tests. */
 
-const { getHealthPayload } = require("./health");
+function getHealthPayload(env = process.env) {
+  return {
+    status: "ok",
+    service: "interview-buddy-api",
+    buildVersion: env.BUILD_VERSION || "local",
+    sourceCommitSha: env.SOURCE_COMMIT_SHA || "local",
+  };
+}
 
-describe("health deployment metadata", () => {
-  test("contains the source revision and CI build version", () => {
-    const sourceCommitSha =
-      "0123456789abcdef0123456789abcdef01234567";
-
-    expect(getHealthPayload({
-      BUILD_VERSION: "IB-build-35.1-a73bf21",
-      SOURCE_COMMIT_SHA: sourceCommitSha,
-    })).toEqual({
-      status: "ok",
-      service: "interview-buddy-api",
-      buildVersion: "IB-build-35.1-a73bf21",
-      sourceCommitSha: sourceCommitSha,
-    });
-  });
-});
+module.exports = getHealthPayload;
