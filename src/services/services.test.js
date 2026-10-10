@@ -52,6 +52,161 @@ describe("interviewService", () => {
     );
   });
 
+  test(
+    "getQuestionQuota retrieves the current daily question allowance",
+    async () => {
+      global.fetch =
+        jest.fn()
+          .mockResolvedValue({
+            ok: true,
+            status: 200,
+
+            json: async () => ({
+              quota: {
+                role: "user",
+
+                unlimited: false,
+
+                limit: 20,
+
+                used: 7,
+
+                remaining: 13,
+
+                codeQuestionsUsed: 4,
+
+                theoreticalQuestionsUsed: 3,
+
+                dateKey:
+                  "2026-10-09",
+
+                timeZone:
+                  "America/Los_Angeles",
+              },
+            }),
+          });
+
+      const result =
+        await interviewService
+          .getQuestionQuota();
+
+      expect(
+        global.fetch
+      ).toHaveBeenCalledWith(
+        "http://localhost:5001/api/questions/quota",
+        {
+          headers: {
+            Authorization:
+              "Bearer test-id-token",
+          },
+        }
+      );
+
+      expect(result).toEqual({
+        role: "user",
+
+        unlimited: false,
+
+        limit: 20,
+
+        used: 7,
+
+        remaining: 13,
+
+        codeQuestionsUsed: 4,
+
+        theoreticalQuestionsUsed: 3,
+
+        dateKey:
+          "2026-10-09",
+
+        timeZone:
+          "America/Los_Angeles",
+      });
+    }
+  );
+
+  test(
+    "getQuestions preserves daily quota error information",
+    async () => {
+      global.fetch =
+        jest.fn()
+          .mockResolvedValue({
+            ok: false,
+            status: 429,
+
+            json: async () => ({
+              error:
+                "Daily AI question limit exceeded. 2 questions remain today.",
+
+              code:
+                "daily-question-limit-exceeded",
+
+              quota: {
+                limit: 20,
+                used: 18,
+                requested: 5,
+                remaining: 2,
+              },
+            }),
+          });
+
+      let receivedError;
+
+      try {
+        await interviewService
+          .getQuestions({
+            mode:
+              INTERVIEW_MODES.CODE,
+
+            jobRole:
+              "Software Engineer",
+
+            experienceLevel:
+              "Intermediate",
+
+            tags: [
+              "algorithms",
+            ],
+
+            limit: 5,
+          });
+      } catch (error) {
+        receivedError =
+          error;
+      }
+
+      expect(
+        receivedError
+      ).toBeDefined();
+
+      expect(
+        receivedError.code
+      ).toBe(
+        "daily-question-limit-exceeded"
+      );
+
+      expect(
+        receivedError.status
+      ).toBe(429);
+
+      expect(
+        receivedError.quota
+      ).toEqual({
+        limit: 20,
+        used: 18,
+        requested: 5,
+        remaining: 2,
+      });
+
+      expect(
+        receivedError.message
+      ).toBe(
+        "Daily AI question limit exceeded. 2 questions remain today."
+      );
+    }
+  );
+
   test("startSession defaults to 10 questions when no count is provided", async () => {
     const result =
       await interviewService.startSession({
