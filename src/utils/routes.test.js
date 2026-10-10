@@ -104,6 +104,20 @@ describe("AppRoutes", () => {
         uid: "test-user",
         email: "test@example.com",
       },
+
+      profile: {
+        uid: "test-user",
+        username: "TestUser",
+        usernameLower: "testuser",
+        email: "test@example.com",
+        role: "user",
+        settings: {
+          theme: "light",
+        },
+      },
+
+      profileComplete: true,
+      profileError: "",
       loading: false,
     });
   });
@@ -127,6 +141,38 @@ describe("AppRoutes", () => {
 
     expect(screen.getByTestId("current-location")).toHaveTextContent(path);
   });
+
+  test(
+    "redirects an authenticated user without a completed profile to login",
+    async () => {
+      useAuth.mockReturnValue({
+        user: {
+          uid: "google-user-123",
+          email: "unfinished@gmail.com",
+        },
+        profile: null,
+        profileComplete: false,
+        profileError: "",
+        loading: false,
+      });
+
+      renderRoute(PAGES.DASHBOARD);
+
+      await waitFor(() => {
+        expect(
+          screen.getByText("Login Route")
+        ).toBeInTheDocument();
+      });
+
+      expect(
+        screen.getByTestId(
+          "current-location"
+        )
+      ).toHaveTextContent(
+        PAGES.LOGIN
+      );
+    }
+  );
 
   test("redirects the base URL to the login route", async () => {
     renderRoute("/");
@@ -166,6 +212,9 @@ describe("AppRoutes", () => {
     async (path) => {
       useAuth.mockReturnValue({
         user: null,
+        profile: null,
+        profileComplete: false,
+        profileError: "",
         loading: false,
       });
 
@@ -185,6 +234,9 @@ describe("AppRoutes", () => {
   test("does not redirect while authentication is still loading", () => {
     useAuth.mockReturnValue({
       user: null,
+      profile: null,
+      profileComplete: false,
+      profileError: "",
       loading: true,
     });
 
@@ -211,7 +263,10 @@ describe("AppRoutes", () => {
     (path, expectedPage) => {
       useAuth.mockReturnValue({
         user: null,
-        loading: false,
+        profile: null,
+        profileComplete: false,
+        profileError: "",
+        loading: true,
       });
 
       renderRoute(path);

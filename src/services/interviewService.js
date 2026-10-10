@@ -4,9 +4,7 @@ import { auth } from "../config/firebase";
  * React-facing interview/session service facade.
  *
  * The page layer calls this service instead of talking directly to Firebase.
- * Database access stays behind the Express application layer, which lets the
- * frontend keep the same service contract as authentication, history, AI, and
- * leaderboard features are implemented.
+ * Database access stays behind the Express application layer.
  */
 
 export const INTERVIEW_MODES = Object.freeze({
@@ -15,7 +13,9 @@ export const INTERVIEW_MODES = Object.freeze({
   THEORETICAL: "Theoretical Style",
 });
 
-const VALID_MODES = Object.values(INTERVIEW_MODES);
+const VALID_MODES = Object.values(
+  INTERVIEW_MODES
+);
 
 const API_BASE_URL = (
   process.env.REACT_APP_API_BASE_URL ||
@@ -26,7 +26,9 @@ async function getIdToken() {
   const user = auth.currentUser;
 
   if (!user) {
-    throw new Error("Authenticated Firebase user is required.");
+    throw new Error(
+      "Authenticated Firebase user is required."
+    );
   }
 
   return user.getIdToken();
@@ -41,18 +43,36 @@ function validateMode(mode) {
 }
 
 function normalizeTags(value) {
-  const values = Array.isArray(value) ? value : [value];
+  const values = Array.isArray(value)
+    ? value
+    : [value];
 
   return [
     ...new Set(
       values
-        .flatMap((entry) => String(entry || "").split(","))
+        .flatMap((entry) =>
+          String(entry || "").split(",")
+        )
         .map((tag) => tag.trim())
         .filter(Boolean)
     ),
   ];
 }
 
+/**
+ * Read an Express JSON response.
+ *
+ * In addition to the message, preserve backend
+ * metadata such as the error code and quota state.
+ *
+ * This lets pages distinguish:
+ *
+ * normal network/server failure
+ *
+ * from
+ *
+ * daily-question-limit-exceeded
+ */
 async function readJsonResponse(response) {
   let payload = null;
 
@@ -69,10 +89,84 @@ async function readJsonResponse(response) {
       payload?.message ||
       `Interview service request failed (${response.status}).`;
 
-    throw new Error(message);
+    const serviceError =
+      new Error(message);
+
+    serviceError.code =
+      payload?.code ||
+      "interview-service-error";
+
+    serviceError.status =
+      response.status;
+
+    serviceError.quota =
+      payload?.quota ||
+      null;
+
+    throw serviceError;
   }
 
   return payload;
+}
+
+function normalizeQuota(quota) {
+  if (!quota) {
+    return null;
+  }
+
+  const unlimited =
+    Boolean(quota.unlimited);
+
+  return {
+    role:
+      String(
+        quota.role || ""
+      ),
+
+    unlimited,
+
+    limit:
+      quota.limit === null ||
+      quota.limit === undefined
+        ? null
+        : Number(quota.limit),
+
+    used:
+      Number(
+        quota.used || 0
+      ),
+
+    remaining:
+      quota.remaining === null ||
+      quota.remaining === undefined
+        ? null
+        : Number(
+            quota.remaining
+          ),
+
+    codeQuestionsUsed:
+      Number(
+        quota.codeQuestionsUsed ||
+        0
+      ),
+
+    theoreticalQuestionsUsed:
+      Number(
+        quota
+          .theoreticalQuestionsUsed ||
+          0
+      ),
+
+    dateKey:
+      String(
+        quota.dateKey || ""
+      ),
+
+    timeZone:
+      String(
+        quota.timeZone || ""
+      ),
+  };
 }
 
 export const interviewService = {
@@ -88,7 +182,7 @@ export const interviewService = {
       jobRole,
       experienceLevel,
       tags,
-      // Kept as a compatibility fallback for older callers/tests.
+      // Compatibility fallback for older callers/tests.
       practiceGoals,
       codingLanguage,
       questionCount = 10,
@@ -96,10 +190,15 @@ export const interviewService = {
 
     validateMode(mode);
 
-    const selectedTags = normalizeTags(tags);
-    const normalizedTags = selectedTags.length > 0
-      ? selectedTags
-      : normalizeTags(practiceGoals);
+    const selectedTags =
+      normalizeTags(tags);
+
+    const normalizedTags =
+      selectedTags.length > 0
+        ? selectedTags
+        : normalizeTags(
+            practiceGoals
+          );
 
     if (
       !jobRole ||
@@ -115,7 +214,9 @@ export const interviewService = {
       Number(questionCount);
 
     if (
-      !Number.isInteger(normalizedQuestionCount) ||
+      !Number.isInteger(
+        normalizedQuestionCount
+      ) ||
       normalizedQuestionCount < 1 ||
       normalizedQuestionCount > 20
     ) {
@@ -124,27 +225,64 @@ export const interviewService = {
       );
     }
 
-    // Session persistence can replace this mock object later. The important
-    // integration contract is that selected tags stay structured as an array.
     return {
       id: `mock-session-${Date.now()}`,
       mode,
       jobRole,
       experienceLevel,
       tags: normalizedTags,
-      // Preserve the old field while other prototype code is still being
-      // migrated. New question retrieval uses tags.
-      practiceGoals: normalizedTags.join(", "),
-      codingLanguage: codingLanguage || null,
-      questionCount: normalizedQuestionCount,
+
+      practiceGoals:
+        normalizedTags.join(", "),
+
+      codingLanguage:
+        codingLanguage || null,
+
+      questionCount:
+        normalizedQuestionCount,
+
       status: "active",
-      startedAt: new Date().toISOString(),
+
+      startedAt:
+        new Date().toISOString(),
     };
   },
 
   /**
-   * Retrieve the available setup values from the backend/Firestore question
-   * metadata for the currently selected interview mode.
+   * Retrieve the user's current shared
+   * Code + Theoretical daily allowance.
+   *
+   * Quiz Style does not consume this allowance,
+   * but the endpoint itself is mode-independent.
+   */
+  async getQuestionQuota() {
+    const idToken =
+      await getIdToken();
+
+    const response =
+      await fetch(
+        `${API_BASE_URL}/questions/quota`,
+        {
+          headers: {
+            Authorization:
+              `Bearer ${idToken}`,
+          },
+        }
+      );
+
+    const payload =
+      await readJsonResponse(
+        response
+      );
+
+    return normalizeQuota(
+      payload?.quota
+    );
+  },
+
+  /**
+   * Retrieve the available setup values
+   * from Firestore question metadata.
    */
   async getSetupOptions(
     mode,
@@ -177,15 +315,16 @@ export const interviewService = {
       );
     }
 
-    const response = await fetch(
-      `${API_BASE_URL}/questions/options?${params.toString()}`,
-      {
-        headers: {
-          Authorization:
-            `Bearer ${idToken}`,
-        },
-      }
-    );
+    const response =
+      await fetch(
+        `${API_BASE_URL}/questions/options?${params.toString()}`,
+        {
+          headers: {
+            Authorization:
+              `Bearer ${idToken}`,
+          },
+        }
+      );
 
     const payload =
       await readJsonResponse(
@@ -202,9 +341,11 @@ export const interviewService = {
 
       experienceLevels:
         Array.isArray(
-          payload?.experienceLevels
+          payload
+            ?.experienceLevels
         )
-          ? payload.experienceLevels
+          ? payload
+              .experienceLevels
           : [],
 
       tags:
@@ -217,99 +358,149 @@ export const interviewService = {
   },
 
   /**
-   * Retrieve interview questions through the backend.
-   * The browser does not connect directly to Firestore.
+   * Retrieve interview questions through
+   * the backend.
+   *
+   * The backend performs the actual quota
+   * reservation for Code/Theoretical modes.
    */
   async getQuestions({
+    sessionId = "",
     mode,
     jobRole = "",
     experienceLevel = "",
     tags,
-    // Compatibility fallback for sessions created before the tag contract.
     practiceGoals = "",
     limit = 10,
   } = {}) {
     validateMode(mode);
 
-    const selectedTags = normalizeTags(tags);
-    const normalizedTags = selectedTags.length > 0
-      ? selectedTags
-      : normalizeTags(practiceGoals);
+    const selectedTags =
+      normalizeTags(tags);
 
-    if (!jobRole || !experienceLevel || normalizedTags.length === 0) {
+    const normalizedTags =
+      selectedTags.length > 0
+        ? selectedTags
+        : normalizeTags(
+            practiceGoals
+          );
+
+    if (
+      !jobRole ||
+      !experienceLevel ||
+      normalizedTags.length === 0
+    ) {
       throw new Error(
         "Job role, experience level, and at least one tag are required."
       );
     }
 
-    const params = new URLSearchParams({
-      mode,
-      jobRole,
-      experienceLevel,
-      limit: String(limit),
-    });
+    const params =
+      new URLSearchParams({
+        mode,
+        jobRole,
+        experienceLevel,
+        limit: String(limit),
+      });
 
-    normalizedTags.forEach((tag) => {
-      params.append("tags", tag);
-    });
+    if (sessionId) {
+      params.set(
+        "sessionId",
+        sessionId
+      );
+    }
 
-    const idToken = await getIdToken();
-    const response = await fetch(
-      `${API_BASE_URL}/questions?${params.toString()}`,
-      {
-        headers: {
-          Authorization: `Bearer ${idToken}`,
-        },
+    normalizedTags.forEach(
+      (tag) => {
+        params.append(
+          "tags",
+          tag
+        );
       }
     );
 
-    const payload =
-      await readJsonResponse(response);
+    const idToken =
+      await getIdToken();
 
-    return Array.isArray(payload?.questions)
+    const response =
+      await fetch(
+        `${API_BASE_URL}/questions?${params.toString()}`,
+        {
+          headers: {
+            Authorization:
+              `Bearer ${idToken}`,
+          },
+        }
+      );
+
+    const payload =
+      await readJsonResponse(
+        response
+      );
+
+    return Array.isArray(
+      payload?.questions
+    )
       ? payload.questions
       : [];
   },
 
   /**
-   * Validate a Quiz Style answer on the server.
+   * Validate a Quiz Style answer
+   * on the server.
    */
-  async checkQuizAnswer(questionId, answer) {
+  async checkQuizAnswer(
+    questionId,
+    answer
+  ) {
     if (!questionId) {
       throw new Error(
         "Question ID is required."
       );
     }
 
-    if (!answer || !String(answer).trim()) {
+    if (
+      !answer ||
+      !String(answer).trim()
+    ) {
       throw new Error(
         "An answer is required."
       );
     }
 
-    const idToken = await getIdToken();
-    const response = await fetch(
-      `${API_BASE_URL}/questions/${encodeURIComponent(
-        questionId
-      )}/check`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${idToken}`,
-        },
-        body: JSON.stringify({
-          answer,
-        }),
-      }
-    );
+    const idToken =
+      await getIdToken();
 
-    return readJsonResponse(response);
+    const response =
+      await fetch(
+        `${API_BASE_URL}/questions/${encodeURIComponent(
+          questionId
+        )}/check`,
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type":
+              "application/json",
+
+            Authorization:
+              `Bearer ${idToken}`,
+          },
+
+          body: JSON.stringify({
+            answer,
+          }),
+        }
+      );
+
+    return readJsonResponse(
+      response
+    );
   },
 
   /**
-   * Retained for the service contract established by
-   * the prototype.
+   * Retained for the service contract
+   * established by the prototype.
    */
   async getQuestion(sessionId) {
     if (!sessionId) {
@@ -326,7 +517,10 @@ export const interviewService = {
     questionId,
     answer
   ) {
-    if (!sessionId || !questionId) {
+    if (
+      !sessionId ||
+      !questionId
+    ) {
       throw new Error(
         "Session ID and question ID are required."
       );
@@ -335,7 +529,8 @@ export const interviewService = {
     if (
       answer === undefined ||
       answer === null ||
-      String(answer).trim() === ""
+      String(answer).trim() ===
+        ""
     ) {
       throw new Error(
         "An answer is required."
@@ -359,7 +554,9 @@ export const interviewService = {
     return {
       sessionId,
       status: "completed",
-      completedAt: new Date().toISOString(),
+
+      completedAt:
+        new Date().toISOString(),
     };
   },
 };

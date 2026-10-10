@@ -3,6 +3,7 @@ jest.mock("./repositories", () => ({
   questionRepository: {},
   evaluationRepository: {},
   userRepository: {},
+  questionUsageRepository: {},
 }));
 jest.mock("./routes/questions", () => () => require("express").Router());
 jest.mock("./routes/evaluate", () => () => require("express").Router());

@@ -13,6 +13,8 @@ import LoadingState from "../components/state/LoadingState";
 import ErrorState from "../components/state/ErrorState";
 import SubmittingState from "../components/state/SubmittingState";
 
+import { PAGES } from "../utils/constants";
+
 import {
   aiService,
   interviewService,
@@ -117,6 +119,11 @@ function InterviewSessionPage({
     questionLoadError,
     setQuestionLoadError,
   ] = useState("");
+
+  const [
+    questionQuotaError,
+    setQuestionQuotaError,
+  ] = useState(null);
 
   const [
     selectedQuizAnswer,
@@ -251,10 +258,18 @@ function InterviewSessionPage({
           ""
         );
 
+        setQuestionQuotaError(
+          null
+        );
+
         try {
           const loadedQuestions =
             await interviewService.getQuestions(
               {
+                sessionId:
+                  setupData?.id ||
+                  "",
+
                 mode:
                   selectedMode,
 
@@ -306,13 +321,55 @@ function InterviewSessionPage({
             0
           );
         } catch (error) {
-          setQuestions([]);
+            setQuestions([]);
 
-          setQuestionLoadError(
-            error.message ||
-              "Unable to load interview questions."
-          );
-        } finally {
+            if (
+              error?.code ===
+              "daily-question-limit-exceeded"
+            ) {
+              setQuestionQuotaError({
+                limit:
+                  Number(
+                    error?.quota?.limit ||
+                      0
+                  ),
+
+                used:
+                  Number(
+                    error?.quota?.used ||
+                      0
+                  ),
+
+                requested:
+                  Number(
+                    error?.quota?.requested ||
+                      0
+                  ),
+
+                remaining:
+                  Number(
+                    error?.quota?.remaining ||
+                      0
+                  ),
+              });
+
+              setQuestionLoadError(
+                error.message ||
+                  "Your daily Code + Theoretical question allowance changed before the session could begin."
+              );
+
+              return;
+            }
+
+            setQuestionQuotaError(
+              null
+            );
+
+            setQuestionLoadError(
+              error?.message ||
+                "Unable to load interview questions."
+            );
+          } finally {
           setIsLoadingQuestions(
             false
           );
@@ -323,6 +380,12 @@ function InterviewSessionPage({
         setupData,
       ]
     );
+
+  function handleReturnToSetup() {
+    onNavigate(
+      PAGES.INTERVIEW_SETUP
+    );
+  }
 
   useEffect(() => {
     loadQuestions();
@@ -1337,6 +1400,62 @@ function InterviewSessionPage({
   }
 
   if (questionLoadError) {
+    /*
+    * A quota rejection is different
+    * from a normal network/data error.
+    *
+    * Retrying the exact same request
+    * would simply fail again, so send
+    * the user back to setup where the
+    * latest allowance can be loaded.
+    */
+    if (questionQuotaError) {
+      const {
+        remaining,
+        limit,
+      } = questionQuotaError;
+
+      const quotaTitle =
+        remaining <= 0
+          ? "Daily question limit reached"
+          : "Not enough questions remaining";
+
+      const quotaMessage =
+        remaining <= 0
+          ? `You have used your daily Code + Theoretical question allowance${
+              limit > 0
+                ? ` of ${limit} questions`
+                : ""
+            }. Return to Interview Setup to choose another mode or wait for the daily reset.`
+          : `Your daily allowance changed before this session began. You now have ${remaining} Code + Theoretical question${
+              remaining === 1
+                ? ""
+                : "s"
+            } remaining today. Return to Interview Setup and choose a session of ${remaining} question${
+              remaining === 1
+                ? ""
+                : "s"
+            } or fewer.`;
+
+      return (
+        <PageLayout
+          title="Interview Session"
+          subtitle="Your daily allowance changed."
+          currentPage={currentPage}
+          onNavigate={onNavigate}
+        >
+          <ErrorState
+            title={quotaTitle}
+            message={quotaMessage}
+            retry={
+              handleReturnToSetup
+            }
+            retryLabel="Return to Interview Setup"
+          />
+        </PageLayout>
+      );
+    }
+
     return (
       <PageLayout
         title="Interview Session"
