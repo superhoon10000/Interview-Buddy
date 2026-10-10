@@ -14,6 +14,7 @@
     "backfill-user-roles": "node scripts/backfillUserRoles.js",
     "sync-auth-users": "node scripts/syncAuthUsersToFirestore.js",
     "audit-user-fields": "node scripts/auditUserFields.js",
+    "reset-google-test-accounts": "node scripts/resetGoogleTestAccounts.js",
     "test": "jest",
     "lint": "eslint src"
   },
