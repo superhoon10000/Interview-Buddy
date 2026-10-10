@@ -8,16 +8,31 @@ import React, {
 
 import { authService } from "../services/authService";
 
-const AuthContext = createContext({
-  user: null,
-  profile: null,
-  profileComplete: false,
-  profileError: "",
-  loading: true,
-  refreshProfile: async () => null,
-});
+const AuthContext =
+  createContext({
+    user: null,
+    profile: null,
+    passwordLinked: false,
+    profileComplete: false,
+    profileError: "",
+    loading: true,
+    refreshProfile:
+      async () => null,
+  });
 
-export function AuthProvider({ children }) {
+function hasPasswordProvider(
+  user
+) {
+  return Boolean(
+    user?.providerIds?.includes(
+      "password"
+    )
+  );
+}
+
+export function AuthProvider({
+  children,
+}) {
   const [user, setUser] =
     useState(null);
 
@@ -38,13 +53,17 @@ export function AuthProvider({ children }) {
 
       try {
         const currentProfile =
-          await authService.getCurrentUserProfile();
+          await authService
+            .getCurrentUserProfile();
 
         setProfile(
           currentProfile || null
         );
 
-        return currentProfile || null;
+        return (
+          currentProfile ||
+          null
+        );
       } catch (error) {
         setProfile(null);
 
@@ -60,7 +79,8 @@ export function AuthProvider({ children }) {
   const refreshProfile =
     useCallback(async () => {
       const currentUser =
-        authService.getCurrentUser();
+        authService
+          .getCurrentUser();
 
       if (!currentUser) {
         setUser(null);
@@ -70,7 +90,10 @@ export function AuthProvider({ children }) {
         return null;
       }
 
-      setUser(currentUser);
+      setUser(
+        currentUser
+      );
+
       setLoading(true);
 
       try {
@@ -84,53 +107,63 @@ export function AuthProvider({ children }) {
     let active = true;
 
     const unsubscribe =
-      authService.subscribeToAuthState(
-        async (currentUser) => {
-          if (!active) {
-            return;
-          }
-
-          setUser(currentUser);
-          setProfileError("");
-
-          if (!currentUser) {
-            setProfile(null);
-            setLoading(false);
-
-            return;
-          }
-
-          setLoading(true);
-
-          try {
-            const currentProfile =
-              await authService.getCurrentUserProfile();
-
+      authService
+        .subscribeToAuthState(
+          async (
+            currentUser
+          ) => {
             if (!active) {
               return;
             }
 
-            setProfile(
-              currentProfile || null
+            setUser(
+              currentUser
             );
-          } catch (error) {
-            if (!active) {
-              return;
-            }
 
-            setProfile(null);
+            setProfileError("");
 
-            setProfileError(
-              error?.message ||
-                "Your user profile could not be loaded."
-            );
-          } finally {
-            if (active) {
+            if (!currentUser) {
+              setProfile(null);
               setLoading(false);
+
+              return;
+            }
+
+            setLoading(true);
+
+            try {
+              const currentProfile =
+                await authService
+                  .getCurrentUserProfile();
+
+              if (!active) {
+                return;
+              }
+
+              setProfile(
+                currentProfile ||
+                  null
+              );
+            } catch (error) {
+              if (!active) {
+                return;
+              }
+
+              setProfile(null);
+
+              setProfileError(
+                error?.message ||
+                  "Your user profile could not be loaded."
+              );
+            } finally {
+              if (active) {
+                setLoading(
+                  false
+                );
+              }
             }
           }
-        }
-      );
+        );
 
     return () => {
       active = false;
@@ -138,14 +171,21 @@ export function AuthProvider({ children }) {
     };
   }, []);
 
+  const passwordLinked =
+    hasPasswordProvider(
+      user
+    );
+
   const profileComplete =
-    Boolean(profile);
+    Boolean(profile) &&
+    passwordLinked;
 
   return (
     <AuthContext.Provider
       value={{
         user,
         profile,
+        passwordLinked,
         profileComplete,
         profileError,
         loading,
@@ -158,7 +198,9 @@ export function AuthProvider({ children }) {
 }
 
 export function useAuth() {
-  return useContext(AuthContext);
+  return useContext(
+    AuthContext
+  );
 }
 
 export default AuthContext;

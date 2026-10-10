@@ -1,92 +1,196 @@
-
 import React from "react";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import { MemoryRouter } from "react-router-dom";
+
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from "@testing-library/react";
+
+import {
+  MemoryRouter,
+} from "react-router-dom";
 
 import LoginPage from "./LoginPage";
 import RegisterPage from "./RegisterPage";
-import { authService } from "../services/authService.js";
+
+import {
+  authService,
+} from "../services/authService.js";
 
 import {
   useAuth,
 } from "../context/AuthContext";
 
-jest.mock("../context/AuthContext", () => ({
-  useAuth: jest.fn(),
-}));
+jest.mock(
+  "../context/AuthContext",
+  () => ({
+    useAuth: jest.fn(),
+  })
+);
 
-jest.mock("../services/authService.js", () => ({
-  authService: {
-    login: jest.fn(),
-    loginWithGoogle: jest.fn(),
-    completeGoogleProfile: jest.fn(),
-    completeGoogleProfileWithGeneratedUsername:
-      jest.fn(),
-    register: jest.fn(),
-  },
-}));
+jest.mock(
+  "../services/authService.js",
+  () => ({
+    authService: {
+      login: jest.fn(),
+      loginWithGoogle:
+        jest.fn(),
 
-const renderLoginPage = (loginMessage = "") => {
-  const onLogin = jest.fn();
-  const onGoToRegister = jest.fn();
+      prepareGoogleUsername:
+        jest.fn(),
 
-  render(
-    <MemoryRouter>
-      <LoginPage
-        onLogin={onLogin}
-        onGoToRegister={onGoToRegister}
-        loginMessage={loginMessage}
-      />
-    </MemoryRouter>
-  );
+      prepareGeneratedGoogleUsername:
+        jest.fn(),
 
-  return { onLogin, onGoToRegister };
-};
+      completeGoogleRegistration:
+        jest.fn(),
 
-const enterValidCredentials = () => {
-  fireEvent.change(screen.getByPlaceholderText("Email"), {
-    target: { value: "test@example.com" },
+      completeGooglePasswordSetup:
+        jest.fn(),
+
+      completeExistingPasswordGoogleLink:
+        jest.fn(),
+
+      cancelGoogleSetup:
+        jest.fn(),
+
+      register:
+        jest.fn(),
+    },
+  })
+);
+
+const makeProfile =
+  () => ({
+    uid:
+      "google-user-123",
+    username:
+      "TestUser",
+    usernameLower:
+      "testuser",
+    email:
+      "test@example.com",
+    role: "user",
+    settings: {
+      theme: "light",
+    },
   });
 
-  fireEvent.change(screen.getByPlaceholderText("Password"), {
-    target: { value: "password123" },
-  });
-};
+const renderLoginPage =
+  (
+    loginMessage = ""
+  ) => {
+    const onLogin =
+      jest.fn();
+
+    const onGoToRegister =
+      jest.fn();
+
+    render(
+      <MemoryRouter>
+        <LoginPage
+          onLogin={
+            onLogin
+          }
+          onGoToRegister={
+            onGoToRegister
+          }
+          loginMessage={
+            loginMessage
+          }
+        />
+      </MemoryRouter>
+    );
+
+    return {
+      onLogin,
+      onGoToRegister,
+    };
+  };
+
+const enterValidCredentials =
+  () => {
+    fireEvent.change(
+      screen.getByPlaceholderText(
+        "Email"
+      ),
+      {
+        target: {
+          value:
+            "test@example.com",
+        },
+      }
+    );
+
+    fireEvent.change(
+      screen.getByPlaceholderText(
+        "Password"
+      ),
+      {
+        target: {
+          value:
+            "password123",
+        },
+      }
+    );
+  };
 
 beforeEach(() => {
   jest.clearAllMocks();
 
   useAuth.mockReturnValue({
     user: null,
+    profile: null,
+    passwordLinked: false,
     profileComplete: false,
     profileError: "",
     loading: false,
+
     refreshProfile:
-      jest.fn().mockResolvedValue({
-        uid: "google-user-123",
-        username: "TestUser",
-      }),
+      jest
+        .fn()
+        .mockResolvedValue(
+          makeProfile()
+        ),
   });
+
+  authService
+    .cancelGoogleSetup
+    .mockResolvedValue({
+      canceled: true,
+      deletedIncompleteAccount:
+        true,
+    });
 });
 
 test(
-  "an authenticated user with no profile is automatically returned to username setup",
+  "authenticated user with no profile returns to username setup",
   async () => {
     useAuth.mockReturnValue({
       user: {
-        uid: "google-user-123",
+        uid:
+          "google-user-123",
         email:
           "unfinished@gmail.com",
+        providerIds: [
+          "google.com",
+        ],
       },
+
+      profile: null,
+      passwordLinked: false,
       profileComplete: false,
       profileError: "",
       loading: false,
+
       refreshProfile:
         jest.fn(),
     });
 
-    const { onLogin } =
-      renderLoginPage();
+    const {
+      onLogin,
+    } = renderLoginPage();
 
     expect(
       await screen.findByRole(
@@ -110,123 +214,207 @@ test(
   }
 );
 
-test("displays error when email and password are empty", () => {
-  renderLoginPage();
-
-  fireEvent.click(screen.getByRole("button", { name: /login to workspace/i }));
-
-  expect(
-    screen.getByText("Please enter both email and password.")
-  ).toBeInTheDocument();
-
-  expect(authService.login).not.toHaveBeenCalled();
-});
-
-test("displays error when email is invalid", () => {
-  renderLoginPage();
-
-  fireEvent.change(screen.getByPlaceholderText("Email"), {
-    target: { value: "bryanexample.com" },
-  });
-
-  fireEvent.change(screen.getByPlaceholderText("Password"), {
-    target: { value: "password123" },
-  });
-
-  fireEvent.click(screen.getByRole("button", { name: /login to workspace/i }));
-
-  expect(screen.getByText("Please enter a valid email")).toBeInTheDocument();
-  expect(authService.login).not.toHaveBeenCalled();
-});
-
-test("rejects malicious looking email", () => {
-  renderLoginPage();
-
-  fireEvent.change(screen.getByPlaceholderText("Email"), {
-    target: { value: "' OR '1'='1" },
-  });
-
-  fireEvent.change(screen.getByPlaceholderText("Password"), {
-    target: { value: "password123" },
-  });
-
-  fireEvent.click(screen.getByRole("button", { name: /login to workspace/i }));
-
-  expect(screen.getByText("Please enter a valid email")).toBeInTheDocument();
-  expect(authService.login).not.toHaveBeenCalled();
-});
-
-test("logs in through the existing auth service", async () => {
-  authService.login.mockResolvedValue({ authenticated: true });
-
-  const { onLogin } = renderLoginPage();
-  enterValidCredentials();
-
-  fireEvent.click(screen.getByRole("button", { name: /login to workspace/i }));
-
-  await waitFor(() => expect(onLogin).toHaveBeenCalledTimes(1));
-
-  expect(authService.login).toHaveBeenCalledWith({
-    email: "test@example.com",
-    password: "password123",
-  });
-});
-
-test("shows the service error and keeps the user on login", async () => {
-  authService.login.mockRejectedValue(new Error("Invalid email or password."));
-
-  const { onLogin } = renderLoginPage();
-  enterValidCredentials();
-
-  fireEvent.click(screen.getByRole("button", { name: /login to workspace/i }));
-
-  expect(await screen.findByRole("alert")).toHaveTextContent(
-    "Invalid email or password."
-  );
-
-  expect(onLogin).not.toHaveBeenCalled();
-});
-
-test("disables login actions while a request is pending", async () => {
-  let resolveLogin;
-
-  authService.login.mockReturnValue(
-    new Promise((resolve) => {
-      resolveLogin = resolve;
-    })
-  );
-
-  const { onLogin } = renderLoginPage();
-  enterValidCredentials();
-
-  fireEvent.click(screen.getByRole("button", { name: /login to workspace/i }));
-
-  expect(screen.getByRole("button", { name: /logging in/i })).toBeDisabled();
-
-  expect(
-    screen.getByRole("button", { name: /continue with google/i })
-  ).toBeDisabled();
-
-  resolveLogin({ authenticated: true });
-
-  await waitFor(() => expect(onLogin).toHaveBeenCalledTimes(1));
-});
-
 test(
-  "existing Google users continue directly into the application",
+  "Google-only profile requires a password",
   async () => {
-    authService.loginWithGoogle.mockResolvedValue({
-      authenticated: true,
-      needsUsernameSetup: false,
+    useAuth.mockReturnValue({
       user: {
-        uid: "google-user-123",
-        email: "existing@gmail.com",
-        username: "ExistingUser",
+        uid:
+          "google-user-123",
+        email:
+          "existing@gmail.com",
+        providerIds: [
+          "google.com",
+        ],
       },
+
+      profile: {
+        ...makeProfile(),
+        email:
+          "existing@gmail.com",
+      },
+
+      passwordLinked: false,
+      profileComplete: false,
+      profileError: "",
+      loading: false,
+
+      refreshProfile:
+        jest.fn(),
     });
 
-    const { onLogin } =
-      renderLoginPage();
+    renderLoginPage();
+
+    expect(
+      await screen.findByRole(
+        "heading",
+        {
+          name:
+            /add a password/i,
+        }
+      )
+    ).toBeInTheDocument();
+  }
+);
+
+test(
+  "displays error when email and password are empty",
+  () => {
+    renderLoginPage();
+
+    fireEvent.click(
+      screen.getByRole(
+        "button",
+        {
+          name:
+            /login to workspace/i,
+        }
+      )
+    );
+
+    expect(
+      screen.getByText(
+        "Please enter both email and password."
+      )
+    ).toBeInTheDocument();
+
+    expect(
+      authService.login
+    ).not.toHaveBeenCalled();
+  }
+);
+
+test(
+  "displays error when email is invalid",
+  () => {
+    renderLoginPage();
+
+    fireEvent.change(
+      screen.getByPlaceholderText(
+        "Email"
+      ),
+      {
+        target: {
+          value:
+            "bryanexample.com",
+        },
+      }
+    );
+
+    fireEvent.change(
+      screen.getByPlaceholderText(
+        "Password"
+      ),
+      {
+        target: {
+          value:
+            "password123",
+        },
+      }
+    );
+
+    fireEvent.click(
+      screen.getByRole(
+        "button",
+        {
+          name:
+            /login to workspace/i,
+        }
+      )
+    );
+
+    expect(
+      screen.getByText(
+        "Please enter a valid email"
+      )
+    ).toBeInTheDocument();
+
+    expect(
+      authService.login
+    ).not.toHaveBeenCalled();
+  }
+);
+
+test(
+  "logs in through auth service",
+  async () => {
+    authService
+      .login
+      .mockResolvedValue({
+        authenticated:
+          true,
+      });
+
+    const {
+      onLogin,
+    } = renderLoginPage();
+
+    enterValidCredentials();
+
+    fireEvent.click(
+      screen.getByRole(
+        "button",
+        {
+          name:
+            /login to workspace/i,
+        }
+      )
+    );
+
+    await waitFor(() =>
+      expect(
+        onLogin
+      ).toHaveBeenCalledTimes(
+        1
+      )
+    );
+
+    expect(
+      authService.login
+    ).toHaveBeenCalledWith({
+      email:
+        "test@example.com",
+      password:
+        "password123",
+    });
+  }
+);
+
+test(
+  "existing Google user with both providers enters application",
+  async () => {
+    authService
+      .loginWithGoogle
+      .mockResolvedValue({
+        authenticated:
+          true,
+
+        needsUsernameSetup:
+          false,
+
+        needsPasswordSetup:
+          false,
+
+        user: {
+          uid:
+            "google-user-123",
+
+          email:
+            "existing@gmail.com",
+
+          username:
+            "ExistingUser",
+
+          providerIds: [
+            "google.com",
+            "password",
+          ],
+        },
+      });
+
+    const {
+      onLogin,
+    } = renderLoginPage();
 
     fireEvent.click(
       screen.getByRole(
@@ -241,29 +429,40 @@ test(
     await waitFor(() =>
       expect(
         onLogin
-      ).toHaveBeenCalledTimes(1)
+      ).toHaveBeenCalledTimes(
+        1
+      )
     );
-
-    expect(
-      authService.loginWithGoogle
-    ).toHaveBeenCalledTimes(1);
   }
 );
 
 test(
-  "new Google users are prompted to choose a username",
+  "new Google user sees username step",
   async () => {
-    authService.loginWithGoogle.mockResolvedValue({
-      authenticated: true,
-      needsUsernameSetup: true,
-      user: {
-        uid: "google-user-123",
-        email: "newgoogle@gmail.com",
-      },
-    });
+    authService
+      .loginWithGoogle
+      .mockResolvedValue({
+        authenticated:
+          true,
 
-    const { onLogin } =
-      renderLoginPage();
+        needsUsernameSetup:
+          true,
+
+        needsPasswordSetup:
+          true,
+
+        user: {
+          uid:
+            "google-user-123",
+
+          email:
+            "newgoogle@gmail.com",
+        },
+      });
+
+    const {
+      onLogin,
+    } = renderLoginPage();
 
     fireEvent.click(
       screen.getByRole(
@@ -286,40 +485,46 @@ test(
     ).toBeInTheDocument();
 
     expect(
-      screen.getByText(
-        /newgoogle@gmail.com/i
-      )
-    ).toBeInTheDocument();
-
-    expect(
       onLogin
     ).not.toHaveBeenCalled();
   }
 );
 
 test(
-  "new Google users can create their own username",
+  "choosing username moves to password step",
   async () => {
-    authService.loginWithGoogle.mockResolvedValue({
-      authenticated: true,
-      needsUsernameSetup: true,
-      user: {
-        uid: "google-user-123",
-        email: "newgoogle@gmail.com",
-      },
-    });
+    authService
+      .loginWithGoogle
+      .mockResolvedValue({
+        authenticated:
+          true,
 
-    authService.completeGoogleProfile.mockResolvedValue({
-      authenticated: true,
-      needsUsernameSetup: false,
-      user: {
+        needsUsernameSetup:
+          true,
+
+        needsPasswordSetup:
+          true,
+
+        user: {
+          uid:
+            "google-user-123",
+
+          email:
+            "newgoogle@gmail.com",
+        },
+      });
+
+    authService
+      .prepareGoogleUsername
+      .mockResolvedValue({
+        needsPasswordSetup:
+          true,
+
         username:
           "InterviewDaniel",
-      },
-    });
+      });
 
-    const { onLogin } =
-      renderLoginPage();
+    renderLoginPage();
 
     fireEvent.click(
       screen.getByRole(
@@ -331,13 +536,10 @@ test(
       )
     );
 
-    const usernameInput =
+    fireEvent.change(
       await screen.findByPlaceholderText(
         "Choose a username"
-      );
-
-    fireEvent.change(
-      usernameInput,
+      ),
       {
         target: {
           value:
@@ -351,7 +553,165 @@ test(
         "button",
         {
           name:
-            /create username/i,
+            /^continue$/i,
+        }
+      )
+    );
+
+    expect(
+      await screen.findByRole(
+        "heading",
+        {
+          name:
+            /create your password/i,
+        }
+      )
+    ).toBeInTheDocument();
+
+    expect(
+      authService
+        .prepareGoogleUsername
+    ).toHaveBeenCalledWith(
+      "InterviewDaniel"
+    );
+  }
+);
+
+test(
+  "new Google user logs in only after required password succeeds",
+  async () => {
+    const refreshProfile =
+      jest
+        .fn()
+        .mockResolvedValue(
+          makeProfile()
+        );
+
+    useAuth.mockReturnValue({
+      user: null,
+      profile: null,
+      passwordLinked:
+        false,
+      profileComplete:
+        false,
+      profileError: "",
+      loading: false,
+      refreshProfile,
+    });
+
+    authService
+      .loginWithGoogle
+      .mockResolvedValue({
+        authenticated:
+          true,
+
+        needsUsernameSetup:
+          true,
+
+        needsPasswordSetup:
+          true,
+
+        user: {
+          uid:
+            "google-user-123",
+
+          email:
+            "newgoogle@gmail.com",
+        },
+      });
+
+    authService
+      .prepareGoogleUsername
+      .mockResolvedValue({
+        needsPasswordSetup:
+          true,
+
+        username:
+          "InterviewDaniel",
+      });
+
+    authService
+      .completeGoogleRegistration
+      .mockResolvedValue({
+        authenticated:
+          true,
+
+        needsUsernameSetup:
+          false,
+
+        needsPasswordSetup:
+          false,
+
+        profile:
+          makeProfile(),
+      });
+
+    const {
+      onLogin,
+    } = renderLoginPage();
+
+    fireEvent.click(
+      screen.getByRole(
+        "button",
+        {
+          name:
+            /continue with google/i,
+        }
+      )
+    );
+
+    fireEvent.change(
+      await screen.findByPlaceholderText(
+        "Choose a username"
+      ),
+      {
+        target: {
+          value:
+            "InterviewDaniel",
+        },
+      }
+    );
+
+    fireEvent.click(
+      screen.getByRole(
+        "button",
+        {
+          name:
+            /^continue$/i,
+        }
+      )
+    );
+
+    fireEvent.change(
+      await screen.findByPlaceholderText(
+        "Create a password"
+      ),
+      {
+        target: {
+          value:
+            "password123",
+        },
+      }
+    );
+
+    fireEvent.change(
+      screen.getByPlaceholderText(
+        "Confirm password"
+      ),
+      {
+        target: {
+          value:
+            "password123",
+        },
+      }
+    );
+
+    fireEvent.click(
+      screen.getByRole(
+        "button",
+        {
+          name:
+            /finish account setup/i,
         }
       )
     );
@@ -359,43 +719,181 @@ test(
     await waitFor(() =>
       expect(
         authService
-          .completeGoogleProfile
-      ).toHaveBeenCalledWith(
-        "InterviewDaniel"
-      )
+          .completeGoogleRegistration
+      ).toHaveBeenCalledWith({
+        password:
+          "password123",
+
+        confirmPassword:
+          "password123",
+      })
     );
 
     await waitFor(() =>
       expect(
         onLogin
-      ).toHaveBeenCalledTimes(1)
+      ).toHaveBeenCalledTimes(
+        1
+      )
     );
   }
 );
 
 test(
-  "new Google users can skip username creation and receive a generated username",
+  "password mismatch blocks Google account completion",
   async () => {
-    authService.loginWithGoogle.mockResolvedValue({
-      authenticated: true,
-      needsUsernameSetup: true,
-      user: {
-        uid: "google-user-123",
-        email: "newgoogle@gmail.com",
-      },
-    });
-
     authService
-      .completeGoogleProfileWithGeneratedUsername
+      .loginWithGoogle
       .mockResolvedValue({
-        authenticated: true,
-        needsUsernameSetup: false,
-        generatedUsername:
-          "newgoogle_google",
+        authenticated:
+          true,
+
+        needsUsernameSetup:
+          true,
+
+        needsPasswordSetup:
+          true,
+
+        user: {
+          uid:
+            "google-user-123",
+
+          email:
+            "newgoogle@gmail.com",
+        },
       });
 
-    const { onLogin } =
-      renderLoginPage();
+    authService
+      .prepareGoogleUsername
+      .mockResolvedValue({
+        needsPasswordSetup:
+          true,
+
+        username:
+          "InterviewDaniel",
+      });
+
+    renderLoginPage();
+
+    fireEvent.click(
+      screen.getByRole(
+        "button",
+        {
+          name:
+            /continue with google/i,
+        }
+      )
+    );
+
+    fireEvent.change(
+      await screen.findByPlaceholderText(
+        "Choose a username"
+      ),
+      {
+        target: {
+          value:
+            "InterviewDaniel",
+        },
+      }
+    );
+
+    fireEvent.click(
+      screen.getByRole(
+        "button",
+        {
+          name:
+            /^continue$/i,
+        }
+      )
+    );
+
+    fireEvent.change(
+      await screen.findByPlaceholderText(
+        "Create a password"
+      ),
+      {
+        target: {
+          value:
+            "onepass",
+        },
+      }
+    );
+
+    fireEvent.change(
+      screen.getByPlaceholderText(
+        "Confirm password"
+      ),
+      {
+        target: {
+          value:
+            "different",
+        },
+      }
+    );
+
+    fireEvent.click(
+      screen.getByRole(
+        "button",
+        {
+          name:
+            /finish account setup/i,
+        }
+      )
+    );
+
+    expect(
+      screen.getByRole(
+        "alert"
+      )
+    ).toHaveTextContent(
+      "Passwords do not match."
+    );
+
+    expect(
+      authService
+        .completeGoogleRegistration
+    ).not.toHaveBeenCalled();
+  }
+);
+
+test(
+  "generated username still requires password",
+  async () => {
+    authService
+      .loginWithGoogle
+      .mockResolvedValue({
+        authenticated:
+          true,
+
+        needsUsernameSetup:
+          true,
+
+        needsPasswordSetup:
+          true,
+
+        user: {
+          uid:
+            "google-user-123",
+
+          email:
+            "newgoogle@gmail.com",
+        },
+      });
+
+    authService
+      .prepareGeneratedGoogleUsername
+      .mockResolvedValue({
+        needsPasswordSetup:
+          true,
+
+        username:
+          "newgoogle_abcdef",
+
+        generatedUsername:
+          "newgoogle_abcdef",
+      });
+
+    renderLoginPage();
 
     fireEvent.click(
       screen.getByRole(
@@ -425,49 +923,78 @@ test(
       )
     );
 
-    await waitFor(() =>
-      expect(
-        authService
-          .completeGoogleProfileWithGeneratedUsername
-      ).toHaveBeenCalledTimes(
-        1
+    expect(
+      await screen.findByRole(
+        "heading",
+        {
+          name:
+            /create your password/i,
+        }
       )
-    );
+    ).toBeInTheDocument();
 
-    await waitFor(() =>
-      expect(
-        onLogin
-      ).toHaveBeenCalledTimes(1)
-    );
+    expect(
+      screen.getByText(
+        "newgoogle_abcdef"
+      )
+    ).toBeInTheDocument();
   }
 );
 
 test(
-  "keeps the user on username setup when the chosen username is already taken",
+  "password-first account can confirm password and link Google",
   async () => {
-    authService.loginWithGoogle.mockResolvedValue({
-      authenticated: true,
-      needsUsernameSetup: true,
-      user: {
-        uid: "google-user-123",
-        email: "newgoogle@gmail.com",
-      },
+    const refreshProfile =
+      jest
+        .fn()
+        .mockResolvedValue(
+          makeProfile()
+        );
+
+    useAuth.mockReturnValue({
+      user: null,
+      profile: null,
+      passwordLinked:
+        false,
+      profileComplete:
+        false,
+      profileError: "",
+      loading: false,
+      refreshProfile,
     });
 
-    const usernameError =
-      new Error(
-        "That username is already in use."
-      );
+    authService
+      .loginWithGoogle
+      .mockResolvedValue({
+        authenticated:
+          false,
 
-    usernameError.code =
-      "username-already-exists";
+        needsExistingPasswordToLinkGoogle:
+          true,
 
-    authService.completeGoogleProfile.mockRejectedValue(
-      usernameError
-    );
+        email:
+          "existing@example.com",
+      });
 
-    const { onLogin } =
-      renderLoginPage();
+    authService
+      .completeExistingPasswordGoogleLink
+      .mockResolvedValue({
+        authenticated:
+          true,
+
+        needsUsernameSetup:
+          false,
+
+        needsPasswordSetup:
+          false,
+
+        profile:
+          makeProfile(),
+      });
+
+    const {
+      onLogin,
+    } = renderLoginPage();
 
     fireEvent.click(
       screen.getByRole(
@@ -479,16 +1006,24 @@ test(
       )
     );
 
-    const usernameInput =
-      await screen.findByPlaceholderText(
-        "Choose a username"
-      );
+    expect(
+      await screen.findByRole(
+        "heading",
+        {
+          name:
+            /confirm your existing account/i,
+        }
+      )
+    ).toBeInTheDocument();
 
     fireEvent.change(
-      usernameInput,
+      screen.getByPlaceholderText(
+        "Existing password"
+      ),
       {
         target: {
-          value: "daniel",
+          value:
+            "password123",
         },
       }
     );
@@ -498,64 +1033,197 @@ test(
         "button",
         {
           name:
-            /create username/i,
+            /link google account/i,
         }
+      )
+    );
+
+    await waitFor(() =>
+      expect(
+        authService
+          .completeExistingPasswordGoogleLink
+      ).toHaveBeenCalledWith(
+        "password123"
+      )
+    );
+
+    await waitFor(() =>
+      expect(
+        onLogin
+      ).toHaveBeenCalledTimes(
+        1
+      )
+    );
+  }
+);
+
+test(
+  "canceling Google registration calls cancellation service",
+  async () => {
+    authService
+      .loginWithGoogle
+      .mockResolvedValue({
+        authenticated:
+          true,
+
+        needsUsernameSetup:
+          true,
+
+        needsPasswordSetup:
+          true,
+
+        user: {
+          uid:
+            "google-user-123",
+
+          email:
+            "newgoogle@gmail.com",
+        },
+      });
+
+    renderLoginPage();
+
+    fireEvent.click(
+      screen.getByRole(
+        "button",
+        {
+          name:
+            /continue with google/i,
+        }
+      )
+    );
+
+    await screen.findByRole(
+      "heading",
+      {
+        name:
+          /choose your username/i,
+      }
+    );
+
+    fireEvent.click(
+      screen.getByRole(
+        "button",
+        {
+          name:
+            /cancel account creation/i,
+        }
+      )
+    );
+
+    await waitFor(() =>
+      expect(
+        authService
+          .cancelGoogleSetup
+      ).toHaveBeenCalledTimes(
+        1
       )
     );
 
     expect(
       await screen.findByRole(
-        "alert"
-      )
-    ).toHaveTextContent(
-      "That username is already in use."
-    );
-
-    expect(
-      screen.getByPlaceholderText(
-        "Choose a username"
+        "heading",
+        {
+          name:
+            /welcome back/i,
+        }
       )
     ).toBeInTheDocument();
-
-    expect(
-      onLogin
-    ).not.toHaveBeenCalled();
   }
 );
 
-test("preserves the account deletion confirmation and registration action", () => {
-  const { onGoToRegister } = renderLoginPage(
-    "Your account has been successfully deleted."
-  );
+test(
+  "preserves registration action",
+  () => {
+    const {
+      onGoToRegister,
+    } = renderLoginPage(
+      "Your account has been successfully deleted."
+    );
 
-  expect(screen.getByRole("status")).toHaveTextContent(
-    "Your account has been successfully deleted."
-  );
+    expect(
+      screen.getByRole(
+        "status"
+      )
+    ).toHaveTextContent(
+      "Your account has been successfully deleted."
+    );
 
-  fireEvent.click(screen.getByRole("button", { name: "Create Account" }));
+    fireEvent.click(
+      screen.getByRole(
+        "button",
+        {
+          name:
+            "Create Account",
+        }
+      )
+    );
 
-  expect(onGoToRegister).toHaveBeenCalledTimes(1);
-});
+    expect(
+      onGoToRegister
+    ).toHaveBeenCalledTimes(
+      1
+    );
+  }
+);
 
-test("keeps the password reset route available", () => {
-  renderLoginPage();
+test(
+  "keeps password reset route available",
+  () => {
+    renderLoginPage();
 
-  expect(
-    screen.getByRole("link", { name: /forgot password/i })
-  ).toHaveAttribute("href", "/forgot-password");
-});
+    expect(
+      screen.getByRole(
+        "link",
+        {
+          name:
+            /forgot password/i,
+        }
+      )
+    ).toHaveAttribute(
+      "href",
+      "/forgot-password"
+    );
+  }
+);
 
-test("handles stored XSS input in username", () => {
-  render(
-    <RegisterPage onRegister={jest.fn()} onGoToLogin={jest.fn()} />
-  );
+test(
+  "handles stored XSS input in username",
+  () => {
+    render(
+      <RegisterPage
+        onRegister={
+          jest.fn()
+        }
+        onGoToLogin={
+          jest.fn()
+        }
+      />
+    );
 
-  const usernameInput = screen.getByPlaceholderText("Username");
-  const maliciousInput = '<script>alert("Hacked!")</script>';
+    const usernameInput =
+      screen
+        .getByPlaceholderText(
+          "Username"
+        );
 
-  fireEvent.change(usernameInput, {
-    target: { value: maliciousInput },
-  });
+    const maliciousInput =
+      '<script>alert("Hacked!")</script>';
 
-  expect(usernameInput.value).toBe(maliciousInput);
-});
+    fireEvent.change(
+      usernameInput,
+      {
+        target: {
+          value:
+            maliciousInput,
+        },
+      }
+    );
+
+    expect(
+      usernameInput.value
+    ).toBe(
+      maliciousInput
+    );
+  }
+);

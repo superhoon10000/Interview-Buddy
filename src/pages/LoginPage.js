@@ -1,43 +1,76 @@
-import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import {
+  useEffect,
+  useState,
+} from "react";
+
+import {
+  Link,
+} from "react-router-dom";
 
 import AuthShell from "../components/auth/AuthShell";
-import { authService } from "../services/authService.js";
-import { PAGES } from "../utils/constants";
 
 import {
   useAuth,
 } from "../context/AuthContext";
+
+import {
+  authService,
+} from "../services/authService.js";
+
+import {
+  PAGES,
+} from "../utils/constants";
+
+const GOOGLE_STEPS =
+  Object.freeze({
+    NONE: "",
+    USERNAME: "username",
+    PASSWORD: "password",
+    EXISTING_PASSWORD:
+      "existing-password",
+  });
 
 function LoginPage({
   onLogin,
   onGoToRegister,
   loginMessage,
 }) {
-  const [email, setEmail] =
-    useState("");
-
   const {
-    user: authenticatedUser,
+    user:
+      authenticatedUser,
+    profile,
     profileComplete,
     profileError,
     loading: authLoading,
     refreshProfile,
   } = useAuth();
 
-  const [password, setPassword] =
-    useState("");
-
-  const [error, setError] =
-    useState("");
-
-  const [loading, setLoading] =
-    useState(false);
+  const [
+    email,
+    setEmail,
+  ] = useState("");
 
   const [
-    googleUsernameSetup,
-    setGoogleUsernameSetup,
+    password,
+    setPassword,
+  ] = useState("");
+
+  const [
+    error,
+    setError,
+  ] = useState("");
+
+  const [
+    loading,
+    setLoading,
   ] = useState(false);
+
+  const [
+    googleStep,
+    setGoogleStep,
+  ] = useState(
+    GOOGLE_STEPS.NONE
+  );
 
   const [
     googleUsername,
@@ -45,114 +78,253 @@ function LoginPage({
   ] = useState("");
 
   const [
+    selectedGoogleUsername,
+    setSelectedGoogleUsername,
+  ] = useState("");
+
+  const [
     googleAccountEmail,
     setGoogleAccountEmail,
   ] = useState("");
 
+  const [
+    googlePassword,
+    setGooglePassword,
+  ] = useState("");
+
+  const [
+    googleConfirmPassword,
+    setGoogleConfirmPassword,
+  ] = useState("");
+
+  const [
+    googleHasExistingProfile,
+    setGoogleHasExistingProfile,
+  ] = useState(false);
+
   useEffect(() => {
     if (
-      !authLoading &&
-      authenticatedUser &&
-      !profileComplete &&
-      !profileError
+      authLoading ||
+      !authenticatedUser ||
+      profileComplete ||
+      profileError
     ) {
-      setGoogleAccountEmail(
-        authenticatedUser.email || ""
+      return;
+    }
+
+    setGoogleAccountEmail(
+      authenticatedUser.email ||
+        ""
+    );
+
+    if (profile) {
+      setGoogleHasExistingProfile(
+        true
       );
 
-      setGoogleUsernameSetup(true);
+      setGoogleStep(
+        GOOGLE_STEPS.PASSWORD
+      );
+
+      return;
     }
+
+    setGoogleHasExistingProfile(
+      false
+    );
+
+    setGoogleStep(
+      GOOGLE_STEPS.USERNAME
+    );
   }, [
     authLoading,
     authenticatedUser,
+    profile,
     profileComplete,
     profileError,
   ]);
 
-  const handleLogin = async (event) => {
-    event.preventDefault();
-
-    if (loading) {
-      return;
-    }
-
-    setError("");
-
-    if (!email.trim() || !password) {
-      setError(
-        "Please enter both email and password."
+  const resetGoogleSetupUi =
+    () => {
+      setGoogleStep(
+        GOOGLE_STEPS.NONE
       );
 
-      return;
-    }
+      setGoogleUsername("");
 
-    if (!email.includes("@")) {
-      setError(
-        "Please enter a valid email"
+      setSelectedGoogleUsername(
+        ""
       );
 
-      return;
-    }
+      setGooglePassword("");
 
-    setLoading(true);
+      setGoogleConfirmPassword(
+        ""
+      );
 
-    try {
-      const result =
-        await authService.login({
-          email: email.trim(),
-          password,
-        });
+      setGoogleAccountEmail(
+        ""
+      );
 
-      if (result.authenticated) {
-        onLogin();
+      setGoogleHasExistingProfile(
+        false
+      );
+
+      setError("");
+    };
+
+  const verifyProfileAndLogin =
+    async () => {
+      const refreshedProfile =
+        await refreshProfile();
+
+      if (!refreshedProfile) {
+        throw new Error(
+          "Your profile could not be verified. Please try again."
+        );
       }
-    } catch (loginError) {
-      setError(
-        loginError.message ||
-          "Login Failed. Please try again."
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
 
-  const handleGoogleLogin = async () => {
-    if (loading) {
-      return;
-    }
+      resetGoogleSetupUi();
 
-    setError("");
-    setLoading(true);
+      onLogin();
+    };
 
-    try {
-      const result =
-        await authService.loginWithGoogle();
+  const handleLogin =
+    async (event) => {
+      event.preventDefault();
+
+      if (loading) {
+        return;
+      }
+
+      setError("");
 
       if (
-        result.authenticated &&
-        result.needsUsernameSetup
+        !email.trim() ||
+        !password
       ) {
-        setGoogleAccountEmail(
-          result.user?.email || ""
+        setError(
+          "Please enter both email and password."
         );
-
-        setGoogleUsernameSetup(true);
 
         return;
       }
 
-      if (result.authenticated) {
-        onLogin();
+      if (
+        !email.includes("@")
+      ) {
+        setError(
+          "Please enter a valid email"
+        );
+
+        return;
       }
-    } catch (loginError) {
-      setError(
-        loginError.message ||
-          "Google login failed. Please try again."
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
+
+      setLoading(true);
+
+      try {
+        const result =
+          await authService
+            .login({
+              email:
+                email.trim(),
+              password,
+            });
+
+        if (
+          result.authenticated
+        ) {
+          onLogin();
+        }
+      } catch (loginError) {
+        setError(
+          loginError.message ||
+            "Login Failed. Please try again."
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+  const handleGoogleLogin =
+    async () => {
+      if (loading) {
+        return;
+      }
+
+      setError("");
+      setLoading(true);
+
+      try {
+        const result =
+          await authService
+            .loginWithGoogle();
+
+        if (
+          result
+            .needsExistingPasswordToLinkGoogle
+        ) {
+          setGoogleAccountEmail(
+            result.email || ""
+          );
+
+          setGoogleStep(
+            GOOGLE_STEPS
+              .EXISTING_PASSWORD
+          );
+
+          return;
+        }
+
+        setGoogleAccountEmail(
+          result.user?.email ||
+            ""
+        );
+
+        if (
+          result.authenticated &&
+          result.needsUsernameSetup
+        ) {
+          setGoogleHasExistingProfile(
+            false
+          );
+
+          setGoogleStep(
+            GOOGLE_STEPS.USERNAME
+          );
+
+          return;
+        }
+
+        if (
+          result.authenticated &&
+          result.needsPasswordSetup
+        ) {
+          setGoogleHasExistingProfile(
+            true
+          );
+
+          setGoogleStep(
+            GOOGLE_STEPS.PASSWORD
+          );
+
+          return;
+        }
+
+        if (
+          result.authenticated
+        ) {
+          onLogin();
+        }
+      } catch (loginError) {
+        setError(
+          loginError.message ||
+            "Google login failed. Please try again."
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
 
   const handleGoogleUsernameSubmit =
     async (event) => {
@@ -167,7 +339,9 @@ function LoginPage({
 
       setError("");
 
-      if (!normalizedUsername) {
+      if (
+        !normalizedUsername
+      ) {
         setError(
           "Please enter a username."
         );
@@ -179,25 +353,21 @@ function LoginPage({
 
       try {
         const result =
-          await authService.completeGoogleProfile(
-            normalizedUsername
-          );
-
-        if (result.authenticated) {
-          const profile =
-            await refreshProfile();
-
-          if (!profile) {
-            throw new Error(
-              "Your profile was created but could not be verified. Please try again."
+          await authService
+            .prepareGoogleUsername(
+              normalizedUsername
             );
-          }
 
-          onLogin();
-        }
-      } catch (profileError) {
+        setSelectedGoogleUsername(
+          result.username
+        );
+
+        setGoogleStep(
+          GOOGLE_STEPS.PASSWORD
+        );
+      } catch (setupError) {
         setError(
-          profileError.message ||
+          setupError.message ||
             "Username setup failed. Please try again."
         );
       } finally {
@@ -217,23 +387,18 @@ function LoginPage({
       try {
         const result =
           await authService
-            .completeGoogleProfileWithGeneratedUsername();
+            .prepareGeneratedGoogleUsername();
 
-        if (result.authenticated) {
-          const profile =
-            await refreshProfile();
+        setSelectedGoogleUsername(
+          result.username
+        );
 
-          if (!profile) {
-            throw new Error(
-              "Your profile was created but could not be verified. Please try again."
-            );
-          }
-
-          onLogin();
-        }
-      } catch (profileError) {
+        setGoogleStep(
+          GOOGLE_STEPS.PASSWORD
+        );
+      } catch (setupError) {
         setError(
-          profileError.message ||
+          setupError.message ||
             "Username setup failed. Please try again."
         );
       } finally {
@@ -241,12 +406,192 @@ function LoginPage({
       }
     };
 
-  if (googleUsernameSetup) {
+  const handleGooglePasswordSubmit =
+    async (event) => {
+      event.preventDefault();
+
+      if (loading) {
+        return;
+      }
+
+      setError("");
+
+      if (
+        !googlePassword ||
+        !googleConfirmPassword
+      ) {
+        setError(
+          "Password and confirmation are required."
+        );
+
+        return;
+      }
+
+      if (
+        googlePassword !==
+        googleConfirmPassword
+      ) {
+        setError(
+          "Passwords do not match."
+        );
+
+        return;
+      }
+
+      setLoading(true);
+
+      try {
+        const result =
+          googleHasExistingProfile
+            ? await authService
+                .completeGooglePasswordSetup(
+                  {
+                    password:
+                      googlePassword,
+                    confirmPassword:
+                      googleConfirmPassword,
+                  }
+                )
+            : await authService
+                .completeGoogleRegistration(
+                  {
+                    password:
+                      googlePassword,
+                    confirmPassword:
+                      googleConfirmPassword,
+                  }
+                );
+
+        if (
+          result.authenticated
+        ) {
+          await verifyProfileAndLogin();
+        }
+      } catch (setupError) {
+        if (
+          setupError.code ===
+          "username-already-exists"
+        ) {
+          setGooglePassword(
+            ""
+          );
+
+          setGoogleConfirmPassword(
+            ""
+          );
+
+          setGoogleStep(
+            GOOGLE_STEPS.USERNAME
+          );
+        }
+
+        setError(
+          setupError.message ||
+            "Account setup failed. Please try again."
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+  const handleExistingPasswordLink =
+    async (event) => {
+      event.preventDefault();
+
+      if (loading) {
+        return;
+      }
+
+      setError("");
+
+      if (!googlePassword) {
+        setError(
+          "Please enter your existing password."
+        );
+
+        return;
+      }
+
+      setLoading(true);
+
+      try {
+        const result =
+          await authService
+            .completeExistingPasswordGoogleLink(
+              googlePassword
+            );
+
+        if (
+          result.needsUsernameSetup
+        ) {
+          setGooglePassword(
+            ""
+          );
+
+          setGoogleHasExistingProfile(
+            false
+          );
+
+          setGoogleAccountEmail(
+            result.user?.email ||
+              googleAccountEmail
+          );
+
+          setGoogleStep(
+            GOOGLE_STEPS.USERNAME
+          );
+
+          return;
+        }
+
+        if (
+          result.authenticated
+        ) {
+          await verifyProfileAndLogin();
+        }
+      } catch (linkError) {
+        setError(
+          linkError.message ||
+            "Google could not be linked to your existing account."
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+  const handleCancelGoogleSetup =
+    async () => {
+      if (loading) {
+        return;
+      }
+
+      setError("");
+      setLoading(true);
+
+      try {
+        await authService
+          .cancelGoogleSetup();
+
+        resetGoogleSetupUi();
+      } catch (cancelError) {
+        setError(
+          cancelError.message ||
+            "Account setup could not be canceled. Please try again."
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+  if (
+    googleStep ===
+    GOOGLE_STEPS.USERNAME
+  ) {
     return (
       <AuthShell
         eyebrow="PROFILE SETUP"
         title="Choose your username"
-        subtitle="Choose how you want to appear throughout Interview Buddy."
+        subtitle="Step 1 of 2. Choose how you want to appear throughout Interview Buddy."
       >
         {googleAccountEmail && (
           <p className="ib-auth-google-account">
@@ -277,10 +622,15 @@ function LoginPage({
               className="ib-input ib-auth-input"
               type="text"
               placeholder="Choose a username"
-              value={googleUsername}
-              onChange={(event) =>
+              value={
+                googleUsername
+              }
+              onChange={(
+                event
+              ) =>
                 setGoogleUsername(
-                  event.target.value
+                  event.target
+                    .value
                 )
               }
               autoComplete="username"
@@ -290,8 +640,10 @@ function LoginPage({
             />
 
             <p className="ib-auth-field-help">
-              This username will be used
-              across Interview Buddy.
+              Your Firestore profile is
+              not created until the
+              required password step is
+              complete.
             </p>
           </div>
 
@@ -310,11 +662,13 @@ function LoginPage({
             disabled={loading}
           >
             {loading
-              ? "Creating profile..."
-              : "Create Username"}
+              ? "Saving username..."
+              : "Continue"}
 
             {!loading && (
-              <span aria-hidden="true">
+              <span
+                aria-hidden="true"
+              >
                 →
               </span>
             )}
@@ -328,15 +682,273 @@ function LoginPage({
             }
             disabled={loading}
           >
-            Skip — assign me a username
+            Skip - assign me a username
+          </button>
+
+          <button
+            className="ib-auth-switch-button"
+            type="button"
+            onClick={
+              handleCancelGoogleSetup
+            }
+            disabled={loading}
+          >
+            Cancel account creation
           </button>
         </form>
+      </AuthShell>
+    );
+  }
 
-        <p className="ib-auth-footnote">
-          If you skip this step,
-          Interview Buddy will generate a
-          unique username for you.
-        </p>
+  if (
+    googleStep ===
+    GOOGLE_STEPS.PASSWORD
+  ) {
+    return (
+      <AuthShell
+        eyebrow="SECURE YOUR ACCOUNT"
+        title={
+          googleHasExistingProfile
+            ? "Add a password"
+            : "Create your password"
+        }
+        subtitle={
+          googleHasExistingProfile
+            ? "Add a password so this same Interview Buddy account can use either Google or email and password."
+            : "Step 2 of 2. A password is required before your Interview Buddy account is completed."
+        }
+      >
+        {googleAccountEmail && (
+          <p className="ib-auth-google-account">
+            Account{" "}
+            <strong>
+              {googleAccountEmail}
+            </strong>
+          </p>
+        )}
+
+        {!googleHasExistingProfile &&
+          selectedGoogleUsername && (
+            <p className="ib-auth-google-account">
+              Username{" "}
+              <strong>
+                {
+                  selectedGoogleUsername
+                }
+              </strong>
+            </p>
+          )}
+
+        <form
+          className="ib-auth-form"
+          onSubmit={
+            handleGooglePasswordSubmit
+          }
+          noValidate
+        >
+          <div className="ib-auth-field">
+            <label
+              className="ib-label"
+              htmlFor="ib-google-password"
+            >
+              Password
+            </label>
+
+            <input
+              id="ib-google-password"
+              className="ib-input ib-auth-input"
+              type="password"
+              placeholder="Create a password"
+              value={
+                googlePassword
+              }
+              onChange={(
+                event
+              ) =>
+                setGooglePassword(
+                  event.target
+                    .value
+                )
+              }
+              autoComplete="new-password"
+              disabled={loading}
+              autoFocus
+              required
+            />
+          </div>
+
+          <div className="ib-auth-field">
+            <label
+              className="ib-label"
+              htmlFor="ib-google-confirm-password"
+            >
+              Confirm password
+            </label>
+
+            <input
+              id="ib-google-confirm-password"
+              className="ib-input ib-auth-input"
+              type="password"
+              placeholder="Confirm password"
+              value={
+                googleConfirmPassword
+              }
+              onChange={(
+                event
+              ) =>
+                setGoogleConfirmPassword(
+                  event.target
+                    .value
+                )
+              }
+              autoComplete="new-password"
+              disabled={loading}
+              required
+            />
+
+            <p className="ib-auth-field-help">
+              This is your Interview
+              Buddy password, not your
+              Google password. Use at
+              least 6 characters.
+              Firebase may require a
+              stronger password if a
+              password policy is
+              enabled.
+            </p>
+          </div>
+
+          {error && (
+            <p
+              className="ib-auth-message ib-auth-message--error"
+              role="alert"
+            >
+              {error}
+            </p>
+          )}
+
+          <button
+            className="ib-button ib-button--primary ib-auth-action"
+            type="submit"
+            disabled={loading}
+          >
+            {loading
+              ? "Finishing setup..."
+              : "Finish Account Setup"}
+
+            {!loading && (
+              <span
+                aria-hidden="true"
+              >
+                →
+              </span>
+            )}
+          </button>
+
+          <button
+            className="ib-button ib-button--secondary ib-auth-action"
+            type="button"
+            onClick={
+              handleCancelGoogleSetup
+            }
+            disabled={loading}
+          >
+            {googleHasExistingProfile
+              ? "Cancel and sign out"
+              : "Cancel account creation"}
+          </button>
+        </form>
+      </AuthShell>
+    );
+  }
+
+  if (
+    googleStep ===
+    GOOGLE_STEPS.EXISTING_PASSWORD
+  ) {
+    return (
+      <AuthShell
+        eyebrow="LINK ACCOUNT"
+        title="Confirm your existing account"
+        subtitle="This email already belongs to an Interview Buddy account. Enter its existing password to link Google to the same account."
+      >
+        {googleAccountEmail && (
+          <p className="ib-auth-google-account">
+            Existing account{" "}
+            <strong>
+              {googleAccountEmail}
+            </strong>
+          </p>
+        )}
+
+        <form
+          className="ib-auth-form"
+          onSubmit={
+            handleExistingPasswordLink
+          }
+          noValidate
+        >
+          <div className="ib-auth-field">
+            <label
+              className="ib-label"
+              htmlFor="ib-existing-password"
+            >
+              Existing password
+            </label>
+
+            <input
+              id="ib-existing-password"
+              className="ib-input ib-auth-input"
+              type="password"
+              placeholder="Existing password"
+              value={
+                googlePassword
+              }
+              onChange={(
+                event
+              ) =>
+                setGooglePassword(
+                  event.target
+                    .value
+                )
+              }
+              autoComplete="current-password"
+              disabled={loading}
+              autoFocus
+              required
+            />
+          </div>
+
+          {error && (
+            <p
+              className="ib-auth-message ib-auth-message--error"
+              role="alert"
+            >
+              {error}
+            </p>
+          )}
+
+          <button
+            className="ib-button ib-button--primary ib-auth-action"
+            type="submit"
+            disabled={loading}
+          >
+            {loading
+              ? "Linking accounts..."
+              : "Link Google Account"}
+          </button>
+
+          <button
+            className="ib-button ib-button--secondary ib-auth-action"
+            type="button"
+            onClick={
+              handleCancelGoogleSetup
+            }
+            disabled={loading}
+          >
+            Cancel
+          </button>
+        </form>
       </AuthShell>
     );
   }
@@ -358,7 +970,9 @@ function LoginPage({
 
       <form
         className="ib-auth-form"
-        onSubmit={handleLogin}
+        onSubmit={
+          handleLogin
+        }
         noValidate
       >
         <div className="ib-auth-field">
@@ -375,9 +989,12 @@ function LoginPage({
             type="email"
             placeholder="Email"
             value={email}
-            onChange={(event) =>
+            onChange={(
+              event
+            ) =>
               setEmail(
-                event.target.value
+                event.target
+                  .value
               )
             }
             autoComplete="email"
@@ -397,7 +1014,10 @@ function LoginPage({
 
             <Link
               className="ib-auth-link"
-              to={PAGES.FORGOT_PASSWORD}
+              to={
+                PAGES
+                  .FORGOT_PASSWORD
+              }
             >
               Forgot password?
             </Link>
@@ -409,9 +1029,12 @@ function LoginPage({
             type="password"
             placeholder="Password"
             value={password}
-            onChange={(event) =>
+            onChange={(
+              event
+            ) =>
               setPassword(
-                event.target.value
+                event.target
+                  .value
               )
             }
             autoComplete="current-password"
@@ -439,7 +1062,9 @@ function LoginPage({
             : "Login to Workspace"}
 
           {!loading && (
-            <span aria-hidden="true">
+            <span
+              aria-hidden="true"
+            >
               →
             </span>
           )}
@@ -458,7 +1083,9 @@ function LoginPage({
       <button
         type="button"
         className="ib-button ib-button--secondary ib-auth-action ib-auth-google-button"
-        onClick={handleGoogleLogin}
+        onClick={
+          handleGoogleLogin
+        }
         disabled={loading}
       >
         <span
@@ -476,7 +1103,9 @@ function LoginPage({
         <button
           type="button"
           className="ib-auth-switch-button"
-          onClick={onGoToRegister}
+          onClick={
+            onGoToRegister
+          }
           disabled={loading}
         >
           Create Account
