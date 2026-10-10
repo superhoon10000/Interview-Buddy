@@ -3,6 +3,7 @@ import {
   render,
   screen,
   act,
+  waitFor,
 } from "@testing-library/react";
 
 import {
@@ -15,6 +16,8 @@ import { authService } from "../services/authService";
 jest.mock("../services/authService", () => ({
   authService: {
     subscribeToAuthState: jest.fn(),
+    getCurrentUserProfile: jest.fn(),
+    getCurrentUser: jest.fn(),
   },
 }));
 
@@ -39,6 +42,12 @@ describe("AuthContext", () => {
   let unsubscribe;
 
   beforeEach(() => {
+    authService.getCurrentUserProfile
+    .mockResolvedValue({
+      uid: "test-user",
+      username: "TestUser",
+      email: "test@example.com",
+    });
     jest.clearAllMocks();
 
     unsubscribe = jest.fn();
@@ -71,7 +80,9 @@ describe("AuthContext", () => {
     ).toHaveBeenCalledTimes(1);
   });
 
-  test("sets authenticated user and finishes loading when auth resolves", () => {
+  test(
+  "sets authenticated user and finishes loading after the application profile resolves",
+  async () => {
     render(
       <AuthProvider>
         <TestConsumer />
@@ -84,6 +95,18 @@ describe("AuthContext", () => {
         email: "test@example.com",
       });
     });
+
+    expect(
+      await screen.findByText(
+        "test@example.com"
+      )
+    ).toBeInTheDocument();
+
+    await waitFor(() =>
+      expect(
+        screen.getByTestId("loading")
+      ).toHaveTextContent("ready")
+    );
 
     expect(
       screen.getByTestId("loading")

@@ -10,6 +10,10 @@
     "start": "node src/index.js",
     "dev": "nodemon src/index.js",
     "seed": "node scripts/seedQuestions.js",
+    "set-role": "node scripts/setUserRole.js",
+    "backfill-user-roles": "node scripts/backfillUserRoles.js",
+    "sync-auth-users": "node scripts/syncAuthUsersToFirestore.js",
+    "audit-user-fields": "node scripts/auditUserFields.js",
     "test": "jest",
     "lint": "eslint src"
   },

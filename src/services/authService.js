@@ -17,6 +17,8 @@ const API_BASE_URL = (
   "http://localhost:5001/api"
 ).replace(/\/$/, "");
 
+let pendingGoogleUser = null;
+
 function mapFirebaseUser(user) {
   if (!user) {
     return null;
@@ -68,6 +70,90 @@ async function createUserProfile(user, username) {
   }
 
   return payload?.profile || null;
+}
+
+async function getUserProfile(user) {
+  if (!user) {
+    throw new Error(
+      "An authenticated user is required."
+    );
+  }
+
+  const idToken =
+    await user.getIdToken();
+
+  const response = await fetch(
+    `${API_BASE_URL}/users/profile`,
+    {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${idToken}`,
+      },
+    }
+  );
+
+  let payload = null;
+
+  try {
+    payload = await response.json();
+  } catch {
+    // Leave payload null so a fallback error can be used.
+  }
+
+  if (
+    response.status === 404 &&
+    payload?.code === "profile-not-found"
+  ) {
+    return null;
+  }
+
+  if (!response.ok) {
+    const error = new Error(
+      payload?.error ||
+        "User profile could not be loaded."
+    );
+
+    error.code =
+      payload?.code ||
+      "profile-load-failed";
+
+    throw error;
+  }
+
+  return payload?.profile || null;
+}
+
+function getGeneratedUsernameCandidates(user) {
+  const uid = String(
+    user?.uid || ""
+  )
+    .trim()
+    .toLowerCase();
+
+  const emailPrefix = String(
+    user?.email || ""
+  )
+    .split("@")[0]
+    .trim()
+    .toLowerCase();
+
+  const cleanedBase =
+    emailPrefix
+      .replace(/[^a-z0-9_-]/g, "")
+      .slice(0, 20) ||
+    "user";
+
+  const shortUid =
+    uid.slice(0, 6) || "account";
+
+  const longerUid =
+    uid.slice(0, 8) || "account";
+
+  return [
+    `${cleanedBase}_${shortUid}`,
+    `${cleanedBase}_${longerUid}`,
+    `user_${longerUid}`,
+  ];
 }
 
 
@@ -284,17 +370,211 @@ export const authService = {
   },
 
   async loginWithGoogle() {
-    const provider = new GoogleAuthProvider();
+    const provider =
+      new GoogleAuthProvider();
 
-    const userCredential = await signInWithPopup(
-      auth,
-      provider
-    );
+    let userCredential;
+
+    try {
+      userCredential =
+        await signInWithPopup(
+          auth,
+          provider
+        );
+    } catch (error) {
+      throw createLoginError(error);
+    }
+
+    const firebaseUser =
+      userCredential.user;
+
+    pendingGoogleUser =
+      firebaseUser;
+
+    const profile =
+      await getUserProfile(
+        firebaseUser
+      );
+
+    // Existing Interview Buddy user:
+    // no username setup is required.
+    if (profile) {
+      pendingGoogleUser = null;
+
+      return {
+        authenticated: true,
+        needsUsernameSetup: false,
+        user: {
+          ...mapFirebaseUser(
+            firebaseUser
+          ),
+          username:
+            profile.username ||
+            firebaseUser.displayName ||
+            "",
+        },
+        profile,
+      };
+    }
+
+    // Firebase authenticated successfully,
+    // but this account has no Interview Buddy profile yet.
+    return {
+      authenticated: true,
+      needsUsernameSetup: true,
+      user: mapFirebaseUser(
+        firebaseUser
+      ),
+    };
+  },
+
+  async completeGoogleProfile(username) {
+    const user =
+      pendingGoogleUser ||
+      auth.currentUser;
+
+    if (!user) {
+      const error = new Error(
+        "No Google account is waiting for profile setup."
+      );
+
+      error.code =
+        "auth/google-profile-user-missing";
+
+      throw error;
+    }
+
+    const normalizedUsername =
+      String(username || "").trim();
+
+    if (!normalizedUsername) {
+      const error = new Error(
+        "Please enter a username."
+      );
+
+      error.code =
+        "username-required";
+
+      throw error;
+    }
+
+    const profile =
+      await createUserProfile(
+        user,
+        normalizedUsername
+      );
+
+    // Keep the Firebase display name synchronized
+    // with the Interview Buddy username.
+    try {
+      await updateProfile(user, {
+        displayName:
+          profile?.username ||
+          normalizedUsername,
+      });
+    } catch {
+      // Firestore is the authoritative Interview Buddy
+      // username, so a Firebase display-name failure
+      // should not invalidate the completed profile.
+    }
+
+    pendingGoogleUser = null;
 
     return {
       authenticated: true,
-      user: mapFirebaseUser(userCredential.user),
+      needsUsernameSetup: false,
+      profile,
+      user: {
+        ...mapFirebaseUser(user),
+        username:
+          profile?.username ||
+          normalizedUsername,
+      },
     };
+  },
+
+  async completeGoogleProfileWithGeneratedUsername() {
+    const user =
+      pendingGoogleUser ||
+      auth.currentUser;
+
+    if (!user) {
+      const error = new Error(
+        "No Google account is waiting for profile setup."
+      );
+
+      error.code =
+        "auth/google-profile-user-missing";
+
+      throw error;
+    }
+
+    const candidates =
+      getGeneratedUsernameCandidates(
+        user
+      );
+
+    let lastError = null;
+
+    for (const username of candidates) {
+      try {
+        const profile =
+          await createUserProfile(
+            user,
+            username
+          );
+
+        try {
+          await updateProfile(user, {
+            displayName:
+              profile?.username ||
+              username,
+          });
+        } catch {
+          // Firestore remains the application
+          // source of truth for the username.
+        }
+
+        pendingGoogleUser = null;
+
+        return {
+          authenticated: true,
+          needsUsernameSetup: false,
+          generatedUsername:
+            profile?.username ||
+            username,
+          profile,
+          user: {
+            ...mapFirebaseUser(user),
+            username:
+              profile?.username ||
+              username,
+          },
+        };
+      } catch (error) {
+        lastError = error;
+
+        if (
+          error.code ===
+          "username-already-exists"
+        ) {
+          continue;
+        }
+
+        throw error;
+      }
+    }
+
+    const error = new Error(
+      "A unique username could not be generated. Please choose a username."
+    );
+
+    error.code =
+      "generated-username-unavailable";
+
+    error.cause = lastError;
+
+    throw error;
   },
 
   async logout() {
@@ -311,6 +591,8 @@ export const authService = {
       throw logoutError;
     }
 
+    pendingGoogleUser = null;
+
     return {
       success: true,
     };
@@ -318,6 +600,16 @@ export const authService = {
 
   getCurrentUser() {
     return mapFirebaseUser(auth.currentUser);
+  },
+
+  async getCurrentUserProfile() {
+    const user = auth.currentUser;
+
+    if (!user) {
+      return null;
+    }
+
+    return getUserProfile(user);
   },
 
   subscribeToAuthState(callback) {

@@ -625,26 +625,309 @@ describe("authService", () => {
     expect(deleteUser).not.toHaveBeenCalled();
   });
 
-  test("Google login authenticates through Firebase", async () => {
-    signInWithPopup.mockResolvedValue({
-      user: {
+  test(
+    "Google login continues normally when an application profile already exists",
+    async () => {
+      const googleUser = {
         uid: "google-user-123",
-        email: "daniel@gmail.com",
+        email:
+          "daniel@gmail.com",
         displayName: "Daniel",
         emailVerified: true,
-      },
-    });
+        getIdToken: jest
+          .fn()
+          .mockResolvedValue(
+            "google-id-token"
+          ),
+      };
 
-    const result =
+      signInWithPopup.mockResolvedValue({
+        user: googleUser,
+      });
+
+      global.fetch.mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: async () => ({
+          profile: {
+            uid:
+              "google-user-123",
+            username: "Daniel",
+            usernameLower:
+              "daniel",
+            email:
+              "daniel@gmail.com",
+            role: "user",
+            settings: {
+              theme: "light",
+            },
+          },
+        }),
+      });
+
+      const result =
+        await authService.loginWithGoogle();
+
+      expect(
+        signInWithPopup
+      ).toHaveBeenCalled();
+
+      expect(
+        googleUser.getIdToken
+      ).toHaveBeenCalledTimes(1);
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        "http://localhost:5001/api/users/profile",
+        {
+          method: "GET",
+          headers: {
+            Authorization:
+              "Bearer google-id-token",
+          },
+        }
+      );
+
+      expect(result).toMatchObject({
+        authenticated: true,
+        needsUsernameSetup: false,
+        user: {
+          uid:
+            "google-user-123",
+          email:
+            "daniel@gmail.com",
+          username: "Daniel",
+        },
+      });
+    }
+  );
+
+  test(
+    "Google login requests username setup when the Firebase user has no application profile",
+    async () => {
+      const googleUser = {
+        uid: "google-user-123",
+        email:
+          "newgoogle@gmail.com",
+        displayName:
+          "Google Person",
+        emailVerified: true,
+        getIdToken: jest
+          .fn()
+          .mockResolvedValue(
+            "google-id-token"
+          ),
+      };
+
+      signInWithPopup.mockResolvedValue({
+        user: googleUser,
+      });
+
+      global.fetch.mockResolvedValue({
+        ok: false,
+        status: 404,
+        json: async () => ({
+          error:
+            "User profile was not found.",
+          code:
+            "profile-not-found",
+        }),
+      });
+
+      const result =
+        await authService.loginWithGoogle();
+
+      expect(result).toMatchObject({
+        authenticated: true,
+        needsUsernameSetup: true,
+        user: {
+          uid:
+            "google-user-123",
+          email:
+            "newgoogle@gmail.com",
+        },
+      });
+    }
+  );
+
+  test(
+    "Google profile setup creates the username chosen by the user",
+    async () => {
+      const googleUser = {
+        uid: "google-user-123",
+        email:
+          "newgoogle@gmail.com",
+        displayName:
+          "Google Person",
+        emailVerified: true,
+        getIdToken: jest
+          .fn()
+          .mockResolvedValue(
+            "google-id-token"
+          ),
+      };
+
+      signInWithPopup.mockResolvedValue({
+        user: googleUser,
+      });
+
+      // First request:
+      // GET profile -> not found.
+      global.fetch
+        .mockResolvedValueOnce({
+          ok: false,
+          status: 404,
+          json: async () => ({
+            code:
+              "profile-not-found",
+          }),
+        })
+
+        // Second request:
+        // POST chosen username.
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 201,
+          json: async () => ({
+            profile: {
+              uid:
+                "google-user-123",
+              username:
+                "MyInterviewName",
+              usernameLower:
+                "myinterviewname",
+              email:
+                "newgoogle@gmail.com",
+              role: "user",
+              settings: {
+                theme: "light",
+              },
+            },
+          }),
+        });
+
       await authService.loginWithGoogle();
 
-    expect(signInWithPopup).toHaveBeenCalled();
+      const result =
+        await authService.completeGoogleProfile(
+          "MyInterviewName"
+        );
 
-    expect(result.authenticated).toBe(true);
-    expect(result.user.email).toBe(
-      "daniel@gmail.com"
-    );
-  });
+      expect(global.fetch).toHaveBeenNthCalledWith(
+        2,
+        "http://localhost:5001/api/users/profile",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type":
+              "application/json",
+            Authorization:
+              "Bearer google-id-token",
+          },
+          body: JSON.stringify({
+            username:
+              "MyInterviewName",
+          }),
+        }
+      );
+
+      expect(
+        result.user.username
+      ).toBe(
+        "MyInterviewName"
+      );
+
+      expect(
+        result.needsUsernameSetup
+      ).toBe(false);
+    }
+  );
+
+  test(
+    "Google profile setup generates a username when the user skips username creation",
+    async () => {
+      const googleUser = {
+        uid:
+          "F7Q8C5BnLjcvuDJr",
+        email:
+          "daniel@gmail.com",
+        displayName:
+          "Daniel Price",
+        emailVerified: true,
+        getIdToken: jest
+          .fn()
+          .mockResolvedValue(
+            "google-id-token"
+          ),
+      };
+
+      signInWithPopup.mockResolvedValue({
+        user: googleUser,
+      });
+
+      global.fetch
+        // Profile does not exist.
+        .mockResolvedValueOnce({
+          ok: false,
+          status: 404,
+          json: async () => ({
+            code:
+              "profile-not-found",
+          }),
+        })
+
+        // Generated username succeeds.
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 201,
+          json: async () => ({
+            profile: {
+              uid:
+                "F7Q8C5BnLjcvuDJr",
+              username:
+                "daniel_f7q8c5",
+              usernameLower:
+                "daniel_f7q8c5",
+              email:
+                "daniel@gmail.com",
+              role: "user",
+              settings: {
+                theme: "light",
+              },
+            },
+          }),
+        });
+
+      await authService.loginWithGoogle();
+
+      const result =
+        await authService
+          .completeGoogleProfileWithGeneratedUsername();
+
+      expect(global.fetch).toHaveBeenNthCalledWith(
+        2,
+        "http://localhost:5001/api/users/profile",
+        expect.objectContaining({
+          method: "POST",
+          body: JSON.stringify({
+            username:
+              "daniel_f7q8c5",
+          }),
+        })
+      );
+
+      expect(
+        result.generatedUsername
+      ).toBe(
+        "daniel_f7q8c5"
+      );
+
+      expect(
+        result.user.username
+      ).toBe(
+        "daniel_f7q8c5"
+      );
+    }
+  );
 
   test("subscribeToAuthState maps Firebase user changes", () => {
     const callback = jest.fn();
