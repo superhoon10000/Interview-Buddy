@@ -734,3 +734,60 @@ test("accepting a request refreshes the accepted friends list", async () => {
     leaderboardService.getAcceptedFriends
   ).toHaveBeenCalledTimes(2);
 });
+
+//ELO trend rendering tests
+test("displays positive, negative, and flat ELO trends", async () => {
+  leaderboardService.getGlobalLeaderboard.mockResolvedValue([
+    {
+      uid: "up",
+      username: "Alex",
+      rank: 1,
+      elo: 1400,
+      lastEloChange: 16,
+    },
+    {
+      uid: "down",
+      username: "Jordan",
+      rank: 2,
+      elo: 1300,
+      lastEloChange: -8,
+    },
+    {
+      uid: "flat",
+      username: "Taylor",
+      rank: 3,
+      elo: 1200,
+      lastEloChange: 0,
+    },
+  ]);
+
+  leaderboardService.getFriendsLeaderboard.mockResolvedValue([]);
+  leaderboardService.getUserRanking.mockResolvedValue(null);
+
+  render(
+    <LeaderboardPage
+      currentPage="/leaderboard"
+      onNavigate={() => {}}
+    />
+  );
+
+  const table = await screen.findByRole("table");
+
+  expect(
+    within(table).getByRole("img", {
+      name: "ELO increased by 16",
+    })
+  ).toHaveTextContent("↑+16");
+
+  expect(
+    within(table).getByRole("img", {
+      name: "ELO decreased by 8",
+    })
+  ).toHaveTextContent("↓-8");
+
+  expect(
+    within(table).getByRole("img", {
+      name: "ELO unchanged",
+    })
+  ).toHaveTextContent("→0");
+});

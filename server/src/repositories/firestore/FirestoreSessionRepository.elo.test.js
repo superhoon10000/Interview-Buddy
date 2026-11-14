@@ -68,7 +68,11 @@ describe("SCRUM-112 atomic ELO completion and persistence", () => {
     const path = f.addSession("one", Array(10).fill(100));
     const completed = await f.repository.finalizeSessionWithResults("one", "owner");
     expect(f.docs.get(f.userPath).ranking).toMatchObject({
-      points: 100, rankedSessions: 1, averageScore: 100, elo: 1016,
+      points: 100,
+      rankedSessions: 1,
+      averageScore: 100,
+      elo: 1016,
+      lastEloChange: 16,
     });
     expect(f.docs.get(path).result).toMatchObject({
       score: 100, previousElo: 1000, newElo: 1016, eloChange: "+16",
@@ -86,6 +90,8 @@ describe("SCRUM-112 atomic ELO completion and persistence", () => {
     expect(f.docs.get(path).result).toMatchObject({
       previousElo: 1000, newElo: 984, eloChange: "-16",
     });
+    expect(f.docs.get(f.userPath).ranking.lastEloChange)
+      .toBe(-16);
   });
 
   test("later sessions calculate ELO from the previous saved rating", async () => {
@@ -95,7 +101,11 @@ describe("SCRUM-112 atomic ELO completion and persistence", () => {
     await f.repository.finalizeSessionWithResults("one", "owner");
     await f.repository.finalizeSessionWithResults("two", "owner");
     expect(f.docs.get(f.userPath).ranking).toMatchObject({
-      points: 100, rankedSessions: 2, averageScore: 50, elo: 999,
+      points: 100,
+      rankedSessions: 2,
+      averageScore: 50,
+      elo: 999,
+      lastEloChange: -17,
     });
     expect(f.docs.get("sessions/two").result).toMatchObject({
       previousElo: 1016, newElo: 999, eloChange: "-17",
@@ -108,6 +118,7 @@ describe("SCRUM-112 atomic ELO completion and persistence", () => {
     await f.repository.finalizeSessionWithResults("one", "owner");
     expect(f.docs.get(path).result.eloChange).toBe("0");
     expect(f.docs.get(f.userPath).ranking.elo).toBe(1000);
+    expect(f.docs.get(f.userPath).ranking.lastEloChange).toBe(0);
   });
 
   test("preserves unrelated ranking fields from other workstreams", async () => {

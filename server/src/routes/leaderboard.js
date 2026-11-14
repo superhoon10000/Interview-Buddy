@@ -59,8 +59,16 @@ function createLeaderboardRouter({ userRepository, friendshipRepository }) {
 
       return res.json({
         rankings: rankings.map(({
-          uid, username, rank, elo,
-        }) => ({ uid, username, rank, elo })),
+          uid, username, rank, elo, lastEloChange,
+        }) => ({
+          uid,
+          username,
+          rank,
+          elo,
+          ...(Number.isSafeInteger(lastEloChange)
+            ? { lastEloChange }
+            : {}),
+        })),
       });
     } catch (error) {
       return next(error);

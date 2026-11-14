@@ -739,6 +739,7 @@ class FirestoreSessionRepository extends SessionRepository {
             ...savedRanking,
             ...pointsUpdate,
             elo: eloUpdate.newElo,
+            lastEloChange: eloUpdate.eloChange,
           };
 
           // Record the *awarded* change on this session for stable history.
