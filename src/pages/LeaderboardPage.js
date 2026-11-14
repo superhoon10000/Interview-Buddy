@@ -43,6 +43,53 @@ function RankingMessage({ title = "Loading rankings", children, type = "status" 
   );
 }
 
+//Shows trend arrow for ELO
+//Handles 4 states
+function EloTrend({ change }) {
+  if (!Number.isSafeInteger(change)) {
+    return (
+      <span
+        className="ibRankingTrendUnknown"
+        title="No ELO trend available"
+      >
+        —
+      </span>
+    );
+  }
+
+  const direction =
+    change > 0 ? "up" : change < 0 ? "down" : "flat";
+
+  const label =
+    change > 0
+      ? `ELO increased by ${change}`
+      : change < 0
+        ? `ELO decreased by ${Math.abs(change)}`
+        : "ELO unchanged";
+
+  const arrow =
+    direction === "up"
+      ? "↑"
+      : direction === "down"
+        ? "↓"
+        : "→";
+
+  const amount =
+    change > 0 ? `+${change}` : String(change);
+
+  return (
+    <span
+      className={`ibRankingTrend ibRankingTrend--${direction}`}
+      role="img"
+      aria-label={label}
+      title={`${label} after the last ranked interview`}
+    >
+      <span aria-hidden="true">{arrow}</span>
+      <span aria-hidden="true">{amount}</span>
+    </span>
+  );
+}
+
 function RankingTable({
   data,
   currentUserId,
@@ -97,7 +144,19 @@ function RankingTable({
                     {isCurrentUser && <span className="ibRankingYou">You</span>}
                   </div>
                 </td>
-                <td className="ibRankingScore">{entry.elo == null ? "—" : scoreFormatter.format(entry.elo)}</td>
+                <td className="ibRankingScore">
+                  <span className="ibRankingScoreContent">
+                    <span>
+                      {entry.elo == null
+                        ? "—"
+                        : scoreFormatter.format(entry.elo)}
+                    </span>
+
+                    {entry.elo != null && (
+                      <EloTrend change={entry.lastEloChange} />
+                    )}
+                  </span>
+                </td>
                 {onRemove && (
                   <td className="ibRankingActionCell">
                     <button

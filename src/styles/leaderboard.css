@@ -204,6 +204,39 @@
   white-space: nowrap;
 }
 
+/* ELO trend indicators */
+.ibRankingScoreContent {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.ibRankingTrend {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.ibRankingTrend--up {
+  color: var(--ib-success);
+}
+
+.ibRankingTrend--down {
+  color: var(--ib-danger);
+}
+
+.ibRankingTrend--flat,
+.ibRankingTrendUnknown {
+  color: var(--ib-text-muted);
+}
+
+.ibRankingTrendUnknown {
+  font-size: 0.75rem;
+}
+
 .ibRankingYou {
   padding: 3px 6px;
   border-radius: 4px;

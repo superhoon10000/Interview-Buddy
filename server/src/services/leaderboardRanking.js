@@ -21,7 +21,16 @@ function toEligibleProfile(profile) {
   }
   const elo = ranking.elo == null ? ELO_CONFIG.initialElo : ranking.elo;
   if (!Number.isSafeInteger(elo) || elo < ELO_CONFIG.minimumElo) return null;
-  return { uid, username, elo };
+
+  //Exposes only a valid numeric ELO change while continuing to exclude priv user data
+  return {
+    uid,
+    username,
+    elo,
+    ...(Number.isSafeInteger(ranking.lastEloChange)
+      ? { lastEloChange: ranking.lastEloChange }
+      : {}),
+  };
 }
 
 function compareAscending(first, second) {

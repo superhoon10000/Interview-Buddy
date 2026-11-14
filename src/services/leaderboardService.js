@@ -107,7 +107,9 @@ function normalizeRanking(row) {
       Number.isSafeInteger(elo) && elo >= 0
         ? elo
         : null,
-
+    ...(Number.isSafeInteger(row.lastEloChange)
+      ? { lastEloChange: row.lastEloChange }
+      : {}),
   };
 }
 

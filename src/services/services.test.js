@@ -671,6 +671,45 @@ describe("leaderboardService", () => {
       { method: "DELETE", headers: { Authorization: "Bearer test-id-token" } }
     );
   });
+
+  //Ensures that ELO trends are preserved
+  test("preserves numeric ELO trends including zero", async () => {
+    global.fetch.mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        rankings: [
+          {
+            uid: "up",
+            username: "Up",
+            rank: 1,
+            elo: 1200,
+            lastEloChange: 16,
+          },
+          {
+            uid: "down",
+            username: "Down",
+            rank: 2,
+            elo: 1100,
+            lastEloChange: -8,
+          },
+          {
+            uid: "flat",
+            username: "Flat",
+            rank: 3,
+            elo: 1000,
+            lastEloChange: 0,
+          },
+        ],
+      }),
+    });
+
+    const rankings =
+      await leaderboardService.getGlobalLeaderboard();
+
+    expect(rankings.map((entry) => entry.lastEloChange))
+      .toEqual([16, -8, 0]);
+  });
 });
 
 describe("aiService", () => {
