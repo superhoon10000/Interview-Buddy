@@ -19,8 +19,9 @@ function SettingsPage({ currentPage, onNavigate, onAccountDeleted }) {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const deleteButtonRef = useRef(null);
   const providerIds = user?.providerIds || [];
-  const supportsDeletion = providerIds.includes("password") ||
-    providerIds.includes("google.com");
+  const passwordLinked = providerIds.includes("password");
+  const supportsDeletion =
+    passwordLinked || providerIds.includes("google.com");
 
   function closeDeleteDialog() {
     setShowDeleteDialog(false);
@@ -255,7 +256,16 @@ function SettingsPage({ currentPage, onNavigate, onAccountDeleted }) {
             className={`ib-settings-status ib-settings-status--${status.type}`}
             role={status.type === "error" ? "alert" : "status"}
           >
-            {status.text}
+            <span>{status.text}</span>
+
+            <button
+              type="button"
+              className="ib-settings-status-dismiss"
+              aria-label="Dismiss settings message"
+              onClick={() => setStatus(null)}
+            >
+              ×
+            </button>
           </div>
         )}
 
@@ -282,9 +292,10 @@ function SettingsPage({ currentPage, onNavigate, onAccountDeleted }) {
                   type="text"
                   autoComplete="username"
                   value={username}
-                  onChange={(event) =>
-                    setUsername(event.target.value)
-                  }
+                  onChange={(event) => {
+                    setUsername(event.target.value);
+                    setStatus(null);
+                  }}
                   disabled={isLoading || savingProfile}
                   maxLength={60}
                   required
@@ -316,8 +327,24 @@ function SettingsPage({ currentPage, onNavigate, onAccountDeleted }) {
 
             <div className="ib-settings-actions">
               <button
-                className="ib-button ib-button--primary"
+                type="button"
+                className="ib-button ib-button--secondary"
+                disabled={
+                  isLoading ||
+                  savingProfile ||
+                  !profileHasChanges
+                }
+                onClick={() => {
+                  setUsername(savedUsername);
+                  setStatus(null);
+                }}
+              >
+                Cancel Changes
+              </button>
+
+              <button
                 type="submit"
+                className="ib-button ib-button--primary"
                 disabled={
                   isLoading ||
                   savingProfile ||
@@ -341,10 +368,11 @@ function SettingsPage({ currentPage, onNavigate, onAccountDeleted }) {
           description="Manage your account password."
           icon="shield"
         >
-          <form
-            className="ib-settings-password-form"
-            onSubmit={handlePasswordSave}
-          >
+          {passwordLinked ? (
+            <form
+              className="ib-settings-password-form"
+              onSubmit={handlePasswordSave}
+            >
             <div className="ib-settings-password-grid">
               <div className="ib-settings-field">
                 <label
@@ -361,9 +389,10 @@ function SettingsPage({ currentPage, onNavigate, onAccountDeleted }) {
                   autoComplete="current-password"
                   placeholder="Enter current password"
                   value={currentPassword}
-                  onChange={(event) =>
-                    setCurrentPassword(event.target.value)
-                  }
+                  onChange={(event) => {
+                    setCurrentPassword(event.target.value);
+                    setStatus(null);
+                  }}
                   disabled={isLoading || savingPassword}
                   required
                 />
@@ -384,9 +413,10 @@ function SettingsPage({ currentPage, onNavigate, onAccountDeleted }) {
                   autoComplete="new-password"
                   placeholder="Enter new password"
                   value={newPassword}
-                  onChange={(event) =>
-                    setNewPassword(event.target.value)
-                  }
+                  onChange={(event) => {
+                    setNewPassword(event.target.value);
+                    setStatus(null);
+                  }}
                   disabled={isLoading || savingPassword}
                   minLength={6}
                   required
@@ -408,9 +438,10 @@ function SettingsPage({ currentPage, onNavigate, onAccountDeleted }) {
                   autoComplete="new-password"
                   placeholder="Confirm new password"
                   value={confirmPassword}
-                  onChange={(event) =>
-                    setConfirmPassword(event.target.value)
-                  }
+                  onChange={(event) => {
+                    setConfirmPassword(event.target.value);
+                    setStatus(null);
+                  }}
                   disabled={isLoading || savingPassword}
                   minLength={6}
                   required
@@ -434,7 +465,14 @@ function SettingsPage({ currentPage, onNavigate, onAccountDeleted }) {
                   : "Update Security"}
               </button>
             </div>
-          </form>
+            </form>
+          ) : (
+            <p className="ib-settings-help">
+              Password changes require a linked email/password sign-in
+              method. If you sign in with Google only, manage your
+              password through your Google Account.
+            </p>
+          )}
         </SettingsSection>
 
         {/* Display Preferences */}
@@ -486,8 +524,12 @@ function SettingsPage({ currentPage, onNavigate, onAccountDeleted }) {
         >
           <div className="ib-settings-split-row">
             <p>
-              Permanently delete your Interview Buddy account, profile,
-              interview sessions, responses, and settings. This cannot be undone.
+              {supportsDeletion
+                ? "Permanently delete your Interview Buddy account, " +
+                  "profile, interview sessions, responses, and settings. " +
+                  "This cannot be undone."
+                : "Account deletion is not available for this account's " +
+                  "current sign-in method."}
             </p>
             <button
               ref={deleteButtonRef}
