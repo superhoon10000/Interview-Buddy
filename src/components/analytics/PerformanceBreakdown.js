@@ -1,74 +1,110 @@
-import React from "react";
-import mockSessions from "../../data/mockSessions";
+//Replaced mock information with actual stats
 
-function PerformanceBreakdown() {
-  // Calculate performance metrics from session data
-  const totalSessions = mockSessions.length;
-  const averageScore = Math.round(
-    mockSessions.reduce((sum, session) => {
-      const score = parseInt(session.score.replace('%', ''));
-      return sum + score;
-    }, 0) / totalSessions
+function PerformanceBreakdown({
+  byMode = [],
+  strongestMode,
+  improvementMode,
+}) {
+  const activeModes = byMode.filter(
+    (entry) => entry.sessions > 0
   );
 
-  const modePerformance = mockSessions.reduce((acc, session) => {
-    if (!acc[session.mode]) {
-      acc[session.mode] = { sessions: 0, totalScore: 0, bestScore: 0 };
-    }
-    const score = parseInt(session.score.replace('%', ''));
-    acc[session.mode].sessions += 1;
-    acc[session.mode].totalScore += score;
-    acc[session.mode].bestScore = Math.max(acc[session.mode].bestScore, score);
-    return acc;
-  }, {});
-
-  const strongestMode = Object.entries(modePerformance).reduce((best, [mode, data]) => {
-    const avgScore = data.totalScore / data.sessions;
-    return avgScore > (best.avgScore || 0) ? { mode, avgScore } : best;
-  }, {}).mode;
+  if (!activeModes.length) {
+    return (
+      <p className="analyticsMessage">
+        Complete a scored interview to see
+        performance by mode.
+      </p>
+    );
+  }
 
   return (
     <div className="performanceBreakdown">
       <div className="breakdownSection">
         <h3>Performance by Mode</h3>
+
         <div className="modeBreakdownGrid">
-          {Object.entries(modePerformance).map(([mode, data]) => {
-            const avgScore = Math.round(data.totalScore / data.sessions);
-            return (
-              <div key={mode} className="modeBreakdownCard">
+          {activeModes.map(
+            ({
+              mode,
+              sessions,
+              averageScore,
+              bestScore,
+            }) => (
+              <div
+                key={mode}
+                className="modeBreakdownCard"
+              >
                 <h4>{mode}</h4>
+
                 <div className="modeStats">
                   <div className="stat">
-                    <span className="statLabel">Sessions:</span>
-                    <span className="statValue">{data.sessions}</span>
+                    <span className="statLabel">
+                      Scored sessions:
+                    </span>
+                    <span className="statValue">
+                      {sessions}
+                    </span>
                   </div>
+
                   <div className="stat">
-                    <span className="statLabel">Avg Score:</span>
-                    <span className="statValue">{avgScore}%</span>
+                    <span className="statLabel">
+                      Avg Score:
+                    </span>
+                    <span className="statValue">
+                      {averageScore}%
+                    </span>
                   </div>
+
                   <div className="stat">
-                    <span className="statLabel">Best Score:</span>
-                    <span className="statValue">{data.bestScore}%</span>
+                    <span className="statLabel">
+                      Best Score:
+                    </span>
+                    <span className="statValue">
+                      {bestScore}%
+                    </span>
                   </div>
                 </div>
-                <div className="performanceBar">
+
+                <div
+                  className="performanceBar"
+                  role="img"
+                  aria-label={
+                    `${mode} average: ${averageScore}%`
+                  }
+                >
                   <div
                     className="performanceFill"
-                    style={{ width: `${avgScore}%` }}
-                  ></div>
+                    style={{
+                      width: `${averageScore}%`,
+                    }}
+                  />
                 </div>
               </div>
-            );
-          })}
+            )
+          )}
         </div>
       </div>
 
       <div className="breakdownSection">
-        <h3>Recent Trends</h3>
+        <h3>Mode Insights</h3>
+
         <div className="trendAnalysis">
-          <p><strong>Strongest Mode:</strong> {strongestMode}</p>
-          <p><strong>Improvement Areas:</strong> Focus on modes with scores below 80%</p>
-          <p><strong>Consistency:</strong> {averageScore >= 85 ? 'Excellent' : averageScore >= 75 ? 'Good' : 'Needs improvement'}</p>
+          <p>
+            <strong>Strongest Mode:</strong>{" "}
+            {strongestMode || "Not available"}
+          </p>
+
+          <p>
+            <strong>Potential Improvement:</strong>{" "}
+            {improvementMode ||
+              "Try another mode to compare."}
+          </p>
+
+          <p>
+            Mode comparisons use the average saved
+            score for fully completed interviews.
+          </p>
         </div>
       </div>
     </div>
