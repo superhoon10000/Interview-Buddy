@@ -703,3 +703,152 @@ gap: 12px;
 .resultActionRow {
   margin-top: 18px;
 }
+
+/* Data-backed Analytics additions */
+
+.analyticsMessage {
+  padding: 20px 0;
+  color: var(--text-secondary);
+}
+
+.analyticsFootnote {
+  margin-top: 18px;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+/* ==========================================
+   Analytics - Bounded Progress Chart
+   ========================================== */
+
+/* Graph frame includes the Y-axis and plot */
+.progressChart .chartFrame {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+}
+
+/* Y-axis percentage labels */
+.progressChart .chartYAxis {
+  position: relative;
+  height: 200px;
+}
+
+.progressChart .chartYAxisLabel {
+  position: absolute;
+  right: 0;
+  transform: translateY(-50%);
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+/* Main graph with bounding border */
+.progressChart .chartPlotArea {
+  position: relative;
+  height: 200px;
+  box-sizing: border-box;
+  border: 1px solid var(--border-panel);
+  border-radius: 6px;
+  background: var(--bg-panel);
+  margin-bottom: 36px;
+}
+
+/* Grid overlay */
+.progressChart .chartGrid {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+
+  /* Vertical gridlines */
+  background-image: linear-gradient(
+    to right,
+    var(--border-panel) 1px,
+    transparent 1px
+  );
+  background-size: 20% 100%;
+}
+
+/* Horizontal gridlines at 25%, 50%, 75% */
+.progressChart .chartGridLine {
+  position: absolute;
+  left: 0;
+  right: 0;
+  border-top: 1px dashed var(--border-panel);
+}
+
+/* Keep interview bars inside graph */
+.progressChart .chartContainer {
+  position: relative;
+  height: 100%;
+  margin: 0;
+  padding: 0 12px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-around;
+}
+
+/* Individual interview column */
+.progressChart .chartColumn {
+  position: relative;
+  height: 100%;
+  flex: 1;
+  max-width: 80px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+/* Bar container */
+.progressChart .chartBarContainer {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  margin: 0;
+}
+
+/* Actual score bar */
+.progressChart .chartBarFill {
+  width: 30px;
+  max-width: 90%;
+  border-radius: 4px 4px 0 0;
+  transition: height 0.3s ease;
+}
+
+/* Date labels below the bounding border */
+.progressChart .chartLabel {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  font-size: 0.8rem;
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+  .progressChart .chartFrame {
+    grid-template-columns: 34px minmax(0, 1fr);
+    gap: 7px;
+  }
+
+  .progressChart .chartContainer {
+    padding: 0 6px;
+  }
+
+  .progressChart .chartBarFill {
+    width: 22px;
+  }
+
+  .progressChart .chartLabel {
+    font-size: 0.7rem;
+  }
+}
