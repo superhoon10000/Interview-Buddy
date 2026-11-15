@@ -22,11 +22,6 @@
 
 
 /* Main cards */
-
-.ib-settings-section {
-  padding: var(--ib-space-5) var(--ib-space-6);
-}
-
 .ib-settings-section-header {
   display: flex;
   align-items: flex-start;
@@ -95,6 +90,8 @@
 .ib-settings-actions {
   display: flex;
   justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: var(--ib-space-2);
   margin-top: var(--ib-space-4);
 }
 
@@ -168,12 +165,10 @@
   font-weight: var(--ib-font-weight-semibold);
 }
 
-.ib-settings-segment:focus-visible,
-.ib-settings-switch-label input:focus-visible {
+.ib-settings-segment:focus-visible {
   outline: 3px solid var(--ib-focus-ring);
   outline-offset: 2px;
 }
-
 
 /* Danger Zone */
 
@@ -198,6 +193,10 @@
 /* Success / error notifications */
 
 .ib-settings-status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ib-space-3);
   padding: var(--ib-space-3) var(--ib-space-4);
   border: 1px solid;
   border-radius: var(--ib-radius-md);
@@ -214,6 +213,44 @@
   background: var(--ib-danger-soft);
   color: var(--ib-danger);
   border-color: var(--ib-danger-border);
+}
+
+/* Dismissible settings messages */
+.ib-settings-status-dismiss {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border-radius: var(--ib-radius-sm);
+  background: transparent;
+  color: inherit;
+  font-size: 20px;
+  line-height: 1;
+}
+
+.ib-settings-status-dismiss:hover {
+  background: var(--ib-surface-muted);
+}
+
+.ib-settings-status-dismiss:focus-visible {
+  outline: 3px solid var(--ib-focus-ring);
+  outline-offset: 2px;
+}
+
+/* Informational text for unavailable settings */
+
+.ib-settings-help {
+  margin: 0;
+  padding: var(--ib-space-3) var(--ib-space-4);
+  border: 1px solid var(--ib-border);
+  border-radius: var(--ib-radius-sm);
+  background: var(--ib-surface-muted);
+  color: var(--ib-text-secondary);
+  font-size: var(--ib-font-size-sm);
+  line-height: var(--ib-line-height-normal);
 }
 
 /* Responsive layout */
