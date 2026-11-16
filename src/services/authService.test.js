@@ -1394,6 +1394,82 @@ describe(
       );
     });
 
+    test("rejects password changes when the account has no email", async () => {
+      auth.currentUser = makeUser();
+      auth.currentUser.email = null;
+
+      await expect(
+        authService.changePassword("oldPassword123", "newPassword123")
+      ).rejects.toThrow(
+        "This account does not have an email/password sign-in method."
+      );
+
+      expect(EmailAuthProvider.credential).not.toHaveBeenCalled();
+      expect(reauthenticateWithCredential).not.toHaveBeenCalled();
+      expect(updatePassword).not.toHaveBeenCalled();
+    });
+
+    test("rejects password changes when credentials belong to another user", async () => {
+      auth.currentUser = makeUser();
+
+      reauthenticateWithCredential.mockRejectedValue({
+        code: "auth/user-mismatch",
+      });
+
+      await expect(
+        authService.changePassword("oldPassword123", "newPassword123")
+      ).rejects.toMatchObject({
+        code: "auth/user-mismatch",
+        message: "The credentials do not match this account.",
+      });
+
+      expect(updatePassword).not.toHaveBeenCalled();
+    });
+
+    test("requires recent authentication before changing a password", async () => {
+      auth.currentUser = makeUser();
+
+      reauthenticateWithCredential.mockRejectedValue({
+        code: "auth/requires-recent-login",
+      });
+
+      await expect(
+        authService.changePassword("oldPassword123", "newPassword123")
+      ).rejects.toMatchObject({
+        code: "auth/requires-recent-login",
+        message: "Please sign in again and retry.",
+      });
+
+      expect(updatePassword).not.toHaveBeenCalled();
+    });
+
+    test("reports network failures during password updates without success", async () => {
+      const user = makeUser();
+      auth.currentUser = user;
+
+      updatePassword.mockRejectedValue({
+        code: "auth/network-request-failed",
+      });
+
+      await expect(
+        authService.changePassword("oldPassword123", "newPassword123")
+      ).rejects.toMatchObject({
+        code: "auth/network-request-failed",
+        message: "Unable to reach Firebase. Please try again.",
+      });
+
+      expect(reauthenticateWithCredential).toHaveBeenCalledWith(
+        user,
+        expect.objectContaining({
+          providerId: "password",
+        })
+      );
+
+      expect(updatePassword).toHaveBeenCalledWith(
+        user,
+        "newPassword123"
+      );
+    });
 
     test("verified password signup creates its deferred profile", async () => {
       auth.currentUser = makeUser();
