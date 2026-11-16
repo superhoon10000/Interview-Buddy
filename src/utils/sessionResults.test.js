@@ -2,7 +2,6 @@
 import {
   END_SESSION_ERROR_MESSAGES,
   buildSessionResult,
-  calculateEloChange,
   formatCompletedDate,
   getEndSessionErrorMessage,
   isRetryableEndSessionError,
@@ -275,6 +274,63 @@ describe("buildSessionResult", () => {
     });
   });
 
+  //Validates authoritative backend values, missing values, invalid values and zero change handling
+  test("uses the nested persisted ELO from the server response", () => {
+    const result = buildSessionResult({
+      mode: "Code Style",
+      savedSession: {
+        eloChange: "+2",
+        result: {
+          score: 75,
+          rankEligible: true,
+          completionStatus: "completed",
+          eloChange: "+8",
+        },
+      },
+    });
+
+    expect(result.eloChange).toBe("+8");
+  });
+
+  test("does not invent a ranked ELO change when the saved value is missing", () => {
+    const result = buildSessionResult({
+      mode: "Code Style",
+      savedSession: {
+        result: {
+          score: 75,
+          rankEligible: true,
+          completionStatus: "completed",
+          eloChange: null,
+        },
+      },
+    });
+
+    expect(result.rankEligible).toBe(true);
+    expect(result.eloChange).toBeNull();
+  });
+
+  test("ignores invalid ELO values but preserves an awarded zero change", () => {
+    const savedSession = {
+      result: {
+        score: 75,
+        rankEligible: true,
+        completionStatus: "completed",
+      },
+    };
+
+    expect(
+      buildSessionResult({
+        savedSession: { ...savedSession, eloChange: "estimate" },
+      }).eloChange
+    ).toBeNull();
+
+    expect(
+      buildSessionResult({
+        savedSession: { ...savedSession, eloChange: "0" },
+      }).eloChange
+    ).toBe("0");
+  });
+
   //Explicity verifies that an unverified setup count cannot change a locally estimated score.
   test("does not use unverified setup question count for fallback scoring", () => {
     const result = buildSessionResult({
@@ -315,19 +371,4 @@ describe("formatCompletedDate", () => {
       formatCompletedDate("not a date")
     ).toBe("Unknown date");
   });
-});
-
-describe("calculateEloChange", () => {
-  test.each([
-    [70, "+2"],
-    [50, "+1"],
-    [49, "-2"],
-  ])(
-    "score %i gives %s",
-    (score, expected) => {
-      expect(
-        calculateEloChange(score)
-      ).toBe(expected);
-    }
-  );
 });
