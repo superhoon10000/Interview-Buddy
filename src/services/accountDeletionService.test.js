@@ -96,3 +96,93 @@ test("does not sign out after a backend deletion failure", async () => {
   })).rejects.toMatchObject({ code: "recent-login-required" });
   expect(signOut).not.toHaveBeenCalled();
 });
+
+//Expanded testing for security regarding deletion
+//Check identity, unsupported verification, or missing auth.
+//Distinguishes failed / successful deletion followed by a browser sign-out failure.
+test("rejects deletion when the user is signed out", async () => {
+  auth.currentUser = null;
+
+  await expect(
+    accountDeletionService.deleteAccount({
+      confirmation: "DELETE",
+      method: "password",
+      password: "secret",
+    })
+  ).rejects.toThrow("Please sign in before deleting your account.");
+
+  expect(reauthenticateWithCredential).not.toHaveBeenCalled();
+  expect(global.fetch).not.toHaveBeenCalled();
+  expect(signOut).not.toHaveBeenCalled();
+});
+
+test("rejects an unlinked Google verification method", async () => {
+  await expect(
+    accountDeletionService.deleteAccount({
+      confirmation: "DELETE",
+      method: "google",
+    })
+  ).rejects.toThrow("Google sign-in is not linked to this account.");
+
+  expect(reauthenticateWithPopup).not.toHaveBeenCalled();
+  expect(global.fetch).not.toHaveBeenCalled();
+});
+
+test("blocks deletion if the signed-in identity changes during verification", async () => {
+  reauthenticateWithCredential.mockImplementationOnce(async () => {
+    auth.currentUser = {
+      ...firebaseUser(),
+      uid: "different-user",
+    };
+  });
+
+  await expect(
+    accountDeletionService.deleteAccount({
+      confirmation: "DELETE",
+      method: "password",
+      password: "secret",
+    })
+  ).rejects.toThrow(
+    "The signed-in account changed during verification."
+  );
+
+  expect(global.fetch).not.toHaveBeenCalled();
+  expect(signOut).not.toHaveBeenCalled();
+});
+
+test("does not report deletion success without backend confirmation", async () => {
+  global.fetch.mockResolvedValue({
+    ok: true,
+    json: async () => ({ deleted: false }),
+  });
+
+  await expect(
+    accountDeletionService.deleteAccount({
+      confirmation: "DELETE",
+      method: "password",
+      password: "secret",
+    })
+  ).rejects.toMatchObject({
+    code: "account-deletion-failed",
+  });
+
+  expect(signOut).not.toHaveBeenCalled();
+});
+
+test("reports local sign-out failure after backend deletion succeeds", async () => {
+  signOut.mockRejectedValueOnce(new Error("Sign-out failed"));
+
+  await expect(
+    accountDeletionService.deleteAccount({
+      confirmation: "DELETE",
+      method: "password",
+      password: "secret",
+    })
+  ).rejects.toMatchObject({
+    code: "account-deleted-signout-failed",
+    message: expect.stringContaining("Account deleted"),
+  });
+
+  expect(global.fetch).toHaveBeenCalledTimes(1);
+  expect(signOut).toHaveBeenCalledWith(auth);
+});

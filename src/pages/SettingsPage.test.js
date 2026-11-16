@@ -430,6 +430,64 @@ test("hides password form for Google-only accounts", async () => {
   });
 });
 
+//Covers password reuse prevention and stale error-message handling.
+test("rejects using the current password as the new password", async () => {
+  renderPage();
+  await screen.findByDisplayValue("original_name");
+
+  enterPasswords(
+    "samePassword123",
+    "samePassword123",
+    "samePassword123"
+  );
+
+  fireEvent.click(
+    screen.getByRole("button", { name: "Update Security" })
+  );
+
+  expect(
+    await screen.findByRole("alert")
+  ).toHaveTextContent(
+    "New password must differ from the current password."
+  );
+
+  expect(authService.changePassword).not.toHaveBeenCalled();
+});
+
+test("clears password errors when the user edits a field", async () => {
+  authService.changePassword.mockRejectedValueOnce(
+    new Error("Current password is incorrect.")
+  );
+
+  renderPage();
+  await screen.findByDisplayValue("original_name");
+
+  enterPasswords(
+    "wrongPassword123",
+    "newPassword123",
+    "newPassword123"
+  );
+
+  fireEvent.click(
+    screen.getByRole("button", { name: "Update Security" })
+  );
+
+  expect(
+    await screen.findByRole("alert")
+  ).toHaveTextContent("Current password is incorrect.");
+
+  fireEvent.change(
+    screen.getByLabelText("Current Password"),
+    { target: { value: "correctedPassword123" } }
+  );
+
+  expect(
+    screen.queryByText("Current password is incorrect.")
+  ).not.toBeInTheDocument();
+
+  expect(authService.changePassword).toHaveBeenCalledTimes(1);
+});
+
 //Unsupported deletion is explained
 test("explains when account deletion is unavailable", async () => {
   useAuth.mockReturnValue({
