@@ -57,20 +57,6 @@ function isRetryableEndSessionError(error) {
   return !NON_RETRYABLE_CODES.has(error?.code);
 }
 
-// Used only as a display estimate after
-// the server confirms ranking eligibility.
-function calculateEloChange(score) {
-  if (score >= 70) {
-    return "+2";
-  }
-
-  if (score >= 50) {
-    return "+1";
-  }
-
-  return "-2";
-}
-
 // Returns the average score of the provided answers, rounded to the nearest integer.
 function averageScore(answers, assignedCount = null) {
   const count =
@@ -214,6 +200,18 @@ function buildSessionResult({
   const rankEligible =
     savedSession?.result?.rankEligible === true;
 
+  // ELO is awarded by the backend transaction. Never infer a change
+  // from a score when a saved result has no ELO delta (legacy sessions).
+  const savedEloChange =
+    savedSession?.result?.eloChange ??
+    savedSession?.eloChange;
+
+  const persistedEloChange =
+    typeof savedEloChange === "string" &&
+    /^[+-]?[0-9]+$/.test(savedEloChange)
+      ? savedEloChange
+      : null;
+
   return {
     sessionId:
       savedSession?.id ||
@@ -245,10 +243,7 @@ function buildSessionResult({
     eloChange:
       rankEligible &&
       completionStatus === "completed"
-        ? (
-            savedSession?.eloChange ??
-            calculateEloChange(score)
-          )
+        ? persistedEloChange
         : null,
 
     isCorrect: Boolean(lastAnswer?.isCorrect),
@@ -281,6 +276,5 @@ export {
   getEndSessionErrorMessage,
   isRetryableEndSessionError,
   buildSessionResult,
-  calculateEloChange,
   formatCompletedDate,
 };

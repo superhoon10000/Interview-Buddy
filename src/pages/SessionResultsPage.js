@@ -226,21 +226,16 @@ function SessionResultsPage({
     savedSummary.eloChange ??
     null;
 
-  const hasEloEstimate =
+  const hasSavedEloChange =
     isEligibleForElo &&
-    savedElo !== null &&
-    savedElo !== undefined;
+    typeof savedElo === "string" &&
+    /^[+-]?[0-9]+$/.test(savedElo);
 
-  const eloChange = hasEloEstimate
+  const eloChange = hasSavedEloChange
     ? savedElo
     : isNotRanked
       ? "Not ranked"
       : "—";
-
-  const eloLabel =
-    hasEloEstimate
-      ? "Estimated ELO Change"
-      : "ELO Change";
 
   const heroEyebrow =
     completionStatus === "completed"
@@ -405,19 +400,12 @@ function SessionResultsPage({
 
               <div className="ibResultsStat">
                 <span>
-                  {eloLabel}
+                  ELO Change
                 </span>
 
                 <strong>
                   {eloChange}
                 </strong>
-
-                {hasEloEstimate && (
-                  <small>
-                    Display estimate only; not a
-                    confirmed ranking update.
-                  </small>
-                )}
               </div>
             </div>
 

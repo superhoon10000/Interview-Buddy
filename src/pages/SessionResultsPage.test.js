@@ -219,6 +219,56 @@ test("reloaded SEC-03 interview preserves feedback, rubric, and eligible ELO", a
   expect(
     screen.getByText("+2")
   ).toBeInTheDocument();
+
+  expect(
+    screen.getByText("ELO Change")
+  ).toBeInTheDocument();
+
+  expect(
+    screen.queryByText("Estimated ELO Change")
+  ).not.toBeInTheDocument();
+
+  expect(
+    screen.queryByText(/Display estimate only/i)
+  ).not.toBeInTheDocument();
+});
+
+test("shows the backend-awarded +8 ELO on freshly completed interviews", () => {
+  renderResult("/results/saved-elo", {
+    sessionId: "saved-elo",
+    score: "75%",
+    completionStatus: "completed",
+    rankEligible: true,
+    eloChange: "+8",
+  });
+
+  expect(screen.getByText("+8")).toBeInTheDocument();
+  expect(screen.getByText("ELO Change")).toBeInTheDocument();
+  expect(historyService.getCompletedSessionResults).not.toHaveBeenCalled();
+});
+
+test("does not fabricate ELO for an eligible legacy session with no saved delta", async () => {
+  historyService.getCompletedSessionResults.mockResolvedValue({
+    id: "missing-elo",
+    status: "completed",
+    mode: "Code Style",
+    result: {
+      score: 75,
+      questionsAnswered: 10,
+      questionsAssigned: 10,
+      questionsUnanswered: 0,
+      completionStatus: "completed",
+      rankEligible: true,
+      eloChange: null,
+    },
+  });
+
+  renderResult("/results/missing-elo");
+
+  expect(await screen.findByText("75%")).toBeInTheDocument();
+  expect(screen.getByText("ELO Change")).toBeInTheDocument();
+  expect(screen.getByText("—")).toBeInTheDocument();
+  expect(screen.queryByText("+2")).not.toBeInTheDocument();
 });
 
 test("missing completed session shows the unavailable state", async () => {
