@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import PageLayout from "../components/layout/PageLayout";
 import { useAuth } from "../context/AuthContext";
 import { leaderboardService } from "../services/leaderboardService";
@@ -342,9 +342,28 @@ function LeaderboardPage({ currentPage, onNavigate }) {
   const [searching, setSearching] = useState(false);
   const [addStatus, setAddStatus] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [friendsRefreshing, setFriendsRefreshing] = useState(false);
+  // Requests can overlap when switching tabs, refreshing, or changing friendships.
+  // Only the latest response for each dataset may update the view.
+  const friendsRequestId = useRef(0);
+  const acceptedFriendsRequestId = useRef(0);
+  const friendsTabRequestPending = useRef(false);
+  const openedFriendsTab = useRef(false);
+  const mounted = useRef(false);
+
+  useEffect(() => {
+    mounted.current = true;
+    return () => { mounted.current = false; };
+  }, []);
 
   useEffect(() => {
     let active = true;
+    const friendsId = ++friendsRequestId.current;
+    const acceptedId = ++acceptedFriendsRequestId.current;
+    friendsTabRequestPending.current = false;
+    // New accounts should not inherit another user's tab-visit history.
+    openedFriendsTab.current = false;
+    setFriendsRefreshing(false);
     setGlobal(initialCollection);
     setFriends(initialCollection);
     setAcceptedFriends(initialCollection);
@@ -370,14 +389,23 @@ function LeaderboardPage({ currentPage, onNavigate }) {
       if (!active) return;
 
       setGlobal(resolveResult(globalResult, []));
-      setFriends(resolveResult(friendsResult, []));
+      if (friendsId === friendsRequestId.current) {
+        setFriends(resolveResult(friendsResult, []));
+      }
       setStanding(resolveResult(standingResult, null));
       setRequests(resolveResult(requestsResult, emptyRequests));
-      setAcceptedFriends(resolveResult(acceptedResult, []));
+      if (acceptedId === acceptedFriendsRequestId.current) {
+        setAcceptedFriends(resolveResult(acceptedResult, []));
+      }
     });
 
     //Cleanup
-    return () => { active = false; };
+    return () => {
+      active = false;
+      friendsRequestId.current += 1;
+      acceptedFriendsRequestId.current += 1;
+      friendsTabRequestPending.current = false;
+    };
   }, [user?.uid, refreshKey]);
 
   const friendRankings = useMemo(() => friends.data, [friends.data]);
@@ -416,11 +444,60 @@ function LeaderboardPage({ currentPage, onNavigate }) {
   }
 
   async function reloadFriends() {
+    const requestId = ++friendsRequestId.current;
+    friendsTabRequestPending.current = false;
+    setFriendsRefreshing(false);
     try {
       const records = await leaderboardService.getFriendsLeaderboard();
-      setFriends({ status: "success", data: records, error: "" });
+      if (mounted.current && requestId === friendsRequestId.current) {
+        setFriends({ status: "success", data: records, error: "" });
+      }
     } catch (error) {
-      setFriends(resolveResult({ status: "rejected", reason: error }, []));
+      if (mounted.current && requestId === friendsRequestId.current) {
+        setFriends(resolveResult({ status: "rejected", reason: error }, []));
+      }
+    }
+  }
+
+  // SCRUM-110: Refresh both friend rankings and accepted-friend membership
+  // when entering Friends. The server owns ELO sorting, ties and eligibility.
+  async function refreshFriendsTab() {
+    // The initial page load already fetches these datasets. Avoid duplicating it.
+    if (friends.status === "loading" || acceptedFriends.status === "loading" || friendsTabRequestPending.current) return;
+
+    const friendsId = ++friendsRequestId.current;
+    const acceptedId = ++acceptedFriendsRequestId.current;
+    friendsTabRequestPending.current = true;
+    setFriendsRefreshing(true);
+    setFriends(initialCollection);
+    setAcceptedFriends(initialCollection);
+
+    const [rankingResult, acceptedResult] = await Promise.allSettled([
+      leaderboardService.getFriendsLeaderboard(),
+      leaderboardService.getAcceptedFriends(),
+    ]);
+
+    if (mounted.current && friendsId === friendsRequestId.current) {
+      setFriends(resolveResult(rankingResult, []));
+      setVisibleFriends(PAGE_SIZE);
+      friendsTabRequestPending.current = false;
+      setFriendsRefreshing(false);
+    }
+    if (mounted.current && acceptedId === acceptedFriendsRequestId.current) {
+      setAcceptedFriends(resolveResult(acceptedResult, []));
+    }
+  }
+
+  function selectTab(tab) {
+    if (tab === activeTab) return;
+    setActiveTab(tab);
+    if (tab === "friends") {
+      // Initial page load already fetched these datasets. Refresh on subsequent
+      // visits after leaving Friends; avoid duplicating the first fetch.
+      if (openedFriendsTab.current) {
+        void refreshFriendsTab();
+      }
+      openedFriendsTab.current = true;
     }
   }
 
@@ -444,21 +521,16 @@ function LeaderboardPage({ currentPage, onNavigate }) {
   }
 
   async function reloadAcceptedFriends() {
+    const requestId = ++acceptedFriendsRequestId.current;
     try {
       const records = await leaderboardService.getAcceptedFriends();
-
-      setAcceptedFriends({
-        status: "success",
-        data: records,
-        error: "",
-      });
+      if (mounted.current && requestId === acceptedFriendsRequestId.current) {
+        setAcceptedFriends({ status: "success", data: records, error: "" });
+      }
     } catch (error) {
-      setAcceptedFriends(
-        resolveResult(
-          { status: "rejected", reason: error },
-          []
-        )
-      );
+      if (mounted.current && requestId === acceptedFriendsRequestId.current) {
+        setAcceptedFriends(resolveResult({ status: "rejected", reason: error }, []));
+      }
     }
   }
 
@@ -606,8 +678,8 @@ function LeaderboardPage({ currentPage, onNavigate }) {
         <div className="ibRankingMain">
           <div className="ibRankingToolbar">
             <div className="ibRankingTabs" role="tablist" aria-label="Leaderboard views">
-              <button type="button" role="tab" id="ib-global-tab" aria-selected={activeTab === "global"} aria-controls="ib-global-panel" className={activeTab === "global" ? "ibRankingTab is-active" : "ibRankingTab"} onClick={() => setActiveTab("global")}>Global</button>
-              <button type="button" role="tab" id="ib-friends-tab" aria-selected={activeTab === "friends"} aria-controls="ib-friends-panel" className={activeTab === "friends" ? "ibRankingTab is-active" : "ibRankingTab"} onClick={() => setActiveTab("friends")}>Friends</button>
+              <button type="button" role="tab" id="ib-global-tab" aria-selected={activeTab === "global"} aria-controls="ib-global-panel" className={activeTab === "global" ? "ibRankingTab is-active" : "ibRankingTab"} onClick={() => selectTab("global")}>Global</button>
+              <button type="button" role="tab" id="ib-friends-tab" aria-selected={activeTab === "friends"} aria-controls="ib-friends-panel" className={activeTab === "friends" ? "ibRankingTab is-active" : "ibRankingTab"} onClick={() => selectTab("friends")}>Friends</button>
             </div>
             <div className="ibRankingToolbarActions">
               <p className="ibRankingToolbarNote">
@@ -638,6 +710,12 @@ function LeaderboardPage({ currentPage, onNavigate }) {
                   </span>
                 </div>
 
+                <p className="ibRankingRefreshStatus">
+                  Ordered by ELO. Equal ELO scores share the same rank.
+                </p>
+                {friendsRefreshing && (
+                  <p className="ibRankingRefreshStatus" role="status">Updating friends rankings...</p>
+                )}
                 <RankingTable
                   data={{
                     ...friends,
@@ -651,6 +729,17 @@ function LeaderboardPage({ currentPage, onNavigate }) {
                   emptyDescription={friendsEmptyDescription}
                 />
 
+                {(friends.status === "error" || friends.status === "unavailable" ||
+                  acceptedFriends.status === "error" || acceptedFriends.status === "unavailable") && (
+                  <button
+                    type="button"
+                    className="ibRankingRefresh"
+                    onClick={refreshFriendsTab}
+                    disabled={friendsRefreshing || saving}
+                  >
+                    Retry Friends Rankings
+                  </button>
+                )}
                 {friends.status === "success" &&
                   visibleFriends < friends.data.length && (
                     <button
@@ -806,7 +895,7 @@ function LeaderboardPage({ currentPage, onNavigate }) {
                 No friends available yet.
               </p>
             )}
-            {activeTab !== "friends" && <button type="button" className="ibRankingViewFriends" onClick={() => setActiveTab("friends")}>View Friends</button>}
+            {activeTab !== "friends" && <button type="button" className="ibRankingViewFriends" onClick={() => selectTab("friends")}>View Friends</button>}
           </section>
         </aside>
       </div>

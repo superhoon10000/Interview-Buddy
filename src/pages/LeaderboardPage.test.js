@@ -1,5 +1,5 @@
 import React from "react";
-import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import LeaderboardPage from "./LeaderboardPage";
 import { useAuth } from "../context/AuthContext";
 import { leaderboardService } from "../services/leaderboardService";
@@ -861,5 +861,158 @@ describe("SCRUM-108 friend discovery", () => {
     fireEvent.click(screen.getByRole("button", { name: "Search" }));
     expect(await screen.findByText("Search unavailable")).toHaveAttribute("role", "alert");
     expect(leaderboardService.sendFriendRequest).not.toHaveBeenCalled();
+  });
+});
+
+
+describe("SCRUM-110 friends-only ranking refresh workflow", () => {
+  const ranking = (uid, username, rank, elo) => ({ uid, username, rank, elo });
+  const viewFriends = () => fireEvent.click(screen.getByRole("tab", { name: "Friends" }));
+  const viewGlobal = () => fireEvent.click(screen.getByRole("tab", { name: "Global" }));
+
+  test("refreshes server ELO and membership when returning to Friends", async () => {
+    leaderboardService.getGlobalLeaderboard.mockResolvedValue([]);
+    leaderboardService.getFriendsLeaderboard
+      .mockResolvedValueOnce([ranking("old", "OldFriend", 1, 1200)])
+      .mockResolvedValueOnce([ranking("new", "NewLeader", 1, 1450)]);
+    leaderboardService.getAcceptedFriends
+      .mockResolvedValueOnce([{ uid: "old", username: "OldFriend" }])
+      .mockResolvedValueOnce([{ uid: "new", username: "NewLeader" }]);
+
+    render(<LeaderboardPage currentPage="/leaderboard" onNavigate={() => {}} />);
+    expect(await screen.findByText("1,200 ELO")).toBeInTheDocument();
+    viewFriends();
+    expect(leaderboardService.getFriendsLeaderboard).toHaveBeenCalledTimes(1);
+    viewGlobal();
+    viewFriends();
+
+    const friendsPanel = screen.getByRole("region", { name: "Friends leaderboard" });
+    expect(await within(friendsPanel).findByText("NewLeader")).toBeInTheDocument();
+    expect(within(friendsPanel).getByText("1,450")).toBeInTheDocument();
+    expect(within(friendsPanel).queryByText("OldFriend")).not.toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Accepted Friends" })).toHaveTextContent("NewLeader");
+    expect(leaderboardService.getFriendsLeaderboard).toHaveBeenCalledTimes(2);
+    expect(leaderboardService.getAcceptedFriends).toHaveBeenCalledTimes(2);
+  });
+
+  test("displays a friends-specific loading state and avoids duplicate refreshes", async () => {
+    let resolveFresh;
+    const inFlight = new Promise((resolve) => { resolveFresh = resolve; });
+    leaderboardService.getGlobalLeaderboard.mockResolvedValue([]);
+    leaderboardService.getFriendsLeaderboard
+      .mockResolvedValueOnce([ranking("old", "OldFriend", 1, 1200)])
+      .mockReturnValueOnce(inFlight);
+    leaderboardService.getAcceptedFriends.mockResolvedValue([{ uid: "old", username: "OldFriend" }]);
+
+    render(<LeaderboardPage currentPage="/leaderboard" onNavigate={() => {}} />);
+    expect(await screen.findByText("1,200 ELO")).toBeInTheDocument();
+    viewFriends();
+    viewGlobal();
+    viewFriends();
+
+    const friendsPanel = screen.getByRole("region", { name: "Friends leaderboard" });
+    expect(
+      within(friendsPanel).getByText("Updating friends rankings...")
+    ).toBeInTheDocument();
+    expect(within(friendsPanel).queryByText("OldFriend")).not.toBeInTheDocument();
+    viewGlobal();
+    viewFriends();
+
+    expect(leaderboardService.getFriendsLeaderboard).toHaveBeenCalledTimes(2);
+
+    await act(async () => {
+      resolveFresh([ranking("old", "OldFriend", 1, 1350)]);
+    });
+
+    // Re-query the panel because switching tabs unmounts and recreates it.
+    const updatedFriendsPanel = screen.getByRole("region", {
+      name: "Friends leaderboard",
+    });
+
+    expect(
+      await within(updatedFriendsPanel).findByText("1,350")
+    ).toBeInTheDocument();
+
+    expect(
+      within(updatedFriendsPanel).queryByRole("status")
+    ).not.toBeInTheDocument();
+  });
+
+  test("shows a safe error and retries without stale ELO or affecting Global", async () => {
+    leaderboardService.getGlobalLeaderboard.mockResolvedValue([ranking("global", "GlobalLeader", 1, 1600)]);
+    leaderboardService.getFriendsLeaderboard
+      .mockResolvedValueOnce([ranking("friend", "OldRating", 1, 1200)])
+      .mockRejectedValueOnce(new Error("Friends service temporarily unavailable"))
+      .mockResolvedValueOnce([ranking("friend", "UpdatedRating", 1, 1490)]);
+    leaderboardService.getAcceptedFriends.mockResolvedValue([{ uid: "friend", username: "UpdatedRating" }]);
+
+    render(<LeaderboardPage currentPage="/leaderboard" onNavigate={() => {}} />);
+    expect(await screen.findByText("1,200 ELO")).toBeInTheDocument();
+    viewFriends();
+    viewGlobal();
+    viewFriends();
+
+    const friendsPanel = screen.getByRole("region", { name: "Friends leaderboard" });
+    expect(await within(friendsPanel).findByRole("alert")).toHaveTextContent("Friends service temporarily unavailable");
+    expect(within(friendsPanel).queryByText("OldRating")).not.toBeInTheDocument();
+    fireEvent.click(within(friendsPanel).getByRole("button", { name: "Retry Friends Rankings" }));
+    expect(await within(friendsPanel).findByText("UpdatedRating")).toBeInTheDocument();
+    expect(within(friendsPanel).getByText("1,490")).toBeInTheDocument();
+
+    viewGlobal();
+    expect(screen.getByRole("tabpanel", { name: "Global" })).toHaveTextContent("GlobalLeader");
+    expect(leaderboardService.getGlobalLeaderboard).toHaveBeenCalledTimes(1);
+  });
+
+  test("ignores a stale refresh result after the authenticated user changes", async () => {
+    let resolveOld;
+    const oldResponse = new Promise((resolve) => { resolveOld = resolve; });
+    leaderboardService.getGlobalLeaderboard.mockResolvedValue([]);
+    leaderboardService.getFriendsLeaderboard
+      .mockResolvedValueOnce([ranking("original", "OriginalFriend", 1, 1200)])
+      .mockReturnValueOnce(oldResponse)
+      .mockResolvedValueOnce([ranking("other", "OtherAccountFriend", 1, 1700)]);
+    leaderboardService.getAcceptedFriends
+      .mockResolvedValueOnce([{ uid: "original", username: "OriginalFriend" }])
+      .mockResolvedValueOnce([{ uid: "original", username: "OriginalFriend" }])
+      .mockResolvedValueOnce([{ uid: "other", username: "OtherAccountFriend" }]);
+
+    const { rerender } = render(<LeaderboardPage currentPage="/leaderboard" onNavigate={() => {}} />);
+    expect(await screen.findByText("1,200 ELO")).toBeInTheDocument();
+    viewFriends();
+    viewGlobal();
+    viewFriends();
+    expect(screen.getByRole("region", { name: "Friends leaderboard" })).toHaveTextContent("Updating friends rankings");
+
+    useAuth.mockReturnValue({ user: { uid: "different-user" } });
+    rerender(<LeaderboardPage currentPage="/leaderboard" onNavigate={() => {}} />);
+    const friendsPanel = screen.getByRole("region", { name: "Friends leaderboard" });
+    expect(await within(friendsPanel).findByText("OtherAccountFriend")).toBeInTheDocument();
+    await act(async () => { resolveOld([ranking("original", "StaleFriend", 1, 2000)]); });
+    expect(within(friendsPanel).queryByText("StaleFriend")).not.toBeInTheDocument();
+    expect(within(friendsPanel).getByText("1,700")).toBeInTheDocument();
+  });
+
+  test("preserves server-supplied tied ELO ranks and their order", async () => {
+    leaderboardService.getGlobalLeaderboard.mockResolvedValue([]);
+    leaderboardService.getFriendsLeaderboard.mockResolvedValue([
+      ranking("alice", "Alice", 1, 1500),
+      ranking("bob", "Bob", 1, 1500),
+      ranking("carol", "Carol", 3, 1300),
+    ]);
+    leaderboardService.getAcceptedFriends.mockResolvedValue([
+      { uid: "alice", username: "Alice" },
+      { uid: "bob", username: "Bob" },
+      { uid: "carol", username: "Carol" },
+    ]);
+
+    render(<LeaderboardPage currentPage="/leaderboard" onNavigate={() => {}} />);
+    await screen.findByText("1,300 ELO");
+    viewFriends();
+    const table = await screen.findByRole("table");
+    const rows = within(table).getAllByRole("row").slice(1);
+    expect(rows.map((row) => within(row).getAllByRole("cell")[1].textContent)).toEqual(["Alice", "Bob", "Carol"]);
+    expect(rows.map((row) => within(row).getAllByRole("cell")[0].textContent)).toEqual(["1", "1", "3"]);
+    expect(screen.getByText(/Equal ELO scores share the same rank/)).toBeInTheDocument();
   });
 });
