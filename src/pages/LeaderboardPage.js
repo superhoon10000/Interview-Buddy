@@ -338,6 +338,8 @@ function LeaderboardPage({ currentPage, onNavigate }) {
   const [visibleFriends, setVisibleFriends] = useState(PAGE_SIZE);
   const [refreshKey, setRefreshKey] = useState(0);
   const [searchInput, setSearchInput] = useState("");
+  const [searchResults, setSearchResults] = useState(null);
+  const [searching, setSearching] = useState(false);
   const [addStatus, setAddStatus] = useState(null);
   const [saving, setSaving] = useState(false);
 
@@ -409,6 +411,7 @@ function LeaderboardPage({ currentPage, onNavigate }) {
     setVisibleGlobal(PAGE_SIZE);
     setVisibleFriends(PAGE_SIZE);
     setAddStatus(null);
+    setSearchResults(null);
     setRefreshKey((previous) => previous + 1);
   }
 
@@ -487,6 +490,7 @@ function LeaderboardPage({ currentPage, onNavigate }) {
         reloadFriends(),
         reloadAcceptedFriends(),
       ]);
+      setSearchResults(null);
 
       setAddStatus({
         type: "success",
@@ -507,6 +511,49 @@ function LeaderboardPage({ currentPage, onNavigate }) {
     }
   }
 
+  async function handleSearchFriends() {
+    const query = searchInput.trim();
+    if (!hasFriends || searching || saving) return;
+    if (query.length < 2 || query.length > 64) {
+      setSearchResults({ status: "error", data: [], error: "Enter 2 to 64 characters to search usernames." });
+      return;
+    }
+    setSearching(true);
+    setAddStatus(null);
+    setSearchResults({ status: "loading", data: [], error: "" });
+    try {
+      const users = await leaderboardService.searchFriends(query);
+      setSearchResults({ status: "success", data: users, error: "" });
+    } catch (error) {
+      setSearchResults({ status: "error", data: [], error: error.message || "Unable to search usernames." });
+    } finally {
+      setSearching(false);
+    }
+  }
+
+  async function handleSearchRequest(entry) {
+    if (saving || searching || entry.relationship !== "none") return;
+    setSaving(true);
+    setAddStatus(null);
+    try {
+      await leaderboardService.sendFriendRequest(entry.username);
+      setSearchResults((current) => current?.status === "success"
+        ? {
+            ...current,
+            data: current.data.map((user) => user.uid === entry.uid
+              ? { ...user, relationship: "outgoing" }
+              : user),
+          }
+        : current);
+      await reloadRequests();
+      setAddStatus({ type: "success", message: `Friend request sent to "${entry.username}".` });
+    } catch (error) {
+      setAddStatus({ type: "error", message: error.message || "Unable to send the friend request." });
+    } finally {
+      setSaving(false);
+    }
+  }
+
   async function handleAddFriend(event) {
     event.preventDefault();
     const name = searchInput.trim();
@@ -517,6 +564,7 @@ function LeaderboardPage({ currentPage, onNavigate }) {
       await leaderboardService.sendFriendRequest(name);
       setAddStatus({ type: "success", message: `Friend request sent to "${name}". They will appear after accepting.` });
       setSearchInput("");
+      setSearchResults(null);
       await Promise.all([
         reloadFriends(),
         reloadRequests(),
@@ -538,6 +586,7 @@ function LeaderboardPage({ currentPage, onNavigate }) {
         reloadFriends(),
         reloadAcceptedFriends(),
       ]);
+      setSearchResults(null);
       setAddStatus({ type: "success", message: `Removed "${friend.username}" from your friends.` });
     } catch (error) {
       setAddStatus({ type: "error", message: error.message || "Unable to remove the friend." });
@@ -620,16 +669,41 @@ function LeaderboardPage({ currentPage, onNavigate }) {
                 <div className="ibRankingAddHeading">
                   <div>
                     <h2 id="ib-add-friend-title">Add a Friend</h2>
-                    <p>Send a friend request by username.</p>
+                    <p>Search for usernames or send a request to an exact username.</p>
                   </div>
                   <span className="ibRankingAddIcon" aria-hidden="true">+</span>
                 </div>
                 <form className="ibRankingAddForm" onSubmit={handleAddFriend}>
                   <label className="ibRankingVisuallyHidden" htmlFor="ib-friend-username">Username</label>
-                  <input id="ib-friend-username" type="text" autoComplete="off" placeholder="Enter a username..." value={searchInput} disabled={!hasFriends || saving} onChange={(event) => { setSearchInput(event.target.value); setAddStatus(null); }} />
-                  <button type="submit" disabled={!hasFriends || !searchInput.trim() || saving}>{saving ? "Saving..." : "Add Friend"}</button>
+                  <input id="ib-friend-username" type="text" autoComplete="off" maxLength={128} placeholder="Enter a username..." value={searchInput} disabled={!hasFriends || saving || searching} onChange={(event) => { setSearchInput(event.target.value); setAddStatus(null); setSearchResults(null); }} />
+                  <button type="button" disabled={!hasFriends || !searchInput.trim() || searching || saving} onClick={handleSearchFriends}>{searching ? "Searching..." : "Search"}</button>
+                  <button type="submit" disabled={!hasFriends || !searchInput.trim() || saving || searching}>{saving ? "Saving..." : "Add Friend"}</button>
                 </form>
                 {!hasFriends && <p className="ibRankingFormHint">Friend requests are unavailable until the friends backend is implemented.</p>}
+                {searchResults?.status === "loading" && <p className="ibRankingFormHint" role="status">Searching usernames...</p>}
+                {searchResults?.status === "error" && <p className="ibRankingFormStatus ibRankingFormStatus--error" role="alert">{searchResults.error}</p>}
+                {searchResults?.status === "success" && (
+                  <div className="ibRankingSearchResults" aria-label="User search results" role="region">
+                    {searchResults.data.length === 0 ? (
+                      <p className="ibRankingFormHint">No matching users found.</p>
+                    ) : (
+                      <ul className="ibRankingRequestList">
+                        {searchResults.data.map((entry) => (
+                          <li key={entry.uid} className="ibRankingRequestRow">
+                            <strong>{entry.username}</strong>
+                            {entry.relationship === "none" ? (
+                              <button type="button" className="ibRankingAcceptButton" disabled={saving} onClick={() => handleSearchRequest(entry)} aria-label={`Send friend request to ${entry.username}`}>Send Request</button>
+                            ) : (
+                              <span className="ibRankingPendingLabel">
+                                {entry.relationship === "friends" ? "Already friends" : entry.relationship === "outgoing" ? "Request sent" : "Respond in incoming requests"}
+                              </span>
+                            )}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                )}
                 {addStatus && <p className={`ibRankingFormStatus ibRankingFormStatus--${addStatus.type}`} role="status">{addStatus.message}</p>}
               </section>
 

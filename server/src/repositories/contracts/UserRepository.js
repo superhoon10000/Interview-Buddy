@@ -32,6 +32,10 @@ class UserRepository {
     throw new Error("findByUsername() must be implemented.");
   }
 
+  async searchByUsernamePrefix(_prefix) {
+    throw new Error("searchByUsernamePrefix() must be implemented.");
+  }
+
   async listRankingProfiles() {
     throw new Error("listRankingProfiles() must be implemented.");
   }

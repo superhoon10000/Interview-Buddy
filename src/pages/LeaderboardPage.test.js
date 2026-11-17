@@ -15,6 +15,7 @@ jest.mock("../services/leaderboardService", () => ({
     getFriendsLeaderboard: jest.fn(),
     getUserRanking: jest.fn(),
     getAcceptedFriends: jest.fn(),
+    searchFriends: jest.fn(),
     sendFriendRequest: jest.fn(),
     acceptFriendRequest: jest.fn(),
     declineFriendRequest: jest.fn(),
@@ -35,6 +36,7 @@ beforeEach(() => {
   leaderboardService.getFriendsLeaderboard.mockRejectedValue(unavailable());
   leaderboardService.getUserRanking.mockRejectedValue(unavailable());
   leaderboardService.getAcceptedFriends.mockResolvedValue([]);
+  leaderboardService.searchFriends.mockResolvedValue([]);
 });
 
 test("unimplemented backend shows unavailable states rather than mock rankings", async () => {
@@ -790,4 +792,74 @@ test("displays positive, negative, and flat ELO trends", async () => {
       name: "ELO unchanged",
     })
   ).toHaveTextContent("→0");
+});
+
+describe("SCRUM-108 friend discovery", () => {
+  test("searches matching public usernames without creating a friend request", async () => {
+    leaderboardService.getGlobalLeaderboard.mockResolvedValue([]);
+    leaderboardService.getFriendsLeaderboard.mockResolvedValue([]);
+    leaderboardService.getUserRanking.mockResolvedValue(null);
+    leaderboardService.searchFriends.mockResolvedValueOnce([
+      { uid: "one", username: "Alex", relationship: "none" },
+      { uid: "two", username: "Alexa", relationship: "outgoing" },
+      { uid: "three", username: "Alexis", relationship: "friends" },
+      { uid: "four", username: "Alexander", relationship: "incoming" },
+    ]);
+
+    render(<LeaderboardPage currentPage="/leaderboard" onNavigate={() => {}} />);
+    fireEvent.click(screen.getByRole("tab", { name: "Friends" }));
+    const input = await screen.findByRole("textbox", { name: "Username" });
+    await waitFor(() => expect(input).toBeEnabled());
+    fireEvent.change(input, { target: { value: "Ale" } });
+    fireEvent.click(screen.getByRole("button", { name: "Search" }));
+
+    const results = await screen.findByRole("region", { name: "User search results" });
+    expect(await within(results).findByText("Alex")).toBeInTheDocument();
+    expect(within(results).getByText("Alexa")).toBeInTheDocument();
+    expect(within(results).getByText("Already friends")).toBeInTheDocument();
+    expect(within(results).getByText("Request sent")).toBeInTheDocument();
+    expect(within(results).getByText("Respond in incoming requests")).toBeInTheDocument();
+    expect(within(results).getByRole("button", { name: "Send friend request to Alex" })).toBeInTheDocument();
+    expect(leaderboardService.searchFriends).toHaveBeenCalledWith("Ale");
+    expect(leaderboardService.sendFriendRequest).not.toHaveBeenCalled();
+  });
+
+  test("sending from a search result marks the row pending and reloads requests", async () => {
+    leaderboardService.getGlobalLeaderboard.mockResolvedValue([]);
+    leaderboardService.getFriendsLeaderboard.mockResolvedValue([]);
+    leaderboardService.getUserRanking.mockResolvedValue(null);
+    leaderboardService.searchFriends.mockResolvedValueOnce([
+      { uid: "morgan", username: "Morgan", relationship: "none" },
+    ]);
+    leaderboardService.sendFriendRequest.mockResolvedValueOnce({ request: { status: "pending" } });
+
+    render(<LeaderboardPage currentPage="/leaderboard" onNavigate={() => {}} />);
+    fireEvent.click(screen.getByRole("tab", { name: "Friends" }));
+    const input = await screen.findByRole("textbox", { name: "Username" });
+    await waitFor(() => expect(input).toBeEnabled());
+    fireEvent.change(input, { target: { value: "Mor" } });
+    fireEvent.click(screen.getByRole("button", { name: "Search" }));
+    const results = await screen.findByRole("region", { name: "User search results" });
+    fireEvent.click(await within(results).findByRole("button", { name: "Send friend request to Morgan" }));
+    await waitFor(() => expect(leaderboardService.sendFriendRequest).toHaveBeenCalledWith("Morgan"));
+    expect(await within(results).findByText("Request sent")).toBeInTheDocument();
+    expect(leaderboardService.getFriendRequests).toHaveBeenCalledTimes(2);
+  });
+
+  test("search validation and service failures show errors without false success", async () => {
+    render(<LeaderboardPage currentPage="/leaderboard" onNavigate={() => {}} />);
+    fireEvent.click(screen.getByRole("tab", { name: "Friends" }));
+    const input = await screen.findByRole("textbox", { name: "Username" });
+    await waitFor(() => expect(input).toBeEnabled());
+    fireEvent.change(input, { target: { value: "a" } });
+    fireEvent.click(screen.getByRole("button", { name: "Search" }));
+    expect(await screen.findByRole("alert")).toHaveTextContent("Enter 2 to 64 characters");
+    expect(leaderboardService.searchFriends).not.toHaveBeenCalled();
+
+    leaderboardService.searchFriends.mockRejectedValueOnce(new Error("Search unavailable"));
+    fireEvent.change(input, { target: { value: "alex" } });
+    fireEvent.click(screen.getByRole("button", { name: "Search" }));
+    expect(await screen.findByText("Search unavailable")).toHaveAttribute("role", "alert");
+    expect(leaderboardService.sendFriendRequest).not.toHaveBeenCalled();
+  });
 });

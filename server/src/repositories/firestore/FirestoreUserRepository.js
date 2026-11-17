@@ -186,6 +186,29 @@ class FirestoreUserRepository extends UserRepository {
     };
   }
 
+  // Bounded, case-insensitive prefix search for SCRUM-108.
+  // A single-field usernameLower index is maintained automatically by Firestore.
+  async searchByUsernamePrefix(prefix) {
+    const normalized = String(prefix || "").trim().toLowerCase();
+    if (normalized.length < 2 || normalized.length > 64) {
+      throw new Error("A search prefix must contain 2 to 64 characters.");
+    }
+
+    const snapshot = await this.db
+      .collection("users")
+      .orderBy("usernameLower")
+      .startAt(normalized)
+      .endAt(`${normalized}\uf8ff`)
+      .limit(25)
+      .select("username", "status", "deleting")
+      .get();
+
+    return snapshot.docs.map((document) => ({
+      id: document.id,
+      ...document.data(),
+    }));
+  }
+
   // Read only the public ranking fields needed for the global leaderboard.
   // This first implementation reads all profiles to calculate accurate /me ranks;
   // SCRUM-86 should replace the full scan with an indexed scalable query.

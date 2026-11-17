@@ -810,6 +810,13 @@
   }
 }
 
+/* Bounded user search results within the existing Friends card. */
+.ibRankingSearchResults {
+  margin-top: 14px;
+  padding-top: 10px;
+  border-top: 1px solid var(--ib-border);
+}
+
 /* Loading, error and disabled states */
 .ibRankingToolbarActions {
   display: flex;
