@@ -95,6 +95,56 @@ function createFriendsRouter({ userRepository, friendshipRepository }) {
     }
   };
 
+  // Search eligible public usernames without exposing account emails or profile data.
+  // The application-wide auth and rate-limit middleware also protects this endpoint.
+  router.get("/search", handle(async (req, res) => {
+    const query = req.query?.q;
+    if (
+      typeof query !== "string" ||
+      query !== query.trim() ||
+      query.length < 2 ||
+      query.length > 64 ||
+      hasControlChars(query)
+    ) {
+      return res.status(400).json({
+        code: "invalid-friend-search",
+        error: "Enter 2 to 64 characters to search usernames.",
+      });
+    }
+
+    const [candidates, accepted, incoming, outgoing] = await Promise.all([
+      userRepository.searchByUsernamePrefix(query),
+      friendshipRepository.listFriends(req.user.uid),
+      friendshipRepository.listIncomingRequests(req.user.uid, "pending"),
+      friendshipRepository.listOutgoingRequests(req.user.uid, "pending"),
+    ]);
+
+    const acceptedUids = new Set(accepted.map((row) => row.friendUid));
+    const incomingUids = new Set(incoming.map((row) => row.requesterUid));
+    const outgoingUids = new Set(outgoing.map((row) => row.recipientUid));
+    const seen = new Set();
+    const users = [];
+
+    for (const candidate of candidates) {
+      const uid = candidate.id || candidate.uid;
+      if (!validUid(uid) || uid === req.user.uid || seen.has(uid)) continue;
+      const publicProfile = publicUser(candidate, uid);
+      if (!publicProfile) continue;
+      seen.add(uid);
+      const relationship = acceptedUids.has(uid)
+        ? "friends"
+        : incomingUids.has(uid)
+          ? "incoming"
+          : outgoingUids.has(uid)
+            ? "outgoing"
+            : "none";
+      users.push({ ...publicProfile, relationship });
+      if (users.length === 10) break;
+    }
+
+    return res.json({ users });
+  }));
+
   // Send a request by username.
   // Repeating an existing pending request is idempotent.
   router.post("/requests", handle(async (req, res) => {

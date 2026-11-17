@@ -194,6 +194,37 @@ export const leaderboardService = {
     };
   },
 
+  // Search returns sanitized public usernames and the authenticated user's
+  // relationship state; it never exposes emails or private profile data.
+  async searchFriends(query) {
+    const prefix = String(query || "").trim();
+    if (prefix.length < 2 || prefix.length > 64) {
+      throw new Error("Enter 2 to 64 characters to search usernames.");
+    }
+
+    const payload = await request(`/friends/search?q=${encodeURIComponent(prefix)}`);
+    if (!Array.isArray(payload?.users)) {
+      throw new Error("The server returned an invalid user search response.");
+    }
+
+    const validStates = new Set(["friends", "incoming", "outgoing", "none"]);
+    return payload.users.map((entry) => {
+      if (
+        !entry ||
+        typeof entry.uid !== "string" || !entry.uid.trim() ||
+        typeof entry.username !== "string" || !entry.username.trim() ||
+        !validStates.has(entry.relationship)
+      ) {
+        throw new Error("The server returned an invalid user search result.");
+      }
+      return {
+        uid: entry.uid,
+        username: entry.username.trim(),
+        relationship: entry.relationship,
+      };
+    });
+  },
+
   //Friend related endpoints
   async sendFriendRequest(username) {
     const name = String(username || "").trim();

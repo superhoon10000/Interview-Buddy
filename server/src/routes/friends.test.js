@@ -64,6 +64,11 @@ function signedIn(app, uid = "alice") {
 
 function fixture() {
   const userRepository = {
+    searchByUsernamePrefix: jest.fn(async (prefix) =>
+      Object.values(users).filter((row) =>
+        row.username.toLowerCase().startsWith(prefix.toLowerCase())
+      )
+    ),
     findByUsername: jest.fn(async (username) =>
       Object.values(users).find(
         (row) =>
@@ -554,5 +559,86 @@ describe("SCRUM-109 application friend-request routes", () => {
     expect(response.body).toEqual({
       error: "Internal server error.",
     });
+  });
+});
+
+
+describe("SCRUM-108 authenticated username search", () => {
+  test("returns sanitized prefix matches and excludes the current user", async () => {
+    const f = fixture();
+    f.userRepository.searchByUsernamePrefix.mockResolvedValueOnce([
+      alice,
+      { ...bob, role: "admin", email: "private@hidden.test" },
+      { ...carol, deleting: true },
+      { id: "invalid", username: "" },
+    ]);
+
+    const response = await signedIn(f.app)
+      .get("/api/friends/search?q=al");
+
+    expect(response.status).toBe(200);
+    expect(response.headers["cache-control"]).toBe("private, no-store");
+    expect(response.body).toEqual({
+      users: [{ uid: "bob", username: "Bob", relationship: "none" }],
+    });
+    expect(JSON.stringify(response.body)).not.toContain("private@hidden.test");
+    expect(JSON.stringify(response.body)).not.toContain("admin");
+    expect(f.userRepository.searchByUsernamePrefix).toHaveBeenCalledWith("al");
+  });
+
+  test("labels accepted, incoming and outgoing matches without exposing relationship records", async () => {
+    const f = fixture();
+    f.userRepository.searchByUsernamePrefix.mockResolvedValueOnce([
+      bob, carol, { id: "dave", username: "Dave", email: "secret" },
+    ]);
+    f.friendshipRepository.listFriends.mockResolvedValueOnce([{ friendUid: "bob" }]);
+    f.friendshipRepository.listIncomingRequests.mockResolvedValueOnce([
+      { requesterUid: "carol", recipientUid: "alice", secret: "never-show" },
+    ]);
+    f.friendshipRepository.listOutgoingRequests.mockResolvedValueOnce([
+      { requesterUid: "alice", recipientUid: "dave", secret: "never-show" },
+    ]);
+    const response = await signedIn(f.app)
+      .get("/api/friends/search?q=da");
+    expect(response.status).toBe(200);
+    expect(response.body.users).toEqual([
+      { uid: "bob", username: "Bob", relationship: "friends" },
+      { uid: "carol", username: "Carol", relationship: "incoming" },
+      { uid: "dave", username: "Dave", relationship: "outgoing" },
+    ]);
+    expect(JSON.stringify(response.body)).not.toContain("never-show");
+  });
+
+  test.each(["", "a", "x".repeat(65), "bad%0Aname", "%20%20al%20%20"])(
+    "rejects invalid search prefix %s", async (q) => {
+      const f = fixture();
+      const response = await signedIn(f.app)
+        .get(`/api/friends/search?q=${q}`);
+      expect(response.status).toBe(400);
+      expect(response.body.code).toBe("invalid-friend-search");
+      expect(f.userRepository.searchByUsernamePrefix).not.toHaveBeenCalled();
+    }
+  );
+
+  test("requires Firebase authentication before searching", async () => {
+    const f = fixture();
+    const response = await request(f.app)
+      .get("/api/friends/search?q=bo");
+    expect(response.status).toBe(401);
+    expect(f.userRepository.searchByUsernamePrefix).not.toHaveBeenCalled();
+  });
+
+  test("caps returned usernames and hides deleting profiles", async () => {
+    const f = fixture();
+    f.userRepository.searchByUsernamePrefix.mockResolvedValueOnce([
+      { id: "hidden", username: "Hidden", status: "deleting" },
+      ...Array.from({ length: 18 }, (_, i) => ({ id: `u${i}`, username: `User${i}` })),
+    ]);
+    const response = await signedIn(f.app)
+      .get("/api/friends/search?q=us");
+    expect(response.status).toBe(200);
+    expect(response.body.users).toHaveLength(10);
+    expect(response.body.users.every((row) => row.relationship === "none")).toBe(true);
+    expect(response.body.users.some((row) => row.username === "Hidden")).toBe(false);
   });
 });
