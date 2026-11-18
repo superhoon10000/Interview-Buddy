@@ -263,9 +263,9 @@ test("keeps the NVIDIA badge while navigating before the next ranking response",
   leaderboardService.getUserRanking.mockResolvedValueOnce({
     uid: "test-user", username: "DPhoenix", rank: 1, elo: 1201,
   });
-  const first = await renderSidebar(PAGES.LEADERBOARD);
+  const { unmount } = await renderSidebar(PAGES.LEADERBOARD);
   expect(await screen.findByAltText("NVIDIA ELO rank badge")).toBeInTheDocument();
-  first.unmount();
+  unmount();
 
   let finishRefresh;
   leaderboardService.getUserRanking.mockImplementationOnce(() => new Promise((resolve) => {
@@ -301,9 +301,9 @@ test("removes a cached top-three badge when the backend confirms the user is unr
   leaderboardService.getUserRanking.mockResolvedValueOnce({
     uid: "test-user", username: "DPhoenix", rank: 3, elo: 51,
   });
-  const first = await renderSidebar(PAGES.LEADERBOARD);
+  const { unmount } = await renderSidebar(PAGES.LEADERBOARD);
   expect(await screen.findByAltText("Meta ELO rank badge")).toBeInTheDocument();
-  first.unmount();
+  unmount();
 
   leaderboardService.getUserRanking.mockResolvedValueOnce(null);
   await renderSidebar(PAGES.HISTORY);
@@ -314,9 +314,9 @@ test("does not show the previous account's top-three badge after switching accou
   leaderboardService.getUserRanking.mockResolvedValueOnce({
     uid: "test-user", username: "DPhoenix", rank: 1, elo: 1201,
   });
-  const first = await renderSidebar(PAGES.LEADERBOARD);
+  const { unmount } = await renderSidebar(PAGES.LEADERBOARD);
   expect(await screen.findByAltText("NVIDIA ELO rank badge")).toBeInTheDocument();
-  first.unmount();
+  unmount();
 
   useAuth.mockReturnValue({
     user: { uid: "other-user", username: "Other" },
