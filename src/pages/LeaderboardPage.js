@@ -94,6 +94,7 @@ function RankingTable({
   data,
   currentUserId,
   currentUsername,
+  globalRanksByUid,
   onRemove,
   saving = false,
   emptyTitle = "No available data",
@@ -135,11 +136,24 @@ function RankingTable({
             const isCurrentUser = currentUserId != null && entry.uid != null
               ? String(entry.uid) === String(currentUserId)
               : Boolean(currentUsername) && entry.username.toLowerCase() === currentUsername.toLowerCase();
+
+            const badge = getEloRankBadge(
+              entry.elo,
+              globalRanksByUid?.get(String(entry.uid))
+            );
             return (
               <tr key={entry.uid != null ? String(entry.uid) : `${entry.username}-${index}`} className={isCurrentUser ? "ibRankingTableRow--current" : ""}>
                 <td><RankBadge rank={entry.rank} /></td>
                 <td>
                   <div className="ibRankingUser">
+                    {badge && (
+                      <img
+                        className="ibRankingRowBadge"
+                        src={badge.src}
+                        alt={`${badge.name} ELO badge for ${entry.username}`}
+                        title={`${badge.name} rank badge`}
+                      />
+                    )}
                     <span className="ibRankingUsername">{entry.username}</span>
                     {isCurrentUser && <span className="ibRankingYou">You</span>}
                   </div>
@@ -409,6 +423,16 @@ function LeaderboardPage({ currentPage, onNavigate }) {
   }, [user?.uid, refreshKey]);
 
   const friendRankings = useMemo(() => friends.data, [friends.data]);
+  const globalRanksByUid = useMemo(
+    () =>
+      new Map(
+        global.data.map(({ uid, rank }) => [
+          String(uid),
+          rank,
+        ])
+      ),
+    [global.data]
+  );
   const currentUser = standing.status === "success" ? standing.data : null;
   const rankBadge = getEloRankBadge(currentUser?.elo, currentUser?.rank);
   const hasFriends = acceptedFriends.status === "success";
@@ -691,7 +715,7 @@ function LeaderboardPage({ currentPage, onNavigate }) {
 
           {activeTab === "global" ? (
             <section className="ibRankingPanel" role="tabpanel" id="ib-global-panel" aria-labelledby="ib-global-tab">
-              <RankingTable data={{ ...global, data: global.data.slice(0, visibleGlobal) }} currentUserId={user?.uid} currentUsername={currentUser?.username} />
+              <RankingTable data={{ ...global, data: global.data.slice(0, visibleGlobal) }} currentUserId={user?.uid} currentUsername={currentUser?.username} globalRanksByUid={globalRanksByUid} />
               {global.status === "success" && visibleGlobal < global.data.length && (
                 <button type="button" className="ibRankingLoadMore" onClick={() => setVisibleGlobal((count) => count + PAGE_SIZE)}>Load More Rankings</button>
               )}
@@ -723,6 +747,7 @@ function LeaderboardPage({ currentPage, onNavigate }) {
                   }}
                   currentUserId={user?.uid}
                   currentUsername={currentUser?.username}
+                  globalRanksByUid={globalRanksByUid}
                   onRemove={hasFriends ? handleRemoveFriend : undefined}
                   saving={saving}
                   emptyTitle={friendsEmptyTitle}

@@ -86,6 +86,20 @@ test("renders current ELO, global standing and user's saved rank badge", async (
 
   render(<LeaderboardPage currentPage="/leaderboard" onNavigate={() => {}} />);
   const table = await screen.findByRole("table");
+
+  //Row badges
+  expect(
+    within(table).getByRole("img", {
+      name: "NVIDIA ELO badge for Sam",
+    })
+  ).toBeInTheDocument();
+
+  expect(
+    within(table).getByRole("img", {
+      name: "Bill Gates ELO badge for Me",
+    })
+  ).toBeInTheDocument();
+
   expect(within(table).getByRole("columnheader", { name: "ELO Score" })).toBeInTheDocument();
   expect(within(table).getByText("Sam")).toBeInTheDocument();
   expect(within(table).getByText("Me")).toBeInTheDocument();
