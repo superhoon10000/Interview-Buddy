@@ -552,6 +552,18 @@ describe("historyService", () => {
     );
   });
 
+  test("getSessionPage passes optional analytics ranges and compact-summary request", async () => {
+    const page = { sessions: [], nextCursor: null };
+    global.fetch = jest.fn().mockResolvedValue({ ok: true, json: async () => page });
+    await expect(historyService.getSessionPage({ pageSize: 50,
+      startDate: "2026-10-01", endDate: "2026-10-31", summaryOnly: true,
+    })).resolves.toEqual(page);
+    expect(global.fetch).toHaveBeenCalledWith(
+      "http://localhost:5001/api/sessions?status=completed&pageSize=50&startDate=2026-10-01&endDate=2026-10-31&summaryOnly=1",
+      { headers: { Authorization: "Bearer test-id-token" } }
+    );
+  });
+
   test("getSessionById retrieves an authorized saved session", async () => {
     global.fetch = jest.fn().mockResolvedValue({ ok: true, json: async () => completedSession });
     expect(await historyService.getSessionById("saved-1")).toEqual(completedSession);

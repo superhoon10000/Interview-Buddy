@@ -77,12 +77,15 @@ export const historyService = {
 
   // SEC-05: explicit, bounded history retrieval. Unlike the legacy array API,
   // this response includes a cursor for loading older sessions on demand.
-  async getSessionPage({ cursor = null, pageSize = 25 } = {}) {
+  async getSessionPage({ cursor = null, pageSize = 25, startDate = null, endDate = null, summaryOnly = false } = {}) {
     if (!Number.isInteger(pageSize) || pageSize < 1 || pageSize > 50) {
       throw new Error("History page size must be between 1 and 50.");
     }
     const params = new URLSearchParams({ status: "completed", pageSize: String(pageSize) });
     if (cursor) params.set("cursor", cursor);
+    if (startDate !== null) params.set("startDate", startDate);
+    if (endDate !== null) params.set("endDate", endDate);
+    if (summaryOnly) params.set("summaryOnly", "1");
     const payload = await getAuthorizedJson(`/sessions?${params.toString()}`);
     if (!payload || !Array.isArray(payload.sessions) ||
         (payload.nextCursor !== null && typeof payload.nextCursor !== "string")) {

@@ -116,3 +116,15 @@ test("returns empty metrics for no history", () => {
     chartSessions: [],
   });
 });
+
+test("lifetime metrics use all sessions, not just the five chart points", () => {
+  const records = Array.from({ length: 121 }, (_, index) =>
+    full(`full-${index}`, "Quiz Style", index === 120 ? 0 : 100,
+      new Date(Date.UTC(2026, 10, 1) + index * 60000).toISOString())
+  );
+  const metrics = calculateAnalytics(records);
+  expect(metrics.completedCount).toBe(121);
+  expect(metrics.scoredCount).toBe(121);
+  expect(metrics.averageScore).toBe(99);
+  expect(metrics.chartSessions).toHaveLength(5);
+});
