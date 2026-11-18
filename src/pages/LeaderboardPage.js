@@ -410,7 +410,7 @@ function LeaderboardPage({ currentPage, onNavigate }) {
 
   const friendRankings = useMemo(() => friends.data, [friends.data]);
   const currentUser = standing.status === "success" ? standing.data : null;
-  const rankBadge = getEloRankBadge(currentUser?.elo);
+  const rankBadge = getEloRankBadge(currentUser?.elo, currentUser?.rank);
   const hasFriends = acceptedFriends.status === "success";
   const friendCount = hasFriends ? acceptedFriends.data.length : null;
   const rankedFriendCount = friends.status === "success" ? friendRankings.length : null;
