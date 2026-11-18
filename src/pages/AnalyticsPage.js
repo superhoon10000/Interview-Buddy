@@ -16,7 +16,10 @@ import ErrorState from "../components/state/ErrorState";
 import { useAuth } from "../context/AuthContext";
 import { analyticsService } from "../services/analyticsService";
 import { leaderboardService } from "../services/leaderboardService";
-import { calculateAnalytics } from "../utils/analyticsMetrics";
+import {
+  calculateAnalytics,
+  getAnalyticsWindow,
+} from "../utils/analyticsMetrics";
 
 const INITIAL = {
   uid: null,
@@ -33,6 +36,12 @@ function AnalyticsPage({ currentPage, onNavigate }) {
   const [state, setState] = useState(INITIAL);
   const [retry, setRetry] = useState(0);
 
+  // Same 30-day window for API requests and chart calculations.
+  const analyticsWindow = useMemo(
+    () => getAnalyticsWindow(),
+    []
+  );
+
   useEffect(() => {
     let active = true;
 
@@ -42,7 +51,10 @@ function AnalyticsPage({ currentPage, onNavigate }) {
     });
 
     Promise.allSettled([
-      analyticsService.getCompletedSessions(),
+      analyticsService.getCompletedSessions({
+        startDate: analyticsWindow.startDate,
+        endDate: analyticsWindow.endDate,
+      }),
       leaderboardService.getUserRanking(),
     ]).then(([historyResult, rankingResult]) => {
       if (!active) return;
@@ -75,11 +87,11 @@ function AnalyticsPage({ currentPage, onNavigate }) {
     return () => {
       active = false;
     };
-  }, [uid, retry]);
+  }, [uid, retry, analyticsWindow]);
 
   const metrics = useMemo(
-    () => calculateAnalytics(state.sessions),
-    [state.sessions]
+    () => calculateAnalytics(state.sessions, analyticsWindow),
+    [state.sessions, analyticsWindow]
   );
 
   // Prevent showing one account's metrics
@@ -152,41 +164,27 @@ function AnalyticsPage({ currentPage, onNavigate }) {
             ))}
           </div>
 
-          {metrics.completedCount === 0 ? (
-            <div className="largePanel">
+          <div className="analyticsContentGrid">
+            <section className="largePanel">
               <h2 className="panelTitle">
-                No completed interviews yet
+                Daily Average — Last 30 Days
               </h2>
-              <p>
-                Finish every question in an interview
-                to begin tracking your performance.
-              </p>
-            </div>
-          ) : (
-            <>
-              <div className="largePanel">
-                <h2 className="panelTitle">
-                  Progress Over Time
-                </h2>
 
-                <ProgressChart
-                  sessions={metrics.chartSessions}
-                />
-              </div>
+              <ProgressChart days={metrics.chartDays} />
+            </section>
 
-              <div className="largePanel">
-                <h2 className="panelTitle">
-                  Performance Breakdown
-                </h2>
+            <section className="largePanel">
+              <h2 className="panelTitle">
+                Performance Breakdown — Last 30 Days
+              </h2>
 
-                <PerformanceBreakdown
-                  byMode={metrics.byMode}
-                  strongestMode={metrics.strongestMode}
-                  improvementMode={metrics.improvementMode}
-                />
-              </div>
-            </>
-          )}
+              <PerformanceBreakdown
+                byMode={metrics.byMode}
+                strongestMode={metrics.strongestMode}
+                improvementMode={metrics.improvementMode}
+              />
+            </section>
+          </div>
 
           <p className="analyticsFootnote">
             Scores come from saved interview results.

@@ -1,21 +1,9 @@
-//Feeding chart actual scores now
-//Displays five most recent dated, scored interviews, order chron.
-//Bar color changes on score
 const GRID_MARKS = [100, 75, 50, 25, 0];
 
-function ProgressChart({ sessions = [] }) {
-  if (!sessions.length) {
-    return (
-      <p className="analyticsMessage">
-        No dated, scored interviews to chart yet.
-      </p>
-    );
-  }
-
+function ProgressChart({ days = [] }) {
   return (
     <div className="progressChart">
       <div className="chartFrame">
-        {/* Y-axis percentage labels */}
         <div className="chartYAxis" aria-hidden="true">
           {GRID_MARKS.map((mark) => (
             <span
@@ -28,24 +16,27 @@ function ProgressChart({ sessions = [] }) {
           ))}
         </div>
 
-        {/* Bounded graph area */}
-        <div className="chartPlotArea">
-          {/* Horizontal and vertical gridlines */}
-          <div className="chartGrid" aria-hidden="true">
-            {GRID_MARKS.slice(1, -1).map((mark) => (
-              <div
-                key={mark}
-                className="chartGridLine"
-                style={{ top: `${100 - mark}%` }}
-              />
-            ))}
-          </div>
+        <div
+          className="chartViewport"
+          aria-label="Daily averages for the last 30 days"
+        >
+          <div
+            className="chartPlotArea"
+            style={{ minWidth: "1140px" }}
+          >
+            <div className="chartGrid" aria-hidden="true">
+              {GRID_MARKS.slice(1, -1).map((mark) => (
+                <div
+                  key={mark}
+                  className="chartGridLine"
+                  style={{ top: `${100 - mark}%` }}
+                />
+              ))}
+            </div>
 
-          {/* Actual interview scores */}
-          <div className="chartContainer">
-            {sessions.map((session, index) => {
-              const date =
-                session.completedAt.toLocaleDateString(
+            <div className="chartContainer">
+              {days.map(({ date, count, averageScore }) => {
+                const dateLabel = date.toLocaleDateString(
                   "en-US",
                   {
                     month: "short",
@@ -53,69 +44,97 @@ function ProgressChart({ sessions = [] }) {
                   }
                 );
 
-              const color =
-                session.score >= 80
-                  ? "#10b981"
-                  : session.score >= 60
-                  ? "#f59e0b"
-                  : "#ef4444";
+                const missing = count === 0;
 
-              return (
-                <div
-                  key={session.id || `${index}-${date}`}
-                  className="chartColumn"
-                >
-                  <div className="chartBarContainer">
-                    <div
-                      className="chartBarFill"
-                      role="img"
-                      aria-label={
-                        `${session.mode || "Interview"}: ${session.score}% on ${date}`
-                      }
-                      style={{
-                        height: `${session.score}%`,
-                        backgroundColor: color,
-                      }}
-                      title={
-                        `${session.mode || "Interview"}: ${session.score}% on ${date}`
-                      }
-                    />
-                  </div>
+                const description = missing
+                  ? `${dateLabel}: No scored interviews`
+                  : `${dateLabel}: ${averageScore}% daily average across ${count} ${
+                      count === 1
+                        ? "interview"
+                        : "interviews"
+                    }`;
 
-                  <div className="chartLabel">
-                    {date}
+                const color =
+                  averageScore >= 80
+                    ? "#10b981"
+                    : averageScore >= 60
+                    ? "#f59e0b"
+                    : "#ef4444";
+
+                return (
+                  <div
+                    key={date.toISOString()}
+                    className={`chartColumn${
+                      missing ? " chartColumn--empty" : ""
+                    }`}
+                    role="img"
+                    aria-label={description}
+                    title={description}
+                  >
+                    <div className="chartBarContainer">
+                      {missing ? (
+                        <div
+                          className="chartBarNoData"
+                          aria-hidden="true"
+                        />
+                      ) : (
+                        <div
+                          className="chartBarFill"
+                          aria-hidden="true"
+                          style={{
+                            height: `${averageScore}%`,
+                            minHeight:
+                              averageScore === 0
+                                ? "4px"
+                                : undefined,
+                            backgroundColor: color,
+                          }}
+                        />
+                      )}
+                    </div>
+
+                    <div className="chartLabel">
+                      {dateLabel}
+                    </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Score legend */}
       <div className="chartLegend">
         <div className="legendItem">
-          <div
+          <span
             className="legendColor"
             style={{ backgroundColor: "#10b981" }}
           />
-          <span>80%+</span>
+          80%+
         </div>
 
         <div className="legendItem">
-          <div
+          <span
             className="legendColor"
             style={{ backgroundColor: "#f59e0b" }}
           />
-          <span>60–79%</span>
+          60–79%
         </div>
 
         <div className="legendItem">
-          <div
+          <span
             className="legendColor"
             style={{ backgroundColor: "#ef4444" }}
           />
-          <span>Below 60%</span>
+          Below 60%
+        </div>
+
+        <div className="legendItem">
+          <span
+            className="legendColor"
+            style={{ backgroundColor: "#9ca3af" }}
+          />
+          No data
         </div>
       </div>
     </div>

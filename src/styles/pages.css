@@ -852,3 +852,46 @@ gap: 12px;
     font-size: 0.7rem;
   }
 }
+
+/* 30-day daily average chart */
+.analyticsPage .chartViewport {
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 44px;
+}
+
+.analyticsPage .chartPlotArea {
+  margin-bottom: 0;
+}
+
+.analyticsPage .chartContainer {
+  justify-content: flex-start;
+  padding: 0 8px;
+}
+
+.analyticsPage .chartColumn {
+  min-width: 37px;
+  max-width: none;
+  flex: 1 0 37px;
+}
+
+.analyticsPage .chartBarFill {
+  width: 20px;
+}
+
+.analyticsPage .chartBarNoData {
+  width: 20px;
+  height: 7px;
+  border-radius: 3px;
+  background-color: #9ca3af;
+  opacity: 0.55;
+}
+
+.analyticsPage .chartColumn--empty .chartLabel {
+  opacity: 0.48;
+}
+
+.analyticsPage .chartLabel {
+  font-size: 0.69rem;
+}

@@ -56,10 +56,52 @@ function isFullyCompleted(session) {
   );
 }
 
-export function calculateAnalytics(sessions) {
-  const allSessions = Array.isArray(sessions)
-    ? sessions
-    : [];
+// Use the last 30 local calendar days, including today.
+export function getAnalyticsWindow(now = new Date()) {
+  const start = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate() - 29
+  );
+
+  const endExclusive = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate() + 1
+  );
+
+  return {
+    start,
+    endExclusive,
+    startDate: start.toISOString(),
+    endDate: endExclusive.toISOString(),
+  };
+}
+
+// Groups interviews by local calendar day.
+function dayKey(date) {
+  return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
+}
+
+export function calculateAnalytics(
+  sessions,
+  window = getAnalyticsWindow()
+) {
+  // Only calculate statistics inside the selected window.
+  // The exclusive end prevents counting tomorrow's sessions.
+  const allSessions = (
+    Array.isArray(sessions) ? sessions : []
+  ).filter((session) => {
+    const date = parseSessionDate(
+      session?.completedAt
+    );
+
+    return (
+      date !== null &&
+      date >= window.start &&
+      date < window.endExclusive
+    );
+  });
 
   const completed = allSessions.filter(
     isFullyCompleted
@@ -132,15 +174,46 @@ export function calculateAnalytics(sessions) {
     0
   );
 
-  // Five most recent dated, scored interviews.
-  const chartSessions = scored
-    .filter((session) => session.completedAt)
-    .sort(
-      (a, b) =>
-        a.completedAt.getTime() -
-        b.completedAt.getTime()
-    )
-    .slice(-5);
+  // Aggregate scored interviews by calendar day.
+  const totalsByDay = new Map();
+
+  for (const session of scored) {
+    if (!session.completedAt) continue;
+
+    const key = dayKey(session.completedAt);
+
+    const previous = totalsByDay.get(key) || {
+      total: 0,
+      count: 0,
+    };
+
+    totalsByDay.set(key, {
+      total: previous.total + session.score,
+      count: previous.count + 1,
+    });
+  }
+
+  // Generate exactly 30 dates, including days with no data.
+  const chartDays = Array.from(
+    { length: 30 },
+    (_, index) => {
+      const date = new Date(
+        window.start.getFullYear(),
+        window.start.getMonth(),
+        window.start.getDate() + index
+      );
+
+      const totals = totalsByDay.get(dayKey(date));
+
+      return {
+        date,
+        count: totals?.count ?? 0,
+        averageScore: totals
+          ? Math.round(totals.total / totals.count)
+          : null,
+      };
+    }
+  );
 
   return {
     completedCount: completed.length,
@@ -161,7 +234,7 @@ export function calculateAnalytics(sessions) {
 
     byMode,
 
-    chartSessions,
+    chartDays,
 
     excludedCount:
       allSessions.length - completed.length,
