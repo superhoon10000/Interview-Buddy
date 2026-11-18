@@ -131,36 +131,88 @@ function SidebarIcon({ name }) {
   );
 }
 
+// PageLayout remounts the sidebar on route changes. Keep the last server-verified
+// personal ranking for this browser tab so a top-three badge does not flash
+// back to the regular ELO tier while a new request is in progress.
+const SIDEBAR_RANKING_CACHE_KEY = "interview-buddy:sidebar-personal-ranking";
+
+function readCachedRanking(uid) {
+  if (!uid) return null;
+  try {
+    const cached = JSON.parse(window.sessionStorage.getItem(SIDEBAR_RANKING_CACHE_KEY));
+    return cached?.uid === uid && cached.data ? cached.data : null;
+  } catch (_) {
+    // Restricted browser storage should not prevent the sidebar from rendering.
+    return null;
+  }
+}
+
+function writeCachedRanking(uid, data) {
+  if (!uid) return;
+  try {
+    if (data === null) {
+      // An authoritative unranked result supersedes a previously cached rank.
+      const cached = JSON.parse(window.sessionStorage.getItem(SIDEBAR_RANKING_CACHE_KEY));
+      if (cached?.uid === uid) {
+        window.sessionStorage.removeItem(SIDEBAR_RANKING_CACHE_KEY);
+      }
+    } else {
+      window.sessionStorage.setItem(
+        SIDEBAR_RANKING_CACHE_KEY,
+        JSON.stringify({ uid, data })
+      );
+    }
+  } catch (_) {
+    // The live API response still updates the badge when storage is unavailable.
+  }
+}
+
 function Sidebar({ currentPage, onNavigate, badgeSrc }) {
   const { user, profile } = useAuth();
 
-  const [personalRanking, setPersonalRanking] = useState({ uid: null, data: null });
+  const uid = user?.uid;
+  const [personalRanking, setPersonalRanking] = useState(() => ({
+    uid,
+    data: readCachedRanking(uid),
+    loaded: false,
+  }));
 
-  // Use the authenticated server ranking for global top-three badges.
-  // Fall back to persisted profile ELO if the user is still unranked or the
-  // leaderboard is temporarily unavailable. Do not invent a global rank.
+  // Refresh the ranking on each mount, but keep showing the last confirmed
+  // badge until a new result arrives. Never reuse another account's ranking.
   useEffect(() => {
-    const uid = user?.uid;
     if (!uid) return undefined;
 
     let active = true;
     leaderboardService.getUserRanking()
       .then((data) => {
-        if (active) setPersonalRanking({ uid, data });
+        if (!active) return;
+        writeCachedRanking(uid, data);
+        setPersonalRanking({ uid, data, loaded: true });
       })
       .catch(() => {
-        if (active) setPersonalRanking({ uid, data: null });
+        if (!active) return;
+        // A transient API failure should not discard a previously earned badge.
+        setPersonalRanking((previous) => ({
+          uid,
+          data: previous.uid === uid ? previous.data : readCachedRanking(uid),
+          loaded: true,
+        }));
       });
 
     return () => { active = false; };
-  }, [user?.uid]);
+  }, [uid]);
 
-  const savedRanking = personalRanking.uid === user?.uid
+  const rankingForUser = personalRanking.uid === uid
     ? personalRanking.data
-    : null;
-  const badge = getEloRankBadge(
-    savedRanking?.elo ?? profile?.ranking?.elo,
-    savedRanking?.rank
+    : readCachedRanking(uid);
+  const rankKnown = (personalRanking.uid === uid && personalRanking.loaded)
+    || rankingForUser !== null;
+
+  // If this account has never loaded a rank, show a neutral placeholder
+  // until the first request settles, not a potentially incorrect ELO badge.
+  const badge = !rankKnown ? null : getEloRankBadge(
+    rankingForUser?.elo ?? profile?.ranking?.elo,
+    rankingForUser?.rank
   );
 
   const [showLogoutDialog, setShowLogoutDialog] =
@@ -261,7 +313,7 @@ function Sidebar({ currentPage, onNavigate, badgeSrc }) {
         </div>
 
         {/* Reusable badge slot */}
-        <div className="sidebarBadgeArea">
+        <div className="sidebarBadgeArea" role="group" aria-label="User rank badge" aria-busy={!rankKnown && !badgeSrc}>
           <ProfileBadge
             imageSrc={badgeSrc ?? badge?.src ?? null}
             badgeAlt={badgeSrc ? "Profile badge" : badge ? `${badge.name} ELO rank badge` : "Rank badge unavailable"}
