@@ -78,6 +78,13 @@ function validateQuestion(question) {
         question.options.length) {
       fail(`Quiz question ${question.id} contains duplicate options.`);
     }
+    // Prevent the generated definition questions that reveal their own answer.
+    // Short numeric/boolean answer choices can naturally occur as input values.
+    const answer = question.correctAnswer.trim().toLowerCase();
+    if (/^which concept is best described by the following definition:/i.test(question.prompt) ||
+        (answer.length >= 5 && question.prompt.toLowerCase().includes(answer))) {
+      fail(`Quiz question ${question.id} reveals the correct answer in the prompt.`);
+    }
   } else {
     const rubricError = validateRubric(question);
     if (rubricError) {

@@ -98,3 +98,39 @@
   color: var(--ib-text-secondary);
   font-size: 0.69rem;
 }
+/* Saved question prompts use the same section spacing as live interviews. */
+.ibResultsQuestion {
+  padding: clamp(18px, 2vw, 26px);
+}
+
+.ibResultsQuestionTop {
+  margin-bottom: 18px;
+}
+
+.ibResultsPrompt.ibQuestionPrompt {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 20px;
+  font-size: 1rem;
+  line-height: 1.75;
+}
+
+.ibResultsPrompt .ibQuestionPromptSection {
+  margin: 0;
+}
+
+.ibResultsAnswer,
+.ibResultsFeedbackGroup {
+  margin-top: 18px;
+}
+
+.ibResultsAnswer {
+  padding: 18px 20px;
+}
+
+.ibResultsAnswer p,
+.ibResultsFeedbackGroup p,
+.ibResultsFeedbackGroup li {
+  line-height: 1.75;
+}

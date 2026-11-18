@@ -8,6 +8,7 @@ import React, {
 import PageLayout from "../components/layout/PageLayout";
 
 import CodeEditor from "../components/interview/CodeEditor";
+import QuestionPrompt from "../components/interview/QuestionPrompt";
 
 import LoadingState from "../components/state/LoadingState";
 import ErrorState from "../components/state/ErrorState";
@@ -1647,11 +1648,10 @@ function InterviewSessionPage({
               )}
             </div>
 
-            <p className="sessionQuestionPrompt">
-              {
-                currentQuestion.prompt
-              }
-            </p>
+            <QuestionPrompt
+              prompt={currentQuestion.prompt}
+              className="sessionQuestionPrompt"
+            />
 
             {currentQuestion.topic && (
               <div className="sessionQuestionTopic">

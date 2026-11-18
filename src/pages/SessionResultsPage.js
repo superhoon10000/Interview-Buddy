@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 
 import PageLayout from "../components/layout/PageLayout";
+import QuestionPrompt from "../components/interview/QuestionPrompt";
 import { PAGES } from "../utils/constants";
 import { historyService } from "../services/historyService";
 import { normalizeHistorySession } from "../utils/historyResults";
@@ -502,11 +503,12 @@ function SessionResultsPage({
                           </div>
                         </div>
 
-                        <p className="ibResultsPrompt">
-                          {question.prompt ||
+                        <QuestionPrompt
+                          className="ibResultsPrompt"
+                          prompt={question.prompt ||
                             question.question ||
                             "Question prompt unavailable"}
-                        </p>
+                        />
 
                         {question.userAnswer && (
                           <div className="ibResultsAnswer">
