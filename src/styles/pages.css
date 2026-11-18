@@ -895,3 +895,183 @@ gap: 12px;
 .analyticsPage .chartLabel {
   font-size: 0.69rem;
 }
+
+/* ==========================================
+   Compact Analytics Dashboard
+   ========================================== */
+
+/* Three statistics horizontally */
+.analyticsPage .analyticsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+
+  /* Separate summary cards from daily chart */
+  padding-bottom: 18px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid var(--border-panel);
+}
+
+.analyticsPage .analyticsCard {
+  min-width: 0;
+  padding: 12px 16px;
+}
+
+.analyticsPage .analyticsCard h2 {
+  font-size: 0.88rem;
+  margin-bottom: 5px;
+}
+
+.analyticsPage .analyticsValue {
+  font-size: 1.6rem;
+  margin-bottom: 4px;
+}
+
+.analyticsPage .analyticsDescription {
+  font-size: 0.75rem;
+  line-height: 1.3;
+}
+
+/* Stack daily chart above performance breakdown */
+.analyticsPage .analyticsContentGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+}
+
+.analyticsPage .analyticsContentGrid > .largePanel {
+  min-width: 0;
+  margin: 0;
+  padding: 12px 16px;
+}
+
+.analyticsPage .panelTitle {
+  font-size: 1.05rem;
+  margin-bottom: 10px;
+}
+
+/* Shorter 30-day chart */
+.analyticsPage .chartYAxis,
+.analyticsPage .chartPlotArea {
+  height: 145px;
+}
+
+.analyticsPage .chartViewport {
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 30px;
+}
+
+.analyticsPage .chartLegend {
+  margin-top: 4px;
+  gap: 12px;
+}
+
+.analyticsPage .legendItem {
+  font-size: 0.72rem;
+}
+
+/* Performance modes horizontally */
+.analyticsPage .performanceBreakdown {
+  padding: 0;
+}
+
+.analyticsPage .breakdownSection {
+  margin-bottom: 10px;
+}
+
+.analyticsPage .breakdownSection:last-child {
+  margin-bottom: 0;
+}
+
+.analyticsPage .breakdownSection h3 {
+  font-size: 0.87rem;
+  margin-bottom: 7px;
+}
+
+.analyticsPage .modeBreakdownGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.analyticsPage .modeBreakdownCard {
+  min-width: 0;
+  padding: 9px 11px;
+}
+
+.analyticsPage .modeBreakdownCard h4 {
+  font-size: 0.85rem;
+  margin-bottom: 14px;
+}
+
+/* Compact statistics inside each mode */
+.analyticsPage .modeStats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.analyticsPage .modeStats .stat {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+}
+
+.analyticsPage .statLabel {
+  font-size: 0.69rem;
+}
+
+.analyticsPage .statValue {
+  font-size: 0.84rem;
+}
+
+.analyticsPage .performanceBar {
+  height: 6px;
+}
+
+/* Compact three-line Mode Insights */
+.analyticsPage .trendAnalysis {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 10px 14px;
+}
+
+.analyticsPage .trendAnalysis p {
+  font-size: 0.75rem;
+  line-height: 1.3;
+  margin: 0;
+}
+
+/* Compact footnote */
+.analyticsPage .analyticsFootnote {
+  margin: 0;
+  font-size: 0.72rem;
+  line-height: 1.3;
+}
+
+/* Smaller screens remain responsive */
+@media (max-width: 800px) {
+  .analyticsPage .analyticsGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .analyticsPage .modeBreakdownGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 650px) {
+  .analyticsPage .analyticsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .analyticsPage .modeStats {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}

@@ -51,10 +51,7 @@ function AnalyticsPage({ currentPage, onNavigate }) {
     });
 
     Promise.allSettled([
-      analyticsService.getCompletedSessions({
-        startDate: analyticsWindow.startDate,
-        endDate: analyticsWindow.endDate,
-      }),
+      analyticsService.getCompletedSessions(),
       leaderboardService.getUserRanking(),
     ]).then(([historyResult, rankingResult]) => {
       if (!active) return;
@@ -104,7 +101,7 @@ function AnalyticsPage({ currentPage, onNavigate }) {
       id: "completed",
       label: "Interviews Completed",
       value: String(metrics.completedCount),
-      description: "Fully completed interview sessions.",
+      description: "All-time completed interview sessions.",
     },
     {
       id: "average",
@@ -114,21 +111,13 @@ function AnalyticsPage({ currentPage, onNavigate }) {
           ? "—"
           : `${metrics.averageScore}%`,
       description:
-        `Across ${metrics.scoredCount} fully completed, scored interviews.`,
+        `Across ${metrics.scoredCount} all-time scored interviews.`,
     },
     {
       id: "elo",
       label: "Current ELO",
       value: state.ranking?.elo ?? "—",
-      description:
-        "Current rating from your leaderboard profile, if available.",
-    },
-    {
-      id: "strongest",
-      label: "Strongest Mode",
-      value: metrics.strongestMode || "—",
-      description:
-        "Practice mode with the highest average saved score.",
+      description: "Your current ELO rating.",
     },
   ];
 
@@ -154,8 +143,8 @@ function AnalyticsPage({ currentPage, onNavigate }) {
       )}
 
       {status === "success" && (
-        <>
-          <div className="analyticsGrid">
+      <div className="analyticsPage">
+        <div className="analyticsGrid">
             {cards.map((item) => (
               <AnalyticsStatCard
                 key={item.id}
@@ -175,7 +164,7 @@ function AnalyticsPage({ currentPage, onNavigate }) {
 
             <section className="largePanel">
               <h2 className="panelTitle">
-                Performance Breakdown — Last 30 Days
+                Performance Breakdown
               </h2>
 
               <PerformanceBreakdown
@@ -196,10 +185,10 @@ function AnalyticsPage({ currentPage, onNavigate }) {
 
             {metrics.completedCount > metrics.scoredCount &&
               " Some older interviews have no valid saved score."}
-          </p>
-        </>
-      )}
-    </PageLayout>
+            </p>
+      </div>
+    )}
+  </PageLayout>
   );
 }
 

@@ -87,21 +87,10 @@ export function calculateAnalytics(
   sessions,
   window = getAnalyticsWindow()
 ) {
-  // Only calculate statistics inside the selected window.
-  // The exclusive end prevents counting tomorrow's sessions.
-  const allSessions = (
-    Array.isArray(sessions) ? sessions : []
-  ).filter((session) => {
-    const date = parseSessionDate(
-      session?.completedAt
-    );
-
-    return (
-      date !== null &&
-      date >= window.start &&
-      date < window.endExclusive
-    );
-  });
+  // Lifetime statistics use every saved session.
+  const allSessions = Array.isArray(sessions)
+    ? sessions
+    : [];
 
   const completed = allSessions.filter(
     isFullyCompleted
@@ -178,7 +167,14 @@ export function calculateAnalytics(
   const totalsByDay = new Map();
 
   for (const session of scored) {
-    if (!session.completedAt) continue;
+    // Only include sessions in the chart's 30-day window.
+    if (
+      !session.completedAt ||
+      session.completedAt < window.start ||
+      session.completedAt >= window.endExclusive
+    ) {
+      continue;
+    }
 
     const key = dayKey(session.completedAt);
 
