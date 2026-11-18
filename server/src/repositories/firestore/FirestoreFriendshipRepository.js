@@ -253,9 +253,16 @@ class FirestoreFriendshipRepository extends FriendshipRepository {
    * Use the same ELO ordering and competition ranks as the global board.
    */
   async listFriendsLeaderboard(userUid) {
-    const friends = await this.listFriends(userUid);
-    if (friends.length === 0) return [];
-    const friendUids = [...new Set(friends.map(({ friendUid }) => friendUid))];
+    const uid = normalizedUid(userUid);
+    const friends = await this.listFriends(uid);
+
+    // Include the authenticated user alongside accepted friends.
+    const friendUids = [
+      ...new Set([
+        uid,
+        ...friends.map(({ friendUid }) => friendUid),
+      ]),
+    ];
     const users = this.db.collection("users");
     const profiles = [];
     for (let start = 0; start < friendUids.length; start += PROFILE_BATCH_SIZE) {

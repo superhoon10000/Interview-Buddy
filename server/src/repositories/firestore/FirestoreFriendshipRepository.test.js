@@ -199,10 +199,19 @@ describe("SCRUM-115 confirmed friendship storage and querying", () => {
 });
 
 describe("SCRUM-116 friends-only ranking query", () => {
-  test("no friends returns empty without querying user profiles", async () => {
+  test("unranked self with no friends returns no rankings", async () => {
     const f = fixture();
-    assert.deepEqual(await f.repository.listFriendsLeaderboard("alice"), []);
-    assert.equal(f.calls.getAll.length, 0);
+
+    assert.deepEqual(
+      await f.repository.listFriendsLeaderboard("alice"),
+      []
+    );
+
+    // Only the authenticated user's profile is requested.
+    assert.deepEqual(
+      f.calls.getAll.map((call) => call.ids),
+      [["alice"]]
+    );
   });
 
   test("reads accepted friends only, sorts by ELO and excludes private fields", async () => {
@@ -219,7 +228,10 @@ describe("SCRUM-116 friends-only ranking query", () => {
     assert.deepEqual(result.map((row) => row.elo), [1500, 1234]);
     assert.ok(result.every((row) => !Object.hasOwn(row, "points")));
     assert.ok(result.every((row) => !Object.hasOwn(row, "email")));
-    assert.deepEqual(f.calls.getAll[0].ids.sort(), ["bob", "carol"]);
+    assert.deepEqual(
+      f.calls.getAll[0].ids.sort(),
+      ["alice", "bob", "carol"]
+    );
     assert.deepEqual(f.calls.getAll[0].options.fieldMask, ["username", "ranking", "deleting", "status"]);
   });
 
@@ -248,7 +260,10 @@ describe("SCRUM-116 friends-only ranking query", () => {
     }
     const result = await f.repository.listFriendsLeaderboard("alice");
     assert.equal(result.length, 101);
-    assert.deepEqual(f.calls.getAll.map((entry) => entry.ids.length), [100, 1]);
+    assert.deepEqual(
+      f.calls.getAll.map((entry) => entry.ids.length),
+      [100, 2]
+    );
   });
 
   test("subsequent reads reflect persisted ranking changes without a global scan", async () => {
@@ -260,5 +275,56 @@ describe("SCRUM-116 friends-only ranking query", () => {
     assert.deepEqual((await f.repository.listFriendsLeaderboard("alice")).map((r) => r.uid), ["carol", "bob"]);
     f.seed("users", "bob", { username: "Bob", ranking: ranking(99, 1, 1300) });
     assert.deepEqual((await f.repository.listFriendsLeaderboard("alice")).map((r) => r.uid), ["bob", "carol"]);
+  });
+
+  test("ranked self appears without accepted friends", async () => {
+    const f = fixture();
+
+    f.seed("users", "alice", {
+      username: "Alice",
+      ranking: ranking(60, 1, 1250),
+    });
+
+    const result =
+      await f.repository.listFriendsLeaderboard("alice");
+
+    assert.deepEqual(
+      result.map((row) => [row.uid, row.rank]),
+      [["alice", 1]]
+    );
+  });
+
+  test("self ranks alongside friends and ties share rank", async () => {
+    const f = fixture();
+
+    await friend(f.repository, "alice", "bob");
+    await friend(f.repository, "alice", "carol");
+
+    f.seed("users", "alice", {
+      username: "Alice",
+      ranking: ranking(100, 1, 1200),
+    });
+
+    f.seed("users", "bob", {
+      username: "Bob",
+      ranking: ranking(90, 1, 1300),
+    });
+
+    f.seed("users", "carol", {
+      username: "Carol",
+      ranking: ranking(80, 1, 1200),
+    });
+
+    const result =
+      await f.repository.listFriendsLeaderboard("alice");
+
+    assert.deepEqual(
+      result.map((row) => [row.uid, row.rank]),
+      [
+        ["bob", 1],
+        ["alice", 2],
+        ["carol", 2],
+      ]
+    );
   });
 });

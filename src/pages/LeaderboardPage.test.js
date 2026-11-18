@@ -245,31 +245,197 @@ test("friends tab retains ELO labels for the future friends service", async () =
   expect(screen.getByText("Rank #5")).toBeInTheDocument();
 });
 
+//Preserve OG test purpose while checking new removal location
 test("friend request and removal call APIs, not local fake changes", async () => {
-  const friend = { uid: "friend-1", username: "Taylor", elo: 1400, rank: 5 };
+  const friend = {
+    uid: "friend-1",
+    username: "Taylor",
+    elo: 1400,
+    rank: 5,
+  };
+
   leaderboardService.getGlobalLeaderboard.mockResolvedValue([]);
+
   leaderboardService.getFriendsLeaderboard
-    .mockResolvedValueOnce([friend]) // Load on mount.
-    .mockResolvedValueOnce([friend]) // Pending request does not add a friend.
-    .mockResolvedValueOnce([]); // Removal persists in backend.
+    .mockResolvedValueOnce([friend])
+    .mockResolvedValueOnce([friend])
+    .mockResolvedValueOnce([]);
+
+  leaderboardService.getAcceptedFriends
+    .mockResolvedValueOnce([
+      { uid: "friend-1", username: "Taylor" },
+    ])
+    .mockResolvedValueOnce([]);
+
   leaderboardService.getUserRanking.mockResolvedValue(null);
-  leaderboardService.sendFriendRequest.mockResolvedValue({ status: "pending" });
+  leaderboardService.sendFriendRequest.mockResolvedValue({
+    status: "pending",
+  });
   leaderboardService.removeFriend.mockResolvedValue({});
 
-  render(<LeaderboardPage currentPage="/leaderboard" onNavigate={() => {}} />);
-  fireEvent.click(screen.getByRole("tab", { name: "Friends" }));
-  expect(await screen.findByRole("button", { name: "Remove Taylor from friends" })).toBeInTheDocument();
+  render(
+    <LeaderboardPage
+      currentPage="/leaderboard"
+      onNavigate={() => {}}
+    />
+  );
 
-  fireEvent.change(screen.getByRole("textbox", { name: "Username" }), { target: { value: "Morgan" } });
-  fireEvent.click(screen.getByRole("button", { name: "Add Friend" }));
-  await waitFor(() => expect(leaderboardService.sendFriendRequest).toHaveBeenCalledWith("Morgan"));
-  expect(await screen.findByText(/Friend request sent to "Morgan"/)).toBeInTheDocument();
-  expect(screen.queryByText("Morgan", { selector: ".ibRankingUsername" })).not.toBeInTheDocument();
+  fireEvent.click(
+    screen.getByRole("tab", { name: "Friends" })
+  );
 
-  await waitFor(() => expect(screen.getByRole("button", { name: "Remove Taylor from friends" })).toBeEnabled());
-  fireEvent.click(screen.getByRole("button", { name: "Remove Taylor from friends" }));
-  await waitFor(() => expect(leaderboardService.removeFriend).toHaveBeenCalledWith("friend-1"));
-  expect(await screen.findByText("No friends yet")).toBeInTheDocument();
+  const accepted = screen.getByRole("region", {
+    name: "Accepted Friends",
+  });
+
+  // Remove must exist in Accepted Friends.
+  expect(
+    await within(accepted).findByRole("button", {
+      name: "Remove Taylor from accepted friends",
+    })
+  ).toBeInTheDocument();
+
+  // Sending a friend request should not immediately add them.
+  fireEvent.change(
+    screen.getByRole("textbox", { name: "Username" }),
+    { target: { value: "Morgan" } }
+  );
+
+  fireEvent.click(
+    screen.getByRole("button", { name: "Add Friend" })
+  );
+
+  await waitFor(() => {
+    expect(
+      leaderboardService.sendFriendRequest
+    ).toHaveBeenCalledWith("Morgan");
+  });
+
+  expect(
+    await screen.findByText(/Friend request sent to "Morgan"/)
+  ).toBeInTheDocument();
+
+  expect(
+    screen.queryByText("Morgan", {
+      selector: ".ibRankingUsername",
+    })
+  ).not.toBeInTheDocument();
+
+  // Removal happens only through Accepted Friends.
+  const removeButton = within(accepted).getByRole("button", {
+    name: "Remove Taylor from accepted friends",
+  });
+
+  await waitFor(() => {
+    expect(removeButton).toBeEnabled();
+  });
+
+  fireEvent.click(removeButton);
+
+  await waitFor(() => {
+    expect(
+      leaderboardService.removeFriend
+    ).toHaveBeenCalledWith("friend-1");
+  });
+
+  expect(
+    await within(accepted).findByText("No accepted friends")
+  ).toBeInTheDocument();
+
+  expect(
+    await screen.findByText("No friends yet")
+  ).toBeInTheDocument();
+});
+
+//Test both requests together.
+test("shows self in Friends Rankings with Remove only in Accepted Friends", async () => {
+  leaderboardService.getGlobalLeaderboard.mockResolvedValue([]);
+
+  leaderboardService.getFriendsLeaderboard.mockResolvedValue([
+    {
+      uid: "friend-1",
+      username: "Taylor",
+      rank: 1,
+      elo: 1400,
+    },
+    {
+      uid: "test-user",
+      username: "Me",
+      rank: 2,
+      elo: 1200,
+    },
+  ]);
+
+  leaderboardService.getAcceptedFriends.mockResolvedValue([
+    { uid: "friend-1", username: "Taylor" },
+  ]);
+
+  leaderboardService.getUserRanking.mockResolvedValue({
+    uid: "test-user",
+    username: "Me",
+    rank: 2,
+    elo: 1200,
+  });
+
+  render(
+    <LeaderboardPage
+      currentPage="/leaderboard"
+      onNavigate={() => {}}
+    />
+  );
+
+  fireEvent.click(
+    screen.getByRole("tab", { name: "Friends" })
+  );
+
+  const rankings = screen.getByRole("region", {
+    name: "Friends leaderboard",
+  });
+
+  const table = await within(rankings).findByRole("table");
+
+  // Both the friend and the current user are ranked.
+  expect(
+    within(table).getByText("Taylor")
+  ).toBeInTheDocument();
+
+  expect(
+    within(table).getByText("Me")
+  ).toBeInTheDocument();
+
+  // The signed-in user's row is identified.
+  expect(
+    within(table).getByText("You")
+  ).toBeInTheDocument();
+
+  // Self is not counted as an accepted friend.
+  expect(
+    within(rankings).getByText("1 ranked friend + you")
+  ).toBeInTheDocument();
+
+  // Ranking table no longer provides removal actions.
+  expect(
+    within(table).queryByRole("columnheader", {
+      name: "Action",
+    })
+  ).not.toBeInTheDocument();
+
+  expect(
+    within(rankings).queryByRole("button", {
+      name: /Remove Taylor/i,
+    })
+  ).not.toBeInTheDocument();
+
+  // Accepted Friends still provides removal.
+  const accepted = screen.getByRole("region", {
+    name: "Accepted Friends",
+  });
+
+  expect(
+    within(accepted).getByRole("button", {
+      name: "Remove Taylor from accepted friends",
+    })
+  ).toBeInTheDocument();
 });
 
 test("failed requests do not claim a friend was added", async () => {
@@ -879,7 +1045,6 @@ describe("SCRUM-108 friend discovery", () => {
     expect(leaderboardService.sendFriendRequest).not.toHaveBeenCalled();
   });
 });
-
 
 describe("SCRUM-110 friends-only ranking refresh workflow", () => {
   const ranking = (uid, username, rank, elo) => ({ uid, username, rank, elo });

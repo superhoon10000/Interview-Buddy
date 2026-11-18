@@ -95,8 +95,6 @@ function RankingTable({
   currentUserId,
   currentUsername,
   globalRanksByUid,
-  onRemove,
-  saving = false,
   emptyTitle = "No available data",
   emptyDescription = "There are no rankings to display yet.",
 }) {
@@ -128,7 +126,6 @@ function RankingTable({
             <th scope="col">Rank</th>
             <th scope="col">User</th>
             <th scope="col">ELO Score</th>
-            {onRemove && <th scope="col" className="ibRankingActionHeading">Action</th>}
           </tr>
         </thead>
         <tbody>
@@ -171,20 +168,6 @@ function RankingTable({
                     )}
                   </span>
                 </td>
-                {onRemove && (
-                  <td className="ibRankingActionCell">
-                    <button
-                      type="button"
-                      className="ibRankingRemoveButton"
-                      disabled={entry.uid == null || saving}
-                      title={entry.uid == null ? "Friend ID is not available" : undefined}
-                      onClick={() => onRemove(entry)}
-                      aria-label={`Remove ${entry.username} from friends`}
-                    >
-                      Remove
-                    </button>
-                  </td>
-                )}
               </tr>
             );
           })}
@@ -437,7 +420,18 @@ function LeaderboardPage({ currentPage, onNavigate }) {
   const rankBadge = getEloRankBadge(currentUser?.elo, currentUser?.rank);
   const hasFriends = acceptedFriends.status === "success";
   const friendCount = hasFriends ? acceptedFriends.data.length : null;
-  const rankedFriendCount = friends.status === "success" ? friendRankings.length : null;
+
+  //Dont count self in friend count, since we include self for friends leaderboard
+  const selfIsRanked =
+    friends.status === "success" &&
+    friendRankings.some(
+      (entry) => String(entry.uid) === String(user?.uid)
+    );
+
+  const rankedFriendCount =
+    friends.status === "success"
+      ? friendRankings.length - (selfIsRanked ? 1 : 0)
+      : null;
 
   //Empty messages for no friends or no ranked friends
   const friendsEmptyTitle = hasFriends
@@ -730,7 +724,7 @@ function LeaderboardPage({ currentPage, onNavigate }) {
                       ? "No available data"
                       : `${rankedFriendCount} ranked ${
                           rankedFriendCount === 1 ? "friend" : "friends"
-                        }`}
+                        }${selfIsRanked ? " + you" : ""}`}
                   </span>
                 </div>
 
@@ -748,8 +742,6 @@ function LeaderboardPage({ currentPage, onNavigate }) {
                   currentUserId={user?.uid}
                   currentUsername={currentUser?.username}
                   globalRanksByUid={globalRanksByUid}
-                  onRemove={hasFriends ? handleRemoveFriend : undefined}
-                  saving={saving}
                   emptyTitle={friendsEmptyTitle}
                   emptyDescription={friendsEmptyDescription}
                 />
