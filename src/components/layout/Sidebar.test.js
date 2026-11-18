@@ -12,6 +12,7 @@ import ProfileBadge from "../common/ProfileBadge";
 import { PAGES } from "../../utils/constants";
 import { useAuth } from "../../context/AuthContext";
 import { authService } from "../../services/authService";
+import { leaderboardService } from "../../services/leaderboardService";
 
 jest.mock("../../context/AuthContext", () => ({
   useAuth: jest.fn(),
@@ -20,6 +21,12 @@ jest.mock("../../context/AuthContext", () => ({
 jest.mock("../../services/authService", () => ({
   authService: {
     logout: jest.fn(),
+  },
+}));
+
+jest.mock("../../services/leaderboardService", () => ({
+  leaderboardService: {
+    getUserRanking: jest.fn(),
   },
 }));
 
@@ -34,10 +41,12 @@ beforeEach(() => {
     },
     profile: {
       username: "DPhoenix",
+      ranking: { elo: 1000 },
     },
   });
 
   authService.logout.mockResolvedValue(undefined);
+  leaderboardService.getUserRanking.mockResolvedValue(null);
 });
 
 
@@ -187,4 +196,50 @@ test("shows initials if a badge image fails", () => {
       name: "DPhoenix's profile",
     })
   ).toHaveTextContent("DP");
+});
+
+
+test("sidebar uses the global #3 Meta badge regardless of a low ELO", async () => {
+  leaderboardService.getUserRanking.mockResolvedValue({ uid: "test-user", username: "DPhoenix", rank: 3, elo: 51 });
+  renderSidebar();
+
+  expect(await screen.findByAltText("Meta ELO rank badge")).toHaveAttribute(
+    "src", "/Meta%20Mascot%20Tech%20Keynote%20Badge.png"
+  );
+});
+
+test("sidebar shows the #2 Bill Gates badge regardless of ELO", async () => {
+  leaderboardService.getUserRanking.mockResolvedValue({ uid: "test-user", username: "DPhoenix", rank: 2, elo: 75 });
+  renderSidebar();
+
+  expect(await screen.findByAltText("Bill Gates ELO rank badge")).toHaveAttribute(
+    "src", "/Bill%20Gates%20Mascot%20Badge.png"
+  );
+});
+
+test("sidebar gives a high-ELO user outside the top three a regular badge", async () => {
+  leaderboardService.getUserRanking.mockResolvedValue({ uid: "test-user", username: "DPhoenix", rank: 4, elo: 2500 });
+  renderSidebar();
+
+  expect(await screen.findByAltText("Senior Developer ELO rank badge")).toBeInTheDocument();
+});
+
+test("sidebar falls back to persisted profile ELO when the ranking service fails", async () => {
+  leaderboardService.getUserRanking.mockRejectedValue(new Error("Offline"));
+  useAuth.mockReturnValue({
+    user: { uid: "test-user", username: "DPhoenix" },
+    profile: { username: "DPhoenix", ranking: { elo: 250 } },
+  });
+  renderSidebar();
+
+  expect(screen.getByAltText("Janitor ELO rank badge")).toBeInTheDocument();
+  await waitFor(() => expect(leaderboardService.getUserRanking).toHaveBeenCalledTimes(1));
+});
+
+test("sidebar does not claim a badge if no ELO is available", async () => {
+  useAuth.mockReturnValue({ user: { uid: "test-user", username: "DPhoenix" }, profile: { username: "DPhoenix" } });
+  renderSidebar();
+
+  expect(screen.getByRole("img", { name: "Rank badge unavailable" })).toBeInTheDocument();
+  expect(screen.queryByAltText("Cheerful graduate mascot badge")).not.toBeInTheDocument();
 });

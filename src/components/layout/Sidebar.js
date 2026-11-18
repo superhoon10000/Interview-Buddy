@@ -5,6 +5,8 @@ import { PAGES } from "../../utils/constants";
 import { authService } from "../../services/authService";
 import { useAuth } from "../../context/AuthContext";
 import ProfileBadge from "../common/ProfileBadge";
+import { leaderboardService } from "../../services/leaderboardService";
+import { getEloRankBadge } from "../../utils/eloRankBadge";
 
 // Centralized navigation configuration.
 // This keeps all sidebar destinations in one place.
@@ -132,6 +134,35 @@ function SidebarIcon({ name }) {
 function Sidebar({ currentPage, onNavigate, badgeSrc }) {
   const { user, profile } = useAuth();
 
+  const [personalRanking, setPersonalRanking] = useState({ uid: null, data: null });
+
+  // Use the authenticated server ranking for global top-three badges.
+  // Fall back to persisted profile ELO if the user is still unranked or the
+  // leaderboard is temporarily unavailable. Do not invent a global rank.
+  useEffect(() => {
+    const uid = user?.uid;
+    if (!uid) return undefined;
+
+    let active = true;
+    leaderboardService.getUserRanking()
+      .then((data) => {
+        if (active) setPersonalRanking({ uid, data });
+      })
+      .catch(() => {
+        if (active) setPersonalRanking({ uid, data: null });
+      });
+
+    return () => { active = false; };
+  }, [user?.uid]);
+
+  const savedRanking = personalRanking.uid === user?.uid
+    ? personalRanking.data
+    : null;
+  const badge = getEloRankBadge(
+    savedRanking?.elo ?? profile?.ranking?.elo,
+    savedRanking?.rank
+  );
+
   const [showLogoutDialog, setShowLogoutDialog] =
     useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -232,7 +263,8 @@ function Sidebar({ currentPage, onNavigate, badgeSrc }) {
         {/* Reusable badge slot */}
         <div className="sidebarBadgeArea">
           <ProfileBadge
-            imageSrc={badgeSrc}
+            imageSrc={badgeSrc ?? badge?.src ?? null}
+            badgeAlt={badgeSrc ? "Profile badge" : badge ? `${badge.name} ELO rank badge` : "Rank badge unavailable"}
             username={username}
           />
         </div>
