@@ -1,7 +1,6 @@
 
 import React from "react";
 import {
-  act,
   fireEvent,
   render,
   screen,
@@ -54,15 +53,17 @@ beforeEach(() => {
 async function renderSidebar(currentPage = PAGES.SETTINGS) {
   const onNavigate = jest.fn();
 
-  // The sidebar fetches a ranking in an effect. Resolve its promise inside
-  // React's async act() boundary to avoid unwrapped state update warnings.
-  await act(async () => {
-    render(
-      <Sidebar
-        currentPage={currentPage}
-        onNavigate={onNavigate}
-      />
-    );
+  render(
+    <Sidebar
+      currentPage={currentPage}
+      onNavigate={onNavigate}
+    />
+  );
+
+  // Allow the async ranking request to settle using Testing Library's
+  // built-in async utilities rather than wrapping render() in act().
+  await waitFor(() => {
+    expect(leaderboardService.getUserRanking).toHaveBeenCalledTimes(1);
   });
 
   return { onNavigate };
@@ -70,7 +71,7 @@ async function renderSidebar(currentPage = PAGES.SETTINGS) {
 
 
 test("renders the logo, graduate badge and username", async () => {
-  const { onNavigate } = await renderSidebar();
+  await renderSidebar();
 
   expect(
     screen.getByRole("button", {
