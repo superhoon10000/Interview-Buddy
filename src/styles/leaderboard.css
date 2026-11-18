@@ -862,3 +862,11 @@
   color: var(--ib-text-secondary);
   font-size: 0.82rem;
 }
+
+/* ELO badges beside ranked users */
+.ibRankingRowBadge {
+  width: 32px;
+  height: 32px;
+  flex: 0 0 32px;
+  object-fit: contain;
+}
