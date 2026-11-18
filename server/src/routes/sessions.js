@@ -1,6 +1,7 @@
 
 const express = require("express");
 const { SESSION_HISTORY_PAGE_MAX } = require("../config/sessionStorageLimits");
+const { parseSessionHistoryDateRange } = require("../services/sessionHistoryDateRange");
 
 const {
   validateSessionSetup,
@@ -86,7 +87,18 @@ function createSessionRouter({
         });
       }
 
+      const hasRange = req.query.startDate !== undefined || req.query.endDate !== undefined;
+      const hasSummary = req.query.summaryOnly !== undefined;
       const wantsPage = req.query.pageSize !== undefined || req.query.cursor !== undefined;
+      if ((hasRange || hasSummary) && !wantsPage) {
+        return res.status(400).json({ error: "Date ranges and summary views require paginated history.", code: "SESSION_PAGE_REQUIRED" });
+      }
+      if ((hasRange || hasSummary) && status !== "completed") {
+        return res.status(400).json({ error: "Analytics queries require completed sessions.", code: "SESSION_STATUS_INVALID" });
+      }
+      if (hasSummary && req.query.summaryOnly !== "1") {
+        return res.status(400).json({ error: "Invalid history summary view.", code: "SESSION_SUMMARY_INVALID" });
+      }
       if (wantsPage) {
         const rawPageSize = req.query.pageSize;
         const pageSize = Number(rawPageSize);
@@ -99,9 +111,12 @@ function createSessionRouter({
             (typeof cursor !== "string" || !SESSION_ID_PATTERN.test(cursor))) {
           return res.status(400).json({ error: "Invalid history cursor.", code: "SESSION_CURSOR_INVALID" });
         }
+        const range = hasRange ? parseSessionHistoryDateRange(req.query) : null;
         const page = await sessionRepository.getSessionPage({
           userId: req.user.uid, status: status || null, pageSize,
           cursor: cursor || null,
+          ...(range ? range : {}),
+          ...(hasSummary ? { summaryOnly: true } : {}),
         });
         return res.json(page);
       }

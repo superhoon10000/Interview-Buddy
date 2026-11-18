@@ -9,16 +9,21 @@ const PAGE_SIZE = 50;
  * currently authenticated user.
  */
 export const analyticsService = {
-  async getCompletedSessions() {
+  async getCompletedSessions({ startDate = null, endDate = null } = {}) {
     const sessions = [];
     const visitedCursors = new Set();
 
     let cursor = null;
+    const filters = {};
+    if (startDate !== null) filters.startDate = startDate;
+    if (endDate !== null) filters.endDate = endDate;
 
     do {
       const page = await historyService.getSessionPage({
         cursor,
         pageSize: PAGE_SIZE,
+        summaryOnly: true,
+        ...filters,
       });
 
       sessions.push(...page.sessions);

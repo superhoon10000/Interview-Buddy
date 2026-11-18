@@ -268,3 +268,81 @@ describe("SCRUM-86 Firestore index configuration and query integrity", () => {
     );
   });
 });
+
+
+describe("Analytics repository date filtering and summary projection", () => {
+  test("uses the existing completedAt index for date bounds, scoped to the user", async () => {
+    const f = makeFixture();
+    const startDate = new Date("2026-10-01T00:00:00.000Z");
+    const endDate = new Date("2026-11-01T00:00:00.000Z");
+    await f.repository.getSessionPage({
+      userId: "user-A", status: "completed", pageSize: 50, startDate, endDate,
+      endDateExclusive: true,
+    });
+    expect(f.filters).toEqual([
+      { field: "userId", op: "==", value: "user-A" },
+      { field: "status", op: "==", value: "completed" },
+      { field: "completedAt", op: ">=", value: startDate },
+      { field: "completedAt", op: "<", value: endDate },
+    ]);
+    expect(f.orders).toEqual([{ field: "completedAt", direction: "desc" }]);
+    expect(f.query.limit).toHaveBeenCalledWith(SESSION_HISTORY_PAGE_MAX + 1);
+    expect(indexConfig.indexes).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        collectionGroup: "sessions", queryScope: "COLLECTION", fields: [
+          { fieldPath: "userId", order: "ASCENDING" },
+          { fieldPath: "status", order: "ASCENDING" },
+          { fieldPath: "completedAt", order: "DESCENDING" },
+        ],
+      }),
+    ]));
+  });
+
+  test("compact analytics projection preserves scores and completion status but excludes answers", async () => {
+    const f = makeFixture({ queryDocs: [{ id: "s-1", data: () => ({
+      userId: "user-A", mode: "Quiz Style", status: "completed",
+      completedAt: "2026-11-17T12:00:00Z", responseText: "sensitive response",
+      result: { score: 82, completionStatus: "completed", internalAnswer: "private" },
+    }) }] });
+    const result = await f.repository.getSessionPage({
+      userId: "user-A", status: "completed", pageSize: 10, summaryOnly: true,
+    });
+    expect(result).toEqual({
+      sessions: [{
+        id: "s-1", mode: "Quiz Style", status: "completed",
+        completedAt: "2026-11-17T12:00:00Z", score: null,
+        completionStatus: null, result: { score: 82, completionStatus: "completed" },
+      }], nextCursor: null,
+    });
+    expect(JSON.stringify(result)).not.toMatch(/internalAnswer|responseText|private|sensitive/);
+  });
+
+  test("default paginated history still returns the full stored record", async () => {
+    const doc = { mode: "Quiz Style", result: { score: 90, internalAnswer: "available in normal history" } };
+    const f = makeFixture({ queryDocs: [{ id: "s-1", data: () => doc }] });
+    await expect(f.repository.getSessionPage({ userId: "user-A", pageSize: 10 }))
+      .resolves.toEqual({ sessions: [{ id: "s-1", ...doc }], nextCursor: null });
+  });
+
+  test("rejects an out-of-range cursor even if it belongs to the same user", async () => {
+    const f = makeFixture({ cursorData: {
+      userId: "user-A", status: "completed", completedAt: "2026-10-30T12:00:00.000Z",
+    } });
+    await expect(f.repository.getSessionPage({
+      userId: "user-A", status: "completed", pageSize: 5, cursor: "cursor-1",
+      startDate: new Date("2026-11-01T00:00:00Z"),
+    })).rejects.toMatchObject({ statusCode: 400, code: "SESSION_CURSOR_INVALID" });
+    expect(f.query.get).not.toHaveBeenCalled();
+  });
+
+  test("rejects range filters on unfiltered history and malformed direct repository ranges", async () => {
+    const f = makeFixture();
+    await expect(f.repository.getSessionPage({ userId: "user-A", pageSize: 5,
+      startDate: new Date("2026-11-01T00:00:00Z"),
+    })).rejects.toMatchObject({ code: "SESSION_STATUS_INVALID" });
+    await expect(f.repository.getSessionPage({ userId: "user-A", status: "completed", pageSize: 5,
+      startDate: new Date("invalid"),
+    })).rejects.toMatchObject({ code: "SESSION_DATE_RANGE_INVALID" });
+    expect(f.query.get).not.toHaveBeenCalled();
+  });
+});
