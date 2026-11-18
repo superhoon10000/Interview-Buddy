@@ -33,9 +33,28 @@ test("global ranks 1, 2 and 3 always receive their special badges", () => {
 });
 
 test("outside global top three, or without a valid rank, ELO decides the badge", () => {
-  expect(getEloRankBadge(51, 4).name).toBe("Janitor");
+  expect(getEloRankBadge(51, 4).name).toBe("Bum");
   expect(getEloRankBadge(3000, 5).name).toBe("Senior Developer");
-  expect(getEloRankBadge(900, null).name).toBe("Paid Intern");
-  expect(getEloRankBadge(1400, "2").name).toBe("Junior Developer");
-  expect(getEloRankBadge(1400, 0).name).toBe("Junior Developer");
+  expect(getEloRankBadge(900, null).name).toBe("Bum");
+  expect(getEloRankBadge(1400, "2").name).toBe("Senior Developer");
+  expect(getEloRankBadge(1400, 0).name).toBe("Senior Developer");
+});
+
+// Lock in the current ELO thresholds, independently of the tier metadata.
+test.each([
+  [0, "Bum"],
+  [999, "Bum"],
+  [1000, "Graduate"],
+  [1019, "Graduate"],
+  [1020, "Janitor"],
+  [1039, "Janitor"],
+  [1040, "Unpaid Intern"],
+  [1059, "Unpaid Intern"],
+  [1060, "Paid Intern"],
+  [1079, "Paid Intern"],
+  [1080, "Junior Developer"],
+  [1099, "Junior Developer"],
+  [1100, "Senior Developer"],
+])("regular ELO %i uses the %s badge", (elo, name) => {
+  expect(getEloRankBadge(elo, 4).name).toBe(name);
 });

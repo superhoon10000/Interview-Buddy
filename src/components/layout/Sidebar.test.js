@@ -1,6 +1,7 @@
 
 import React from "react";
 import {
+  act,
   fireEvent,
   render,
   screen,
@@ -50,22 +51,26 @@ beforeEach(() => {
 });
 
 
-function renderSidebar(currentPage = PAGES.SETTINGS) {
+async function renderSidebar(currentPage = PAGES.SETTINGS) {
   const onNavigate = jest.fn();
 
-  render(
-    <Sidebar
-      currentPage={currentPage}
-      onNavigate={onNavigate}
-    />
-  );
+  // The sidebar fetches a ranking in an effect. Resolve its promise inside
+  // React's async act() boundary to avoid unwrapped state update warnings.
+  await act(async () => {
+    render(
+      <Sidebar
+        currentPage={currentPage}
+        onNavigate={onNavigate}
+      />
+    );
+  });
 
   return { onNavigate };
 }
 
 
-test("renders the logo, graduate badge and username", () => {
-  const { onNavigate } = renderSidebar();
+test("renders the logo, graduate badge and username", async () => {
+  const { onNavigate } = await renderSidebar();
 
   expect(
     screen.getByRole("button", {
@@ -74,7 +79,7 @@ test("renders the logo, graduate badge and username", () => {
   ).toBeInTheDocument();
 
   expect(
-    screen.getByAltText("Cheerful graduate mascot badge")
+    screen.getByAltText("Graduate ELO rank badge")
   ).toHaveAttribute(
     "src",
     "/Cheerful%20Graduate%20Mascot%20Badge.png"
@@ -85,8 +90,8 @@ test("renders the logo, graduate badge and username", () => {
   ).toBeInTheDocument();
 });
 
-test("highlights the current page and preserves navigation", () => {
-  const { onNavigate } = renderSidebar(PAGES.SETTINGS);
+test("highlights the current page and preserves navigation", async () => {
+  const { onNavigate } = await renderSidebar(PAGES.SETTINGS);
 
   expect(
     screen.getByRole("button", { name: "Settings" })
@@ -101,8 +106,8 @@ test("highlights the current page and preserves navigation", () => {
   );
 });
 
-test("allows the user to cancel logout", () => {
-  renderSidebar();
+test("allows the user to cancel logout", async () => {
+  await renderSidebar();
 
   fireEvent.click(
     screen.getByRole("button", { name: "Logout" })
@@ -124,7 +129,7 @@ test("allows the user to cancel logout", () => {
 });
 
 test("logs out through the existing auth service", async () => {
-  const { onNavigate } = renderSidebar();
+  const { onNavigate } = await renderSidebar();
 
   fireEvent.click(
     screen.getByRole("button", { name: "Logout" })
@@ -148,7 +153,7 @@ test("does not navigate to login if logout fails", async () => {
     new Error("Unable to sign out")
   );
 
-  const { onNavigate } = renderSidebar();
+  const { onNavigate } = await renderSidebar();
 
   fireEvent.click(
     screen.getByRole("button", { name: "Logout" })
@@ -201,7 +206,7 @@ test("shows initials if a badge image fails", () => {
 
 test("sidebar uses the global #3 Meta badge regardless of a low ELO", async () => {
   leaderboardService.getUserRanking.mockResolvedValue({ uid: "test-user", username: "DPhoenix", rank: 3, elo: 51 });
-  renderSidebar();
+  await renderSidebar();
 
   expect(await screen.findByAltText("Meta ELO rank badge")).toHaveAttribute(
     "src", "/Meta%20Mascot%20Tech%20Keynote%20Badge.png"
@@ -210,16 +215,16 @@ test("sidebar uses the global #3 Meta badge regardless of a low ELO", async () =
 
 test("sidebar shows the #2 Bill Gates badge regardless of ELO", async () => {
   leaderboardService.getUserRanking.mockResolvedValue({ uid: "test-user", username: "DPhoenix", rank: 2, elo: 75 });
-  renderSidebar();
+  await renderSidebar();
 
   expect(await screen.findByAltText("Bill Gates ELO rank badge")).toHaveAttribute(
-    "src", "/Bill%20Gates%20Mascot%20Badge.png"
+    "src", "/Tech%20CEO%20Mascot%20Innovation%20Badge.png"
   );
 });
 
 test("sidebar gives a high-ELO user outside the top three a regular badge", async () => {
   leaderboardService.getUserRanking.mockResolvedValue({ uid: "test-user", username: "DPhoenix", rank: 4, elo: 2500 });
-  renderSidebar();
+  await renderSidebar();
 
   expect(await screen.findByAltText("Senior Developer ELO rank badge")).toBeInTheDocument();
 });
@@ -230,16 +235,16 @@ test("sidebar falls back to persisted profile ELO when the ranking service fails
     user: { uid: "test-user", username: "DPhoenix" },
     profile: { username: "DPhoenix", ranking: { elo: 250 } },
   });
-  renderSidebar();
+  await renderSidebar();
 
-  expect(screen.getByAltText("Janitor ELO rank badge")).toBeInTheDocument();
+  expect(screen.getByAltText("Bum ELO rank badge")).toBeInTheDocument();
   await waitFor(() => expect(leaderboardService.getUserRanking).toHaveBeenCalledTimes(1));
 });
 
 test("sidebar does not claim a badge if no ELO is available", async () => {
   useAuth.mockReturnValue({ user: { uid: "test-user", username: "DPhoenix" }, profile: { username: "DPhoenix" } });
-  renderSidebar();
+  await renderSidebar();
 
   expect(screen.getByRole("img", { name: "Rank badge unavailable" })).toBeInTheDocument();
-  expect(screen.queryByAltText("Cheerful graduate mascot badge")).not.toBeInTheDocument();
+  expect(screen.queryByAltText(/ELO rank badge/)).not.toBeInTheDocument();
 });

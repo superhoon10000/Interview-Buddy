@@ -96,7 +96,7 @@ test("renders current ELO, global standing and user's saved rank badge", async (
   expect(screen.getAllByText("1,160").length).toBeGreaterThan(0);
   expect(screen.queryByText("Total Points")).not.toBeInTheDocument();
   expect(screen.getByAltText("Bill Gates ELO rank badge")).toHaveAttribute(
-    "src", "/Bill%20Gates%20Mascot%20Badge.png"
+    "src", "/Tech%20CEO%20Mascot%20Innovation%20Badge.png"
   );
   expect(screen.getByText("No friends available yet.")).toBeInTheDocument();
 });
