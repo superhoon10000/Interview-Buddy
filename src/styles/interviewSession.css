@@ -566,7 +566,7 @@
   margin:
     var(--ib-space-4)
     var(--ib-space-5)
-    0;
+    var(--ib-space-4);
 
   padding:
     var(--ib-space-4);
@@ -1337,7 +1337,7 @@
   margin:
     var(--ib-space-4)
     var(--ib-space-5)
-    0;
+    var(--ib-space-4);
 
   padding:
     var(--ib-space-3);

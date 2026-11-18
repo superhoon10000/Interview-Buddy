@@ -369,7 +369,7 @@
   display: flex;
   align-items: baseline;
   gap: 10px;
-  margin-bottom: 28px;
+  margin-bottom: 56px;
 }
 
 .ibRankingStandingValue strong {
@@ -858,7 +858,7 @@
 
 /* SCRUM-110: Keep friend-ranking updates within their panel. */
 .ibRankingRefreshStatus {
-  margin: 8px 0 12px;
+  margin: 8px 24px 12px;
   color: var(--ib-text-secondary);
   font-size: 0.82rem;
 }
