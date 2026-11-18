@@ -2,12 +2,12 @@
   {
     "id": "gen-quiz-accessibility-01",
     "mode": "Quiz Style",
-    "prompt": "Which concept is best described by the following definition: Web accessibility means designing content and interactions so people with diverse abilities can perceive, operate, understand, and use the interface.",
+    "prompt": "A dialog can be opened with a mouse, but keyboard-only users cannot reach its close button. What area of software quality should the team address?",
     "options": [
-      "Unit testing",
-      "Arrays",
-      "Merge sort",
-      "Web accessibility"
+      "Performance optimization",
+      "Web accessibility",
+      "Visual branding",
+      "Network reliability"
     ],
     "correctAnswer": "Web accessibility",
     "explanation": "Web accessibility means designing content and interactions so people with diverse abilities can perceive, operate, understand, and use the interface. A practical use is to build forms, navigation, dialogs, media, and content usable with keyboards, assistive technology, and varied perception. A key benefit is that it improves usability, inclusiveness, standards compliance, and often overall interface quality; a relevant limitation is that semantic mistakes, poor focus management, low contrast, or inaccessible custom controls can exclude users.",
@@ -343,12 +343,12 @@
   {
     "id": "gen-quiz-acid-01",
     "mode": "Quiz Style",
-    "prompt": "Which concept is best described by the following definition: ACID describes transaction properties: atomicity, consistency, isolation, and durability.",
+    "prompt": "A bank transfer must debit one account and credit another, or roll back both changes if an error occurs. Which database concept addresses this requirement?",
     "options": [
-      "Transaction isolation levels",
-      "Load balancing",
-      "CSS Flexbox",
-      "ACID transactions"
+      "Eventual consistency",
+      "Read replicas",
+      "ACID transactions",
+      "Database sharding"
     ],
     "correctAnswer": "ACID transactions",
     "explanation": "ACID describes transaction properties: atomicity, consistency, isolation, and durability. A practical use is to apply a group of related database changes that must succeed or fail together with controlled concurrency. A key benefit is that it protects important invariants and makes failures easier to reason about; a relevant limitation is that strong transactional guarantees can add coordination and contention costs.",
@@ -684,12 +684,12 @@
   {
     "id": "gen-quiz-arrays-01",
     "mode": "Quiz Style",
-    "prompt": "Which concept is best described by the following definition: An array stores elements in indexed positions, typically in contiguous or logically contiguous order, enabling direct access by index.",
+    "prompt": "A program repeatedly needs to retrieve an item by its numeric position, such as the 200th element. Which data structure is the natural starting point?",
     "options": [
-      "Hash maps",
-      "Binary search",
-      "Breadth-first search",
-      "Arrays"
+      "Linked lists",
+      "Arrays",
+      "Binary trees",
+      "Hash sets"
     ],
     "correctAnswer": "Arrays",
     "explanation": "An array stores elements in indexed positions, typically in contiguous or logically contiguous order, enabling direct access by index. A practical use is to store ordered data that benefits from fast indexed reads. A key benefit is that it offers simple O(1) index access in the common model; a relevant limitation is that inserting or deleting in the middle may require shifting many elements.",
@@ -1045,12 +1045,12 @@
   {
     "id": "gen-quiz-backtracking-01",
     "mode": "Quiz Style",
-    "prompt": "Which concept is best described by the following definition: Backtracking explores candidate choices recursively and abandons a partial candidate as soon as it cannot lead to a valid solution.",
+    "prompt": "A Sudoku solver chooses a digit, detects a contradiction, undoes the choice, and tries another digit. Which algorithmic approach is being used?",
     "options": [
-      "SQL joins",
+      "Dynamic programming",
       "Backtracking",
-      "HTTP methods",
-      "Cookies and sessions"
+      "Binary search",
+      "Greedy algorithms"
     ],
     "correctAnswer": "Backtracking",
     "explanation": "Backtracking explores candidate choices recursively and abandons a partial candidate as soon as it cannot lead to a valid solution. A practical use is to enumerate constrained combinations, permutations, placements, or paths. A key benefit is that it systematically searches a solution space while pruning impossible branches; a relevant limitation is that worst-case time is often exponential and pruning quality matters.",
@@ -1406,12 +1406,12 @@
   {
     "id": "gen-quiz-bfs-01",
     "mode": "Quiz Style",
-    "prompt": "Which concept is best described by the following definition: Breadth-first search explores a graph or tree level by level, normally using a queue.",
+    "prompt": "In an unweighted network, you need the path that uses the fewest edges between two people. Which traversal is the best starting point?",
     "options": [
-      "Breadth-first search",
       "Depth-first search",
-      "Sliding window",
-      "CORS"
+      "Breadth-first search",
+      "Topological sorting",
+      "Binary search"
     ],
     "correctAnswer": "Breadth-first search",
     "explanation": "Breadth-first search explores a graph or tree level by level, normally using a queue. A practical use is to find shortest paths by edge count in an unweighted graph or process nodes by distance. A key benefit is that it guarantees minimum-edge-distance discovery in unweighted graphs; a relevant limitation is that it can consume substantial memory on very wide graphs.",
@@ -1767,12 +1767,12 @@
   {
     "id": "gen-quiz-big-o-01",
     "mode": "Quiz Style",
-    "prompt": "Which concept is best described by the following definition: Big-O notation describes how an algorithm's resource usage grows as input size increases, usually focusing on upper-bound time or space growth.",
+    "prompt": "A reviewer wants a machine-independent way to describe how an algorithm’s worst-case work grows as input size increases. Which concept should they use?",
     "options": [
+      "Benchmark latency",
       "Big-O complexity",
-      "Arrays",
-      "Queues",
-      "Graphs"
+      "Unit test coverage",
+      "Cache hit rate"
     ],
     "correctAnswer": "Big-O complexity",
     "explanation": "Big-O notation describes how an algorithm's resource usage grows as input size increases, usually focusing on upper-bound time or space growth. A practical use is to compare candidate algorithms as data size grows. A key benefit is that it helps reason about scalability independently of a specific machine; a relevant limitation is that it hides constant factors and does not replace measurement on real workloads.",
@@ -2128,10 +2128,10 @@
   {
     "id": "gen-quiz-binary-search-01",
     "mode": "Quiz Style",
-    "prompt": "Which concept is best described by the following definition: Binary search repeatedly halves an ordered search space by comparing the target with a middle value.",
+    "prompt": "You have a sorted list of a million IDs and want to narrow the search range by roughly half after each comparison. Which algorithm fits?",
     "options": [
-      "Graphs",
-      "Sliding window",
+      "Linear search",
+      "Breadth-first search",
       "Binary search",
       "Merge sort"
     ],
@@ -2489,12 +2489,12 @@
   {
     "id": "gen-quiz-binary-search-trees-01",
     "mode": "Quiz Style",
-    "prompt": "Which concept is best described by the following definition: A binary search tree orders nodes so values in one subtree compare below a node and values in the other compare above it under the chosen ordering rule.",
+    "prompt": "You want to store ordered keys in nodes so comparisons determine whether to search the left or right subtree. Which structure fits?",
     "options": [
-      "Heaps",
-      "Recursion",
-      "HTTP methods",
-      "Binary search trees"
+      "Binary search trees",
+      "Hash maps",
+      "Queues",
+      "Adjacency lists"
     ],
     "correctAnswer": "Binary search trees",
     "explanation": "A binary search tree orders nodes so values in one subtree compare below a node and values in the other compare above it under the chosen ordering rule. A practical use is to maintain an ordered set that supports search, insertion, and ordered traversal. A key benefit is that it can support O(log n) operations when reasonably balanced; a relevant limitation is that an unbalanced tree can degenerate to O(n) operations.",
@@ -2850,12 +2850,12 @@
   {
     "id": "gen-quiz-caching-01",
     "mode": "Quiz Style",
-    "prompt": "Which concept is best described by the following definition: Caching stores reusable data closer to where it is consumed so repeated requests can avoid slower computation or remote access.",
+    "prompt": "A dashboard repeatedly fetches the same expensive summary even though it changes only once every few minutes. What technique can avoid repeating the computation?",
     "options": [
+      "Load balancing",
       "Caching",
-      "Message queues",
-      "Promises and async/await",
-      "Integration testing"
+      "Database normalization",
+      "Event sourcing"
     ],
     "correctAnswer": "Caching",
     "explanation": "Caching stores reusable data closer to where it is consumed so repeated requests can avoid slower computation or remote access. A practical use is to reduce repeated database, network, or computation cost for frequently reused results. A key benefit is that it improves latency and can reduce load on downstream systems; a relevant limitation is that staleness, invalidation, eviction, and cache stampedes can produce incorrect or unstable behavior.",
@@ -3191,12 +3191,12 @@
   {
     "id": "gen-quiz-cicd-01",
     "mode": "Quiz Style",
-    "prompt": "Which concept is best described by the following definition: Continuous integration automatically validates changes frequently, while continuous delivery or deployment automates packaging and movement of validated changes toward production.",
+    "prompt": "Every pull request should trigger automated checks, and approved builds should move through a repeatable release pipeline. What practice combines these activities?",
     "options": [
+      "Manual release management",
       "CI/CD",
-      "Big-O complexity",
-      "Stacks",
-      "Heaps"
+      "Feature flagging",
+      "Infrastructure monitoring"
     ],
     "correctAnswer": "CI/CD",
     "explanation": "Continuous integration automatically validates changes frequently, while continuous delivery or deployment automates packaging and movement of validated changes toward production. A practical use is to run builds, tests, checks, and repeatable deployment steps on every accepted change. A key benefit is that it reduces integration risk and makes delivery repeatable and observable; a relevant limitation is that flaky tests, unsafe secrets, missing rollback plans, or brittle pipelines can block teams or deploy bad changes.",
@@ -3532,12 +3532,12 @@
   {
     "id": "gen-quiz-cors-01",
     "mode": "Quiz Style",
-    "prompt": "Which concept is best described by the following definition: Cross-Origin Resource Sharing is a browser-enforced HTTP mechanism that lets a server declare which origins and request details are allowed across origins.",
+    "prompt": "A browser app hosted on one origin cannot read a response from an API on a different origin, even though the API returns HTTP 200. Which browser security mechanism should be checked?",
     "options": [
-      "Transaction isolation levels",
+      "Content Security Policy",
       "CORS",
-      "Cookies and sessions",
-      "DNS"
+      "TLS certificate pinning",
+      "SameSite cookies"
     ],
     "correctAnswer": "CORS",
     "explanation": "Cross-Origin Resource Sharing is a browser-enforced HTTP mechanism that lets a server declare which origins and request details are allowed across origins. A practical use is to permit approved browser frontends to call an API hosted on another origin. A key benefit is that it enables controlled cross-origin browser access without disabling the same-origin policy; a relevant limitation is that overly broad origins or credentials settings can expose data or create security mistakes.",
@@ -3873,12 +3873,12 @@
   {
     "id": "gen-quiz-dfs-01",
     "mode": "Quiz Style",
-    "prompt": "Which concept is best described by the following definition: Depth-first search explores one path as deeply as possible before backtracking, using recursion or an explicit stack.",
+    "prompt": "A maze solver follows one route until it reaches a dead end, then returns to the last branch to try another route. Which graph traversal matches?",
     "options": [
-      "Recursion",
-      "Two pointers",
-      "Cookies and sessions",
-      "Depth-first search"
+      "Breadth-first search",
+      "Depth-first search",
+      "Dijkstra’s algorithm",
+      "Topological sorting"
     ],
     "correctAnswer": "Depth-first search",
     "explanation": "Depth-first search explores one path as deeply as possible before backtracking, using recursion or an explicit stack. A practical use is to traverse components, detect cycles, or explore decision paths deeply. A key benefit is that it is simple and memory-efficient on some narrow graphs and supports backtracking patterns; a relevant limitation is that deep recursion can overflow the call stack and DFS does not guarantee shortest paths.",
@@ -4234,12 +4234,12 @@
   {
     "id": "gen-quiz-dns-01",
     "mode": "Quiz Style",
-    "prompt": "Which concept is best described by the following definition: The Domain Name System maps domain names and other records to information such as IP addresses through a distributed hierarchical lookup system.",
+    "prompt": "Users enter a human-readable hostname, but the client must discover an IP address before connecting to the server. Which system supports this lookup?",
     "options": [
+      "DHCP",
       "DNS",
-      "TCP and UDP",
-      "ACID transactions",
-      "Microservices"
+      "TLS",
+      "NAT"
     ],
     "correctAnswer": "DNS",
     "explanation": "The Domain Name System maps domain names and other records to information such as IP addresses through a distributed hierarchical lookup system. A practical use is to resolve human-readable hostnames before connecting to network services. A key benefit is that it decouples service names from changing network addresses and supports distributed administration; a relevant limitation is that caching, propagation delay, spoofing risks, and resolver failures can complicate behavior.",
@@ -4585,12 +4585,12 @@
   {
     "id": "gen-quiz-document-db-01",
     "mode": "Quiz Style",
-    "prompt": "Which concept is best described by the following definition: A document database stores records as flexible nested documents, commonly accessed by document keys and indexed fields.",
+    "prompt": "Product records have different nested attributes by category, and each product is usually read as one object. Which database model is a good fit?",
     "options": [
-      "Unit testing",
+      "Relational database",
+      "Columnar data warehouse",
       "Document databases",
-      "Caching",
-      "JavaScript event loop"
+      "Time-series database"
     ],
     "correctAnswer": "Document databases",
     "explanation": "A document database stores records as flexible nested documents, commonly accessed by document keys and indexed fields. A practical use is to store aggregates whose fields evolve together and are commonly read as a whole. A key benefit is that it supports flexible schemas and object-like records with convenient horizontal distribution in many systems; a relevant limitation is that cross-document joins and multi-record relational constraints may be less natural than in relational databases.",
@@ -4926,12 +4926,12 @@
   {
     "id": "gen-quiz-dynamic-programming-01",
     "mode": "Quiz Style",
-    "prompt": "Which concept is best described by the following definition: Dynamic programming solves overlapping subproblems once and reuses their results through memoization or tabulation.",
+    "prompt": "A recursive solution repeatedly calculates the same subproblems. Which approach improves efficiency by reusing already-computed answers?",
     "options": [
-      "OAuth 2.0 and OpenID Connect",
       "Dynamic programming",
       "Greedy algorithms",
-      "HTTP methods"
+      "Depth-first search",
+      "Randomized search"
     ],
     "correctAnswer": "Dynamic programming",
     "explanation": "Dynamic programming solves overlapping subproblems once and reuses their results through memoization or tabulation. A practical use is to optimize problems with overlapping subproblems and useful state transitions. A key benefit is that it can reduce exponential repeated work to polynomial time when the state is chosen well; a relevant limitation is that state design can be difficult and tables may use significant memory.",
@@ -5287,12 +5287,12 @@
   {
     "id": "gen-quiz-event-loop-01",
     "mode": "Quiz Style",
-    "prompt": "Which concept is best described by the following definition: The JavaScript event loop coordinates execution of synchronous call-stack work with queued asynchronous callbacks and microtasks.",
+    "prompt": "In JavaScript, a callback runs only after the current synchronous call stack finishes. Which runtime mechanism coordinates that scheduling?",
     "options": [
+      "Garbage collector",
       "JavaScript event loop",
-      "Promises and async/await",
-      "Web accessibility",
-      "Hash maps"
+      "Module loader",
+      "Virtual DOM"
     ],
     "correctAnswer": "JavaScript event loop",
     "explanation": "The JavaScript event loop coordinates execution of synchronous call-stack work with queued asynchronous callbacks and microtasks. A practical use is to understand why timers, promises, I/O callbacks, and rendering execute in a particular order. A key benefit is that it enables nonblocking orchestration around asynchronous operations on a single main thread; a relevant limitation is that long synchronous tasks still block progress and misunderstandings about microtasks can create ordering bugs.",
@@ -5628,12 +5628,12 @@
   {
     "id": "gen-quiz-flexbox-01",
     "mode": "Quiz Style",
-    "prompt": "Which concept is best described by the following definition: CSS Flexbox is a one-dimensional layout system for distributing and aligning items along a main axis and a cross axis.",
+    "prompt": "A toolbar needs its buttons aligned along one row, with adjustable gaps and consistent cross-axis alignment. Which CSS layout system best fits?",
     "options": [
+      "CSS Grid",
       "CSS Flexbox",
-      "Web accessibility",
-      "Big-O complexity",
-      "Binary search"
+      "CSS positioning",
+      "CSS floats"
     ],
     "correctAnswer": "CSS Flexbox",
     "explanation": "CSS Flexbox is a one-dimensional layout system for distributing and aligning items along a main axis and a cross axis. A practical use is to build rows or columns whose items need flexible sizing and alignment. A key benefit is that it simplifies common alignment, spacing, and responsive one-dimensional layouts; a relevant limitation is that complex two-dimensional page layouts may be clearer with Grid, and flex sizing rules can surprise developers.",
@@ -5969,12 +5969,12 @@
   {
     "id": "gen-quiz-graphs-01",
     "mode": "Quiz Style",
-    "prompt": "Which concept is best described by the following definition: A graph models entities as vertices and relationships as edges, and may be directed or undirected, weighted or unweighted.",
+    "prompt": "You need to represent airports as entities and routes as connections between them. Which data model is most appropriate?",
     "options": [
-      "HTTP status codes",
+      "Trees",
+      "Arrays",
       "Graphs",
-      "Breadth-first search",
-      "Greedy algorithms"
+      "Stacks"
     ],
     "correctAnswer": "Graphs",
     "explanation": "A graph models entities as vertices and relationships as edges, and may be directed or undirected, weighted or unweighted. A practical use is to represent networks, dependencies, routes, or relationships among entities. A key benefit is that it captures many-to-many relationships more naturally than linear structures; a relevant limitation is that algorithms must account for cycles, connectivity, and potentially large edge sets.",
@@ -6330,12 +6330,12 @@
   {
     "id": "gen-quiz-greedy-01",
     "mode": "Quiz Style",
-    "prompt": "Which concept is best described by the following definition: A greedy algorithm repeatedly makes the locally best available choice and relies on problem structure for that choice to lead to a global optimum.",
+    "prompt": "An algorithm repeatedly commits to the best available local choice without revisiting earlier choices. Which strategy does this describe?",
     "options": [
+      "Backtracking",
       "Greedy algorithms",
-      "Sliding window",
-      "REST APIs",
-      "TLS and HTTPS"
+      "Dynamic programming",
+      "Divide and conquer"
     ],
     "correctAnswer": "Greedy algorithms",
     "explanation": "A greedy algorithm repeatedly makes the locally best available choice and relies on problem structure for that choice to lead to a global optimum. A practical use is to solve optimization problems with a provable greedy-choice property. A key benefit is that it can be simple and efficient when a proof establishes correctness; a relevant limitation is that a locally optimal choice can be globally wrong when the required property is absent.",
@@ -6691,12 +6691,12 @@
   {
     "id": "gen-quiz-hash-maps-01",
     "mode": "Quiz Style",
-    "prompt": "Which concept is best described by the following definition: A hash map stores key-value pairs and uses a hash function to map keys to buckets or slots for fast average-case lookup.",
+    "prompt": "You need to maintain a word-frequency counter where each word maps to its current count. Which structure supports efficient key-based lookup?",
     "options": [
-      "Merge sort",
-      "Depth-first search",
+      "Binary heap",
       "Hash maps",
-      "Linked lists"
+      "Linked list",
+      "Stack"
     ],
     "correctAnswer": "Hash maps",
     "explanation": "A hash map stores key-value pairs and uses a hash function to map keys to buckets or slots for fast average-case lookup. A practical use is to associate unique keys with values such as counts, records, or cached results. A key benefit is that it provides average O(1) lookup, insertion, and deletion with a good hash distribution; a relevant limitation is that collisions, resizing, and poor hash behavior can degrade performance.",
@@ -7052,12 +7052,12 @@
   {
     "id": "gen-quiz-heaps-01",
     "mode": "Quiz Style",
-    "prompt": "Which concept is best described by the following definition: A heap is a partially ordered tree-based structure where the root exposes the minimum or maximum according to heap order.",
+    "prompt": "A scheduler repeatedly removes the job with the highest priority while inserting new jobs between removals. Which structure is well suited?",
     "options": [
-      "Dynamic programming",
-      "REST APIs",
+      "Hash table",
       "Heaps",
-      "Graphs"
+      "Linked list",
+      "Binary search tree with random order"
     ],
     "correctAnswer": "Heaps",
     "explanation": "A heap is a partially ordered tree-based structure where the root exposes the minimum or maximum according to heap order. A practical use is to repeatedly retrieve the smallest or largest priority item. A key benefit is that it supports efficient O(log n) insertion and removal of the root with O(1) root access; a relevant limitation is that it does not provide fully sorted iteration or fast lookup of arbitrary values.",
@@ -7413,12 +7413,12 @@
   {
     "id": "gen-quiz-http-methods-01",
     "mode": "Quiz Style",
-    "prompt": "Which concept is best described by the following definition: HTTP methods such as GET, POST, PUT, PATCH, and DELETE communicate the intended operation semantics of a request.",
+    "prompt": "An API needs to distinguish fetching a resource, creating a record, and deleting a record at the request level. Which part of HTTP communicates this intent?",
     "options": [
+      "HTTP status codes",
       "HTTP methods",
-      "REST APIs",
-      "JSON Web Tokens",
-      "Database indexes"
+      "Response headers",
+      "Content types"
     ],
     "correctAnswer": "HTTP methods",
     "explanation": "HTTP methods such as GET, POST, PUT, PATCH, and DELETE communicate the intended operation semantics of a request. A practical use is to design web endpoints whose operations have clear retrieval, creation, replacement, update, or deletion semantics. A key benefit is that it improves API consistency, interoperability, and caching behavior when semantics are respected; a relevant limitation is that misusing methods can break expectations about safety, idempotency, and caching.",
@@ -7764,12 +7764,12 @@
   {
     "id": "gen-quiz-indexes-01",
     "mode": "Quiz Style",
-    "prompt": "Which concept is best described by the following definition: A database index stores an auxiliary search structure over one or more columns so matching rows can often be located without scanning the entire table.",
+    "prompt": "A database query filters millions of orders by customer ID, but currently scans every row. What database feature could accelerate selective lookups?",
     "options": [
-      "React state",
       "Database indexes",
-      "Database normalization",
-      "Caching"
+      "Data replication",
+      "Transaction logs",
+      "Foreign keys alone"
     ],
     "correctAnswer": "Database indexes",
     "explanation": "A database index stores an auxiliary search structure over one or more columns so matching rows can often be located without scanning the entire table. A practical use is to speed selective lookups, joins, ordering, or range queries on frequently queried columns. A key benefit is that it can dramatically reduce read latency for suitable access patterns; a relevant limitation is that indexes consume storage and add write maintenance cost, and poorly chosen indexes may not be used.",
@@ -8105,12 +8105,12 @@
   {
     "id": "gen-quiz-integration-testing-01",
     "mode": "Quiz Style",
-    "prompt": "Which concept is best described by the following definition: Integration testing verifies that multiple real components or boundaries work together correctly.",
+    "prompt": "You want to verify that an API endpoint, a service, and its database adapter work correctly together rather than testing each in isolation. Which testing level is this?",
     "options": [
-      "Binary search trees",
+      "Unit testing",
       "Integration testing",
-      "CI/CD",
-      "Linked lists"
+      "Static analysis",
+      "Snapshot testing"
     ],
     "correctAnswer": "Integration testing",
     "explanation": "Integration testing verifies that multiple real components or boundaries work together correctly. A practical use is to test interactions such as API-to-database behavior or service-to-service contracts. A key benefit is that it catches interface, configuration, serialization, and persistence problems that isolated unit tests miss; a relevant limitation is that tests are slower and more environment-sensitive than focused unit tests.",
@@ -8446,12 +8446,12 @@
   {
     "id": "gen-quiz-isolation-01",
     "mode": "Quiz Style",
-    "prompt": "Which concept is best described by the following definition: Transaction isolation levels control which effects of concurrent transactions can become visible to one another.",
+    "prompt": "Two concurrent transactions read and update overlapping records. Which database control determines which intermediate changes each transaction can observe?",
     "options": [
-      "Microservices",
-      "Web accessibility",
+      "Database normalization",
       "Transaction isolation levels",
-      "Document databases"
+      "Index selectivity",
+      "Write-ahead logging"
     ],
     "correctAnswer": "Transaction isolation levels",
     "explanation": "Transaction isolation levels control which effects of concurrent transactions can become visible to one another. A practical use is to balance correctness requirements against concurrency for transactional workloads. A key benefit is that it lets systems prevent anomalies such as dirty reads or serialization conflicts at an appropriate strength; a relevant limitation is that stronger isolation may reduce concurrency or cause retries, while weaker isolation allows more anomalies.",
@@ -8787,12 +8787,12 @@
   {
     "id": "gen-quiz-jwt-01",
     "mode": "Quiz Style",
-    "prompt": "Which concept is best described by the following definition: A JWT is a compact signed token format that carries claims and can be verified without modifying the token contents.",
+    "prompt": "An API receives a compact bearer token with signed claims and verifies its signature before trusting those claims. Which format is being used?",
     "options": [
-      "OAuth 2.0 and OpenID Connect",
-      "SQL joins",
-      "Caching",
-      "JSON Web Tokens"
+      "Session cookie",
+      "JSON Web Tokens",
+      "CSRF token",
+      "API key stored in a database"
     ],
     "correctAnswer": "JSON Web Tokens",
     "explanation": "A JWT is a compact signed token format that carries claims and can be verified without modifying the token contents. A practical use is to carry signed identity or authorization claims between components when token-based authentication is appropriate. A key benefit is that it allows stateless verification of signed claims across services; a relevant limitation is that revocation, expiration, key management, and accidental storage of sensitive claims require careful design.",
@@ -9128,12 +9128,12 @@
   {
     "id": "gen-quiz-linked-lists-01",
     "mode": "Quiz Style",
-    "prompt": "Which concept is best described by the following definition: A linked list stores elements in nodes connected by references rather than by contiguous index positions.",
+    "prompt": "You need a collection of nodes connected by references, where inserting after a known node should not require shifting all later elements. Which structure fits?",
     "options": [
-      "Recursion",
+      "Arrays",
+      "Hash maps",
       "Linked lists",
-      "Stacks",
-      "Trees"
+      "Binary heaps"
     ],
     "correctAnswer": "Linked lists",
     "explanation": "A linked list stores elements in nodes connected by references rather than by contiguous index positions. A practical use is to perform frequent insertions or removals when a node location is already known. A key benefit is that it can add or remove nodes without shifting an entire sequence; a relevant limitation is that random access is O(n) and pointer overhead hurts locality.",
@@ -9489,12 +9489,12 @@
   {
     "id": "gen-quiz-load-balancing-01",
     "mode": "Quiz Style",
-    "prompt": "Which concept is best described by the following definition: Load balancing distributes requests or connections across multiple healthy service instances according to a routing policy.",
+    "prompt": "A service has several healthy replicas and wants incoming requests distributed among them so no single instance receives all traffic. What component does this?",
     "options": [
-      "React effects",
-      "Big-O complexity",
+      "Message queue",
       "Load balancing",
-      "Microservices"
+      "Database index",
+      "Circuit breaker"
     ],
     "correctAnswer": "Load balancing",
     "explanation": "Load balancing distributes requests or connections across multiple healthy service instances according to a routing policy. A practical use is to scale a service horizontally and avoid sending all traffic to one instance. A key benefit is that it improves availability and capacity when multiple instances can serve requests; a relevant limitation is that health checks, uneven workloads, sticky state, and failover behavior require careful configuration.",
@@ -9830,12 +9830,12 @@
   {
     "id": "gen-quiz-merge-sort-01",
     "mode": "Quiz Style",
-    "prompt": "Which concept is best described by the following definition: Merge sort recursively divides input, sorts the parts, and merges sorted parts back together.",
+    "prompt": "A sorting routine divides a list into smaller lists, sorts each part, then combines the sorted parts in order. Which algorithm is this?",
     "options": [
-      "Two pointers",
+      "Quick sort",
+      "Insertion sort",
       "Merge sort",
-      "Trees",
-      "Breadth-first search"
+      "Heap sort"
     ],
     "correctAnswer": "Merge sort",
     "explanation": "Merge sort recursively divides input, sorts the parts, and merges sorted parts back together. A practical use is to sort data predictably in O(n log n) time, including linked structures or external data. A key benefit is that it has reliable O(n log n) time and can be stable; a relevant limitation is that typical array implementations require O(n) auxiliary storage.",
@@ -10191,12 +10191,12 @@
   {
     "id": "gen-quiz-message-queues-01",
     "mode": "Quiz Style",
-    "prompt": "Which concept is best described by the following definition: A message queue buffers work or events so producers and consumers can operate asynchronously and at different rates.",
+    "prompt": "An order service needs to accept requests immediately while another worker sends confirmation emails asynchronously. What infrastructure can buffer the pending work?",
     "options": [
-      "Load balancing",
-      "React state",
-      "CI/CD",
-      "Message queues"
+      "Load balancer",
+      "Message queues",
+      "Database index",
+      "Reverse proxy"
     ],
     "correctAnswer": "Message queues",
     "explanation": "A message queue buffers work or events so producers and consumers can operate asynchronously and at different rates. A practical use is to decouple services and absorb bursts of background work. A key benefit is that it improves resilience and smoothing of spikes by separating producer and consumer timing; a relevant limitation is that delivery semantics, retries, duplicates, ordering, and poison messages must be handled deliberately.",
@@ -10532,12 +10532,12 @@
   {
     "id": "gen-quiz-microservices-01",
     "mode": "Quiz Style",
-    "prompt": "Which concept is best described by the following definition: A microservices architecture splits a system into independently deployable services aligned around bounded responsibilities and explicit network interfaces.",
+    "prompt": "A company splits billing, inventory, and shipping into independently deployable components with explicit network interfaces. Which architectural style is this?",
     "options": [
-      "Arrays",
+      "Monolithic architecture",
       "Microservices",
-      "JavaScript event loop",
-      "CSS Flexbox"
+      "Layered monolith",
+      "Serverless function invocation alone"
     ],
     "correctAnswer": "Microservices",
     "explanation": "A microservices architecture splits a system into independently deployable services aligned around bounded responsibilities and explicit network interfaces. A practical use is to allow separate teams or workloads to evolve and scale independently when the system justifies the operational cost. A key benefit is that it can isolate deployment and scaling boundaries and reduce ownership coupling; a relevant limitation is that distributed communication, observability, data consistency, and deployment complexity increase significantly.",
@@ -10873,12 +10873,12 @@
   {
     "id": "gen-quiz-normalization-01",
     "mode": "Quiz Style",
-    "prompt": "Which concept is best described by the following definition: Database normalization organizes relational data to reduce redundant facts and problematic update dependencies.",
+    "prompt": "Customer details are duplicated across many order rows, causing inconsistent addresses when only some rows are updated. Which relational design technique helps address this?",
     "options": [
       "Database normalization",
-      "ACID transactions",
-      "Message queues",
-      "React effects"
+      "Horizontal partitioning",
+      "Data denormalization",
+      "Caching"
     ],
     "correctAnswer": "Database normalization",
     "explanation": "Database normalization organizes relational data to reduce redundant facts and problematic update dependencies. A practical use is to design transactional schemas where a fact should have a clear authoritative location. A key benefit is that it improves consistency and reduces insert, update, and delete anomalies; a relevant limitation is that highly normalized schemas may require more joins and sometimes deliberate denormalization for read performance.",
@@ -11214,12 +11214,12 @@
   {
     "id": "gen-quiz-oauth-01",
     "mode": "Quiz Style",
-    "prompt": "Which concept is best described by the following definition: OAuth 2.0 delegates authorization through access tokens, while OpenID Connect adds an identity layer for authenticating users.",
+    "prompt": "A web app wants third-party sign-in and scoped access to another service without requesting the user’s password. Which standards are most relevant?",
     "options": [
-      "Database indexes",
-      "Message queues",
+      "TLS and HTTPS",
       "OAuth 2.0 and OpenID Connect",
-      "TLS and HTTPS"
+      "DNS",
+      "Database indexes"
     ],
     "correctAnswer": "OAuth 2.0 and OpenID Connect",
     "explanation": "OAuth 2.0 delegates authorization through access tokens, while OpenID Connect adds an identity layer for authenticating users. A practical use is to let users sign in with an identity provider or grant limited API access without sharing a password. A key benefit is that it supports delegated access and centralized identity with scoped tokens; a relevant limitation is that incorrect redirect URI, state, nonce, scope, or token validation can create serious vulnerabilities.",
@@ -11555,12 +11555,12 @@
   {
     "id": "gen-quiz-promises-01",
     "mode": "Quiz Style",
-    "prompt": "Which concept is best described by the following definition: A Promise represents a future asynchronous result, and async/await provides syntax for composing promise-based operations with ordinary control flow.",
+    "prompt": "A JavaScript function must wait for an asynchronous fetch, handle rejection, and then continue with the result without nesting callbacks. Which language feature helps?",
     "options": [
       "React state",
-      "Unit testing",
-      "Linked lists",
-      "Promises and async/await"
+      "Promises and async/await",
+      "CSS transitions",
+      "Event delegation"
     ],
     "correctAnswer": "Promises and async/await",
     "explanation": "A Promise represents a future asynchronous result, and async/await provides syntax for composing promise-based operations with ordinary control flow. A practical use is to coordinate asynchronous network, storage, or timer operations. A key benefit is that it makes asynchronous code easier to compose, propagate errors through, and read; a relevant limitation is that unhandled rejections, accidental serialization, and missing cancellation or timeout behavior can cause failures.",
@@ -11896,12 +11896,12 @@
   {
     "id": "gen-quiz-queues-01",
     "mode": "Quiz Style",
-    "prompt": "Which concept is best described by the following definition: A queue follows first-in, first-out behavior: the earliest enqueued item is normally the next item dequeued.",
+    "prompt": "A print server processes jobs in the order they arrive, handling the earliest pending job first. Which data structure models that behavior?",
     "options": [
-      "Binary search",
-      "Heaps",
-      "Greedy algorithms",
-      "Queues"
+      "Stacks",
+      "Queues",
+      "Binary search trees",
+      "Sets"
     ],
     "correctAnswer": "Queues",
     "explanation": "A queue follows first-in, first-out behavior: the earliest enqueued item is normally the next item dequeued. A practical use is to schedule work in arrival order or perform breadth-first traversal. A key benefit is that it naturally models FIFO processing and buffering; a relevant limitation is that a basic queue does not provide priority ordering or fast arbitrary access.",
@@ -12257,12 +12257,12 @@
   {
     "id": "gen-quiz-react-effects-01",
     "mode": "Quiz Style",
-    "prompt": "Which concept is best described by the following definition: React effects synchronize a component with external systems after rendering, such as subscriptions, timers, or network side effects.",
+    "prompt": "A component must subscribe to a WebSocket when a chat room changes and unsubscribe from the previous room when it changes again. Which React mechanism handles this synchronization?",
     "options": [
-      "Queues",
+      "React state",
       "React effects",
-      "CSS Flexbox",
-      "CI/CD"
+      "React context alone",
+      "React memoization"
     ],
     "correctAnswer": "React effects",
     "explanation": "React effects synchronize a component with external systems after rendering, such as subscriptions, timers, or network side effects. A practical use is to connect rendered state to non-React systems that need setup and cleanup. A key benefit is that it provides a lifecycle for external synchronization with cleanup behavior; a relevant limitation is that incorrect dependencies or effects used for derived state can cause loops, stale values, or unnecessary work.",
@@ -12598,12 +12598,12 @@
   {
     "id": "gen-quiz-react-state-01",
     "mode": "Quiz Style",
-    "prompt": "Which concept is best described by the following definition: React state stores component data whose changes should participate in rendering, and updates should be treated as state transitions rather than direct mutation.",
+    "prompt": "A counter button should update the displayed value when clicked and trigger a re-render in React. Where should the changing count be stored?",
     "options": [
-      "Integration testing",
-      "Stacks",
       "React state",
-      "React effects"
+      "A manually edited DOM node",
+      "A CSS variable",
+      "A static module constant"
     ],
     "correctAnswer": "React state",
     "explanation": "React state stores component data whose changes should participate in rendering, and updates should be treated as state transitions rather than direct mutation. A practical use is to represent interactive UI data such as form values, selected items, or fetched results. A key benefit is that it keeps rendered output synchronized with application state when updates are modeled correctly; a relevant limitation is that duplicated, stale, or unnecessarily lifted state can cause bugs and extra renders.",
@@ -12939,12 +12939,12 @@
   {
     "id": "gen-quiz-recursion-01",
     "mode": "Quiz Style",
-    "prompt": "Which concept is best described by the following definition: Recursion solves a problem by having a function call itself on smaller or simpler subproblems until reaching a base case.",
+    "prompt": "A folder-processing function calls itself for every nested subfolder until it reaches folders with no children. Which technique is this?",
     "options": [
-      "Backtracking",
-      "JSON Web Tokens",
+      "Iteration only",
       "Recursion",
-      "Dynamic programming"
+      "Hashing",
+      "Memoization only"
     ],
     "correctAnswer": "Recursion",
     "explanation": "Recursion solves a problem by having a function call itself on smaller or simpler subproblems until reaching a base case. A practical use is to express naturally recursive structures or divide-and-conquer logic. A key benefit is that it can make hierarchical or inductive logic concise and clear; a relevant limitation is that missing base cases or excessive depth can cause nontermination or stack overflow.",
@@ -13300,12 +13300,12 @@
   {
     "id": "gen-quiz-rest-01",
     "mode": "Quiz Style",
-    "prompt": "Which concept is best described by the following definition: REST is an architectural style that exposes resources through representations and uniform HTTP-oriented interactions while keeping requests stateless.",
+    "prompt": "An API models customers and orders as resources, uses HTTP request methods, and avoids keeping per-client request state on the server. Which design style does this reflect?",
     "options": [
-      "HTTP status codes",
-      "OAuth 2.0 and OpenID Connect",
-      "Database normalization",
-      "REST APIs"
+      "GraphQL subscriptions",
+      "REST APIs",
+      "RPC over raw sockets",
+      "Message queues"
     ],
     "correctAnswer": "REST APIs",
     "explanation": "REST is an architectural style that exposes resources through representations and uniform HTTP-oriented interactions while keeping requests stateless. A practical use is to build resource-oriented web APIs that can evolve independently between clients and servers. A key benefit is that it encourages separation of concerns, stateless scaling, and use of standard web semantics; a relevant limitation is that poor resource modeling or inconsistent HTTP semantics can produce confusing APIs.",
@@ -13651,12 +13651,12 @@
   {
     "id": "gen-quiz-sessions-01",
     "mode": "Quiz Style",
-    "prompt": "Which concept is best described by the following definition: Cookies are browser-stored name-value data sent with matching requests, while server-side sessions commonly use a cookie-held session identifier to reference server state.",
+    "prompt": "After login, a browser sends an identifier in a cookie so the server can retrieve the user’s stored login state. Which approach does this describe?",
     "options": [
+      "Stateless JWT claims only",
       "Cookies and sessions",
-      "JSON Web Tokens",
-      "TCP and UDP",
-      "Document databases"
+      "Browser localStorage without a server",
+      "Mutual TLS certificates"
     ],
     "correctAnswer": "Cookies and sessions",
     "explanation": "Cookies are browser-stored name-value data sent with matching requests, while server-side sessions commonly use a cookie-held session identifier to reference server state. A practical use is to maintain authenticated browser state across requests. A key benefit is that it supports server-controlled session invalidation and conventional browser authentication flows; a relevant limitation is that session stores require lifecycle management and cookies need secure attributes to reduce theft or cross-site abuse.",
@@ -13992,12 +13992,12 @@
   {
     "id": "gen-quiz-sliding-window-01",
     "mode": "Quiz Style",
-    "prompt": "Which concept is best described by the following definition: Sliding window techniques maintain information about a moving contiguous range instead of recomputing that range from scratch.",
+    "prompt": "To compute the largest sum of any five consecutive numbers, a program subtracts the value leaving the range and adds the new value entering it. Which technique is this?",
     "options": [
-      "Two pointers",
-      "HTTP status codes",
-      "DNS",
-      "Sliding window"
+      "Binary search",
+      "Sliding window",
+      "Backtracking",
+      "Merge sort"
     ],
     "correctAnswer": "Sliding window",
     "explanation": "Sliding window techniques maintain information about a moving contiguous range instead of recomputing that range from scratch. A practical use is to analyze contiguous subarrays or substrings under a changing constraint. A key benefit is that it often reduces nested scans to linear time; a relevant limitation is that it applies only when the window state can be updated incrementally and the constraint behaves suitably.",
@@ -14353,12 +14353,12 @@
   {
     "id": "gen-quiz-sql-joins-01",
     "mode": "Quiz Style",
-    "prompt": "Which concept is best described by the following definition: SQL joins combine rows from related tables according to a join condition, with different join types controlling unmatched rows.",
+    "prompt": "An SQL report needs to combine orders with their matching customer records using customer_id. Which database operation combines the rows?",
     "options": [
-      "Document databases",
-      "Promises and async/await",
       "SQL joins",
-      "Database indexes"
+      "ORDER BY",
+      "GROUP BY",
+      "UNION of unrelated schemas"
     ],
     "correctAnswer": "SQL joins",
     "explanation": "SQL joins combine rows from related tables according to a join condition, with different join types controlling unmatched rows. A practical use is to query related normalized data such as users with orders or products with categories. A key benefit is that it lets relational queries reconstruct useful views from separate tables; a relevant limitation is that incorrect join conditions can duplicate rows, drop expected rows, or become expensive.",
@@ -14694,12 +14694,12 @@
   {
     "id": "gen-quiz-stacks-01",
     "mode": "Quiz Style",
-    "prompt": "Which concept is best described by the following definition: A stack follows last-in, first-out behavior: the most recently pushed item is the next item popped.",
+    "prompt": "An undo feature must reverse the most recent edit before older edits. Which data structure naturally supports this order?",
     "options": [
+      "Queue",
       "Stacks",
-      "Queues",
-      "Binary search trees",
-      "Dynamic programming"
+      "Min-heap",
+      "Hash set"
     ],
     "correctAnswer": "Stacks",
     "explanation": "A stack follows last-in, first-out behavior: the most recently pushed item is the next item popped. A practical use is to model nested operations such as undo history, call frames, or delimiter matching. A key benefit is that it naturally represents LIFO workflows with simple push and pop operations; a relevant limitation is that it only exposes the top efficiently, so arbitrary access is not its strength.",
@@ -15055,12 +15055,12 @@
   {
     "id": "gen-quiz-status-codes-01",
     "mode": "Quiz Style",
-    "prompt": "Which concept is best described by the following definition: HTTP status codes communicate the general result of a request, with classes for success, redirection, client errors, and server errors.",
+    "prompt": "An HTTP server needs to signal whether a request succeeded, redirected, or failed due to a client or server error. Which part of its response communicates this?",
     "options": [
-      "TLS and HTTPS",
-      "ACID transactions",
+      "HTTP methods",
       "HTTP status codes",
-      "CORS"
+      "Request query parameters",
+      "Cookies"
     ],
     "correctAnswer": "HTTP status codes",
     "explanation": "HTTP status codes communicate the general result of a request, with classes for success, redirection, client errors, and server errors. A practical use is to let clients distinguish successful, invalid, unauthorized, missing, conflicting, or failed requests. A key benefit is that it provides a standard machine-readable signal before a client parses a response body; a relevant limitation is that choosing overly generic or incorrect codes makes client behavior and diagnostics harder.",
@@ -15406,12 +15406,12 @@
   {
     "id": "gen-quiz-tcp-udp-01",
     "mode": "Quiz Style",
-    "prompt": "Which concept is best described by the following definition: TCP provides a reliable ordered byte stream with connection state, while UDP sends independent datagrams without built-in delivery or ordering guarantees.",
+    "prompt": "A network engineer must choose between a reliable ordered byte stream and low-overhead independent datagrams. Which transport protocols represent those choices?",
     "options": [
-      "SQL joins",
-      "Transaction isolation levels",
-      "JavaScript event loop",
-      "TCP and UDP"
+      "DNS and TLS",
+      "TCP and UDP",
+      "HTTP and HTML",
+      "IP and ARP"
     ],
     "correctAnswer": "TCP and UDP",
     "explanation": "TCP provides a reliable ordered byte stream with connection state, while UDP sends independent datagrams without built-in delivery or ordering guarantees. A practical use is to choose transport behavior based on whether reliability, ordering, latency, or application-level control is most important. A key benefit is that it lets applications trade protocol overhead and guarantees according to workload needs; a relevant limitation is that choosing the wrong transport assumptions can cause latency, loss, or unnecessary complexity.",
@@ -15757,12 +15757,12 @@
   {
     "id": "gen-quiz-tls-01",
     "mode": "Quiz Style",
-    "prompt": "Which concept is best described by the following definition: TLS provides encrypted, integrity-protected communication and server authentication for protocols such as HTTPS.",
+    "prompt": "A website must encrypt traffic, detect tampering in transit, and authenticate the server during a browser connection. Which technology provides this?",
     "options": [
-      "Load balancing",
+      "CORS",
       "TLS and HTTPS",
       "DNS",
-      "Database normalization"
+      "HTTP cookies"
     ],
     "correctAnswer": "TLS and HTTPS",
     "explanation": "TLS provides encrypted, integrity-protected communication and server authentication for protocols such as HTTPS. A practical use is to protect data in transit between clients and servers. A key benefit is that it reduces eavesdropping and tampering and verifies the server certificate chain; a relevant limitation is that certificate, protocol, cipher, and hostname configuration must be maintained correctly.",
@@ -16108,12 +16108,12 @@
   {
     "id": "gen-quiz-trees-01",
     "mode": "Quiz Style",
-    "prompt": "Which concept is best described by the following definition: A tree is a hierarchical data structure of nodes connected by parent-child relationships without cycles in a rooted tree model.",
+    "prompt": "A file explorer models folders containing other folders and files in a hierarchy with one root. Which data structure represents this naturally?",
     "options": [
+      "Graphs with arbitrary cycles",
       "Trees",
-      "Binary search trees",
-      "Depth-first search",
-      "Backtracking"
+      "Hash maps alone",
+      "Queues"
     ],
     "correctAnswer": "Trees",
     "explanation": "A tree is a hierarchical data structure of nodes connected by parent-child relationships without cycles in a rooted tree model. A practical use is to represent hierarchical data such as file systems, DOM structure, or organization charts. A key benefit is that it models hierarchy naturally and supports structured traversal; a relevant limitation is that performance depends heavily on tree shape and the operations supported.",
@@ -16469,12 +16469,12 @@
   {
     "id": "gen-quiz-two-pointers-01",
     "mode": "Quiz Style",
-    "prompt": "Which concept is best described by the following definition: Two-pointer techniques move two indices or references through data in a coordinated way to avoid redundant scanning.",
+    "prompt": "Given a sorted array, you search for two values adding to a target by moving one index from the left and another from the right. Which pattern is this?",
     "options": [
-      "CORS",
-      "TCP and UDP",
+      "Sliding window",
       "Two pointers",
-      "Backtracking"
+      "Depth-first search",
+      "Recursion"
     ],
     "correctAnswer": "Two pointers",
     "explanation": "Two-pointer techniques move two indices or references through data in a coordinated way to avoid redundant scanning. A practical use is to process sorted sequences, partition ranges, or compare opposite ends. A key benefit is that it often turns an O(n^2) pair search into O(n) after suitable ordering or structure; a relevant limitation is that the movement rule must preserve correctness and often relies on ordering or monotonicity.",
@@ -16830,12 +16830,12 @@
   {
     "id": "gen-quiz-unit-testing-01",
     "mode": "Quiz Style",
-    "prompt": "Which concept is best described by the following definition: Unit testing verifies a small unit of behavior in isolation or with controlled collaborators.",
+    "prompt": "A developer checks one price-calculation function with controlled inputs and a mocked dependency, without involving the database or HTTP server. Which testing practice is this?",
     "options": [
-      "Hash maps",
-      "Trees",
+      "Integration testing",
+      "End-to-end testing",
       "Unit testing",
-      "Integration testing"
+      "Load testing"
     ],
     "correctAnswer": "Unit testing",
     "explanation": "Unit testing verifies a small unit of behavior in isolation or with controlled collaborators. A practical use is to check business rules or utility behavior quickly and deterministically. A key benefit is that it provides fast feedback and pinpoints regressions close to the code that caused them; a relevant limitation is that excessive mocking can make tests pass without proving integrated behavior.",
@@ -71397,5 +71397,1575 @@
       }
     ],
     "evaluationInstructions": "Accept technically equivalent terminology and examples. Grade the substance of the explanation rather than exact wording."
+  },
+  {
+    "id": "quiz-applied-http-idempotency-001",
+    "mode": "Quiz Style",
+    "prompt": "Which request is usually idempotent under HTTP semantics, meaning repeating it has the same intended effect as one request?",
+    "options": [
+      "POST to create a new order",
+      "PUT to replace a resource at a known URL",
+      "POST to submit a payment",
+      "POST to append a comment"
+    ],
+    "correctAnswer": "PUT to replace a resource at a known URL",
+    "explanation": "PUT specifies the desired final representation of a resource, so repeating the same PUT has the same intended effect. A typical POST that creates an order may create another order on retry.",
+    "difficulty": "Intermediate",
+    "topic": "HTTP and APIs",
+    "tags": [
+      "http",
+      "fundamentals"
+    ],
+    "experienceLevels": [
+      "Intermediate",
+      "Experienced"
+    ],
+    "jobRoles": [
+      "software engineer",
+      "backend developer",
+      "full stack developer"
+    ],
+    "priority": 8,
+    "active": true
+  },
+  {
+    "id": "quiz-applied-sql-having-001",
+    "mode": "Quiz Style",
+    "prompt": "A query groups orders by customer and must keep only groups with more than five orders. Which SQL clause filters the grouped results?",
+    "options": [
+      "WHERE",
+      "HAVING",
+      "ORDER BY",
+      "LIMIT"
+    ],
+    "correctAnswer": "HAVING",
+    "explanation": "HAVING filters groups after GROUP BY has computed aggregates. WHERE filters individual rows before grouping.",
+    "difficulty": "Intermediate",
+    "topic": "Databases",
+    "tags": [
+      "sql",
+      "fundamentals"
+    ],
+    "experienceLevels": [
+      "Intermediate",
+      "Experienced"
+    ],
+    "jobRoles": [
+      "software engineer",
+      "backend developer",
+      "full stack developer"
+    ],
+    "priority": 8,
+    "active": true
+  },
+  {
+    "id": "quiz-applied-race-condition-001",
+    "mode": "Quiz Style",
+    "prompt": "Two threads read the same balance, add different amounts, and both write a result; one update disappears. What problem occurred?",
+    "options": [
+      "Deadlock",
+      "Race condition",
+      "Memory leak",
+      "DNS failure"
+    ],
+    "correctAnswer": "Race condition",
+    "explanation": "The two threads interleave reads and writes to shared state, producing a lost update. Proper synchronization or an atomic update can prevent the race.",
+    "difficulty": "Intermediate",
+    "topic": "Concurrency",
+    "tags": [
+      "concurrency",
+      "fundamentals"
+    ],
+    "experienceLevels": [
+      "Intermediate",
+      "Experienced"
+    ],
+    "jobRoles": [
+      "software engineer",
+      "backend developer",
+      "full stack developer"
+    ],
+    "priority": 8,
+    "active": true
+  },
+  {
+    "id": "quiz-applied-csrf-001",
+    "mode": "Quiz Style",
+    "prompt": "A malicious site causes a logged-in browser to submit an unwanted state-changing request using its existing session cookie. Which attack fits?",
+    "options": [
+      "Cross-site request forgery (CSRF)",
+      "SQL injection",
+      "Cross-site scripting (XSS)",
+      "Man-in-the-middle attack"
+    ],
+    "correctAnswer": "Cross-site request forgery (CSRF)",
+    "explanation": "Cross-site request forgery exploits the browser automatically including credentials such as cookies with a cross-origin request. CSRF tokens and appropriate SameSite policies can mitigate it.",
+    "difficulty": "Intermediate",
+    "topic": "Web Security",
+    "tags": [
+      "security",
+      "fundamentals"
+    ],
+    "experienceLevels": [
+      "Intermediate",
+      "Experienced"
+    ],
+    "jobRoles": [
+      "software engineer",
+      "frontend developer",
+      "full stack developer"
+    ],
+    "priority": 8,
+    "active": true
+  },
+  {
+    "id": "quiz-applied-sql-parameter-001",
+    "mode": "Quiz Style",
+    "prompt": "An API builds a SQL search from user text. Which approach most directly prevents the input from being interpreted as SQL syntax?",
+    "options": [
+      "Escaping HTML",
+      "Parameterized queries",
+      "Minifying the query",
+      "Adding an index"
+    ],
+    "correctAnswer": "Parameterized queries",
+    "explanation": "Parameterized queries separate user-supplied values from SQL program structure, preventing those values from becoming executable SQL syntax.",
+    "difficulty": "Beginner",
+    "topic": "Database Security",
+    "tags": [
+      "sql",
+      "fundamentals"
+    ],
+    "experienceLevels": [
+      "Beginner",
+      "Intermediate"
+    ],
+    "jobRoles": [
+      "software engineer",
+      "backend developer",
+      "full stack developer"
+    ],
+    "priority": 8,
+    "active": true
+  },
+  {
+    "id": "quiz-applied-binary-overflow-001",
+    "mode": "Quiz Style",
+    "prompt": "A binary counter stored in an unsigned 8-bit integer increases from 255 by one, with wrapping arithmetic. What value does it produce?",
+    "options": [
+      "254",
+      "255",
+      "0",
+      "256"
+    ],
+    "correctAnswer": "0",
+    "explanation": "An unsigned 8-bit value ranges from 0 through 255. With explicitly stated wrapping arithmetic, incrementing 255 wraps to 0.",
+    "difficulty": "Beginner",
+    "topic": "Programming Fundamentals",
+    "tags": [
+      "algorithms",
+      "fundamentals"
+    ],
+    "experienceLevels": [
+      "Beginner",
+      "Intermediate"
+    ],
+    "jobRoles": [
+      "software engineer",
+      "backend developer",
+      "full stack developer"
+    ],
+    "priority": 8,
+    "active": true
+  },
+  {
+    "id": "quiz-applied-git-rebase-001",
+    "mode": "Quiz Style",
+    "prompt": "You want to replay your local feature commits on top of a newer main branch to produce a linear history. Which Git operation does that?",
+    "options": [
+      "git stash",
+      "git rebase",
+      "git reset --hard",
+      "git tag"
+    ],
+    "correctAnswer": "git rebase",
+    "explanation": "git rebase reapplies local commits onto a new base, often producing linear history. It rewrites commit identities and should be used carefully on shared branches.",
+    "difficulty": "Intermediate",
+    "topic": "Version Control",
+    "tags": [
+      "devops",
+      "fundamentals"
+    ],
+    "experienceLevels": [
+      "Intermediate",
+      "Experienced"
+    ],
+    "jobRoles": [
+      "software engineer",
+      "backend developer",
+      "full stack developer"
+    ],
+    "priority": 8,
+    "active": true
+  },
+  {
+    "id": "quiz-applied-api-rate-limit-001",
+    "mode": "Quiz Style",
+    "prompt": "A public API needs to reject excessive requests from the same client during a short interval. Which control directly addresses this?",
+    "options": [
+      "Rate limiting",
+      "Data normalization",
+      "Content compression",
+      "Cache eviction"
+    ],
+    "correctAnswer": "Rate limiting",
+    "explanation": "Rate limiting enforces a request allowance per identity over time, typically returning 429 when exceeded. It helps protect backend capacity and fair access.",
+    "difficulty": "Beginner",
+    "topic": "Backend Development",
+    "tags": [
+      "api",
+      "fundamentals"
+    ],
+    "experienceLevels": [
+      "Beginner",
+      "Intermediate"
+    ],
+    "jobRoles": [
+      "software engineer",
+      "backend developer",
+      "full stack developer"
+    ],
+    "priority": 8,
+    "active": true
+  },
+  {
+    "id": "quiz-applied-sql-left-join-001",
+    "mode": "Quiz Style",
+    "prompt": "A report must include all customers even when they have no orders. Which join preserves every row from the customers table on the left?",
+    "options": [
+      "INNER JOIN",
+      "LEFT JOIN",
+      "CROSS JOIN",
+      "RIGHT JOIN with customers on the left"
+    ],
+    "correctAnswer": "LEFT JOIN",
+    "explanation": "LEFT JOIN retains every row from the table on its left and fills missing matching right-table fields with NULL.",
+    "difficulty": "Intermediate",
+    "topic": "Databases",
+    "tags": [
+      "sql",
+      "fundamentals"
+    ],
+    "experienceLevels": [
+      "Intermediate",
+      "Experienced"
+    ],
+    "jobRoles": [
+      "software engineer",
+      "backend developer",
+      "full stack developer"
+    ],
+    "priority": 8,
+    "active": true
+  },
+  {
+    "id": "quiz-applied-binary-negative-test-001",
+    "mode": "Quiz Style",
+    "prompt": "An API is supposed to reject requests missing an authentication token. Which test case most directly checks that behavior?",
+    "options": [
+      "Valid token returns 200",
+      "No token returns 401",
+      "Average response is 50 ms",
+      "Database has an index"
+    ],
+    "correctAnswer": "No token returns 401",
+    "explanation": "A negative authorization test omits credentials and verifies the endpoint rejects the request; HTTP 401 is the usual response when authentication is required.",
+    "difficulty": "Beginner",
+    "topic": "Testing",
+    "tags": [
+      "testing",
+      "fundamentals"
+    ],
+    "experienceLevels": [
+      "Beginner",
+      "Intermediate"
+    ],
+    "jobRoles": [
+      "software engineer",
+      "backend developer",
+      "full stack developer"
+    ],
+    "priority": 8,
+    "active": true
+  },
+  {
+    "id": "quiz-applied-css-grid-001",
+    "mode": "Quiz Style",
+    "prompt": "A page layout requires aligned rows and columns for cards in a two-dimensional arrangement. Which CSS layout mechanism is designed for this?",
+    "options": [
+      "CSS Grid",
+      "CSS floats",
+      "Inline elements",
+      "CSS transitions"
+    ],
+    "correctAnswer": "CSS Grid",
+    "explanation": "CSS Grid manages placement across rows and columns, which is better suited to two-dimensional layouts than the one-dimensional Flexbox model.",
+    "difficulty": "Beginner",
+    "topic": "Frontend Development",
+    "tags": [
+      "frontend",
+      "fundamentals"
+    ],
+    "experienceLevels": [
+      "Beginner",
+      "Intermediate"
+    ],
+    "jobRoles": [
+      "software engineer",
+      "frontend developer",
+      "full stack developer"
+    ],
+    "priority": 8,
+    "active": true
+  },
+  {
+    "id": "quiz-applied-hash-collision-001",
+    "mode": "Quiz Style",
+    "prompt": "Two distinct keys produce the same bucket index in a hash table. What situation must the implementation handle?",
+    "options": [
+      "Cache miss",
+      "Hash collision",
+      "Stack overflow",
+      "Deadlock"
+    ],
+    "correctAnswer": "Hash collision",
+    "explanation": "A hash collision occurs when distinct keys share a bucket or hash position. Hash tables use techniques such as chaining or open addressing to handle it.",
+    "difficulty": "Intermediate",
+    "topic": "Data Structures",
+    "tags": [
+      "hash map",
+      "fundamentals"
+    ],
+    "experienceLevels": [
+      "Intermediate",
+      "Experienced"
+    ],
+    "jobRoles": [
+      "software engineer",
+      "backend developer",
+      "full stack developer"
+    ],
+    "priority": 8,
+    "active": true
+  },
+  {
+    "id": "quiz-applied-db-optimistic-lock-001",
+    "mode": "Quiz Style",
+    "prompt": "Two editors save the same document. An update should fail when its version is older than the stored version. Which technique fits?",
+    "options": [
+      "Optimistic concurrency control",
+      "Full table scan",
+      "Data compression",
+      "Round-robin scheduling"
+    ],
+    "correctAnswer": "Optimistic concurrency control",
+    "explanation": "Optimistic concurrency control compares a version number or timestamp during update and rejects stale changes instead of holding a lock throughout editing.",
+    "difficulty": "Experienced",
+    "topic": "Databases",
+    "tags": [
+      "database",
+      "fundamentals"
+    ],
+    "experienceLevels": [
+      "Experienced",
+      "Veteran"
+    ],
+    "jobRoles": [
+      "software engineer",
+      "backend developer",
+      "full stack developer"
+    ],
+    "priority": 8,
+    "active": true
+  },
+  {
+    "id": "quiz-applied-testing-boundary-001",
+    "mode": "Quiz Style",
+    "prompt": "A function only accepts question counts from 1 to 20. Which input is most useful for checking an upper boundary rejection?",
+    "options": [
+      "10",
+      "19",
+      "20",
+      "21"
+    ],
+    "correctAnswer": "21",
+    "explanation": "The allowed range ends at 20, so 21 is the smallest value outside the upper boundary and directly verifies invalid input rejection.",
+    "difficulty": "Beginner",
+    "topic": "Testing",
+    "tags": [
+      "testing",
+      "fundamentals"
+    ],
+    "experienceLevels": [
+      "Beginner",
+      "Intermediate"
+    ],
+    "jobRoles": [
+      "software engineer",
+      "backend developer",
+      "full stack developer"
+    ],
+    "priority": 8,
+    "active": true
+  },
+  {
+    "id": "quiz-applied-websocket-001",
+    "mode": "Quiz Style",
+    "prompt": "A chat UI needs the server to push messages to the browser over a long-lived two-way connection. Which protocol fits?",
+    "options": [
+      "SMTP",
+      "WebSocket",
+      "FTP",
+      "DNS"
+    ],
+    "correctAnswer": "WebSocket",
+    "explanation": "WebSocket establishes a persistent full-duplex channel, allowing both browser and server to send messages without opening a new HTTP request for each update.",
+    "difficulty": "Intermediate",
+    "topic": "Networking",
+    "tags": [
+      "networking",
+      "fundamentals"
+    ],
+    "experienceLevels": [
+      "Intermediate",
+      "Experienced"
+    ],
+    "jobRoles": [
+      "software engineer",
+      "backend developer",
+      "full stack developer"
+    ],
+    "priority": 8,
+    "active": true
+  },
+  {
+    "id": "quiz-applied-binary-tree-cycle-001",
+    "mode": "Quiz Style",
+    "prompt": "A rooted tree of n nodes with n > 0 has how many edges?",
+    "options": [
+      "n + 1",
+      "n",
+      "n - 1",
+      "2n"
+    ],
+    "correctAnswer": "n - 1",
+    "explanation": "Every non-root node of a tree has exactly one parent edge. Therefore a nonempty rooted tree with n nodes has n - 1 edges.",
+    "difficulty": "Intermediate",
+    "topic": "Data Structures",
+    "tags": [
+      "tree",
+      "fundamentals"
+    ],
+    "experienceLevels": [
+      "Intermediate",
+      "Experienced"
+    ],
+    "jobRoles": [
+      "software engineer",
+      "backend developer",
+      "full stack developer"
+    ],
+    "priority": 8,
+    "active": true
+  },
+  {
+    "id": "quiz-applied-git-conflict-001",
+    "mode": "Quiz Style",
+    "prompt": "Two branches edit the same lines differently. Git cannot automatically choose a combined result. What must be resolved?",
+    "options": [
+      "Merge conflict",
+      "Detached HEAD",
+      "Empty commit",
+      "Untracked tag"
+    ],
+    "correctAnswer": "Merge conflict",
+    "explanation": "A merge conflict occurs when overlapping changes cannot be combined automatically; a developer must choose or edit the final content.",
+    "difficulty": "Beginner",
+    "topic": "Version Control",
+    "tags": [
+      "devops",
+      "fundamentals"
+    ],
+    "experienceLevels": [
+      "Beginner",
+      "Intermediate"
+    ],
+    "jobRoles": [
+      "software engineer",
+      "backend developer",
+      "full stack developer"
+    ],
+    "priority": 8,
+    "active": true
+  },
+  {
+    "id": "quiz-applied-api-pagination-001",
+    "mode": "Quiz Style",
+    "prompt": "An endpoint returns millions of records. Which change limits each response to manageable chunks and supports continuing later?",
+    "options": [
+      "Pagination",
+      "Disabling indexes",
+      "Base64 encoding",
+      "CORS headers"
+    ],
+    "correctAnswer": "Pagination",
+    "explanation": "Pagination returns a controlled subset with a way to request the next subset, reducing payload size and memory pressure.",
+    "difficulty": "Beginner",
+    "topic": "Backend Development",
+    "tags": [
+      "api",
+      "fundamentals"
+    ],
+    "experienceLevels": [
+      "Beginner",
+      "Intermediate"
+    ],
+    "jobRoles": [
+      "software engineer",
+      "backend developer",
+      "full stack developer"
+    ],
+    "priority": 8,
+    "active": true
+  },
+  {
+    "id": "quiz-applied-docker-isolation-001",
+    "mode": "Quiz Style",
+    "prompt": "A team packages an application with its runtime dependencies into a portable image executed with OS-level process isolation. Which technology category is this?",
+    "options": [
+      "Virtual machines only",
+      "Containers",
+      "Browser service workers",
+      "Database replication"
+    ],
+    "correctAnswer": "Containers",
+    "explanation": "Containers package processes and dependencies while sharing the host operating-system kernel, unlike a full virtual machine with its own guest kernel.",
+    "difficulty": "Intermediate",
+    "topic": "DevOps",
+    "tags": [
+      "devops",
+      "fundamentals"
+    ],
+    "experienceLevels": [
+      "Intermediate",
+      "Experienced"
+    ],
+    "jobRoles": [
+      "software engineer",
+      "backend developer",
+      "full stack developer"
+    ],
+    "priority": 8,
+    "active": true
+  },
+  {
+    "id": "quiz-applied-security-least-privilege-001",
+    "mode": "Quiz Style",
+    "prompt": "A service account only needs to read one storage bucket. Which authorization principle recommends not granting global administrator rights?",
+    "options": [
+      "Least privilege",
+      "Single sign-on",
+      "Eventual consistency",
+      "Defense through obscurity"
+    ],
+    "correctAnswer": "Least privilege",
+    "explanation": "Least privilege limits identities to only permissions needed for their tasks, reducing the damage possible if those credentials are compromised.",
+    "difficulty": "Beginner",
+    "topic": "Security",
+    "tags": [
+      "security",
+      "fundamentals"
+    ],
+    "experienceLevels": [
+      "Beginner",
+      "Intermediate"
+    ],
+    "jobRoles": [
+      "software engineer",
+      "backend developer",
+      "full stack developer"
+    ],
+    "priority": 8,
+    "active": true
+  },
+  {
+    "gradingCriteria": [
+      {
+        "name": "Core correctness",
+        "weight": 60,
+        "description": "Award for functioning logic that satisfies the exact stated input/output contract, required transformations, result format, ordering and value semantics. Judge the submitted code or SQL, not a prose claim. Equivalent algorithms are accepted. Do not deduct here solely for a missing written explanation or for style issues."
+      },
+      {
+        "name": "Edge cases and robustness",
+        "weight": 15,
+        "description": "Award for correct behavior on the explicitly defined empty, minimal, duplicate, boundary, tie, no-result or other applicable inputs. Do not invent unstated requirements or require prose to demonstrate handling."
+      },
+      {
+        "name": "Efficiency",
+        "weight": 10,
+        "description": "Award for reasonable algorithmic time and space complexity and appropriate data structures for the stated task. Judge the code itself; a separate complexity discussion is not required. Do not deduct here for naming, formatting or other readability issues."
+      },
+      {
+        "name": "Readability and code style",
+        "weight": 10,
+        "description": "Award for code that is easy to read and maintain: clear, descriptive names; sensible structure and decomposition; no dead, commented-out or needlessly duplicated code; consistent formatting and indentation; and idiomatic use of the language. Accept any consistent convention (for example camelCase or snake_case) and do not require comments; do not award points for comments that only restate the code. Style cannot make up for missing logic: if the code does not genuinely attempt the task (for example an empty or placeholder function), award 0 for this criterion."
+      },
+      {
+        "name": "Explanation",
+        "weight": 5,
+        "description": "Award up to five points for an optional concise, technically accurate explanation of the implementation. Missing prose costs at most these five points and must not reduce correctness, edge-case, efficiency, or readability points."
+      }
+    ],
+    "evaluationInstructions": "Assess the code or SQL against the explicit contract and private reference answer. Prioritize behavior and core correctness. Do not require a written explanation, complexity paragraph, or identical algorithm to receive full non-explanation points. Never deduct explanation-related points from other criteria. For SQL, use only the schema and column names shown in the prompt. Do not require executing code, since this evaluation mode currently grades submitted text.",
+    "id": "code-applied-first-unique-character-001",
+    "mode": "Code Style",
+    "prompt": "Implement firstUniqueIndex(s). Input: an ASCII string s. Output: the zero-based index of the first character occurring exactly once, or -1 if none exists. Example: \"swiss\" => 1; \"aabb\" => -1; \"\" => -1. Treat uppercase and lowercase as different.",
+    "difficulty": "Beginner",
+    "topic": "Strings",
+    "tags": [
+      "strings",
+      "interview"
+    ],
+    "experienceLevels": [
+      "Beginner",
+      "Intermediate"
+    ],
+    "jobRoles": [
+      "software engineer",
+      "backend developer",
+      "full stack developer"
+    ],
+    "priority": 8,
+    "active": true,
+    "referenceAnswer": "Count character occurrences, then scan the original string from left to right for the first count of one. Return -1 if no such position exists. Time O(n); space O(k) for the alphabet."
+  },
+  {
+    "gradingCriteria": [
+      {
+        "name": "Core correctness",
+        "weight": 60,
+        "description": "Award for functioning logic that satisfies the exact stated input/output contract, required transformations, result format, ordering and value semantics. Judge the submitted code or SQL, not a prose claim. Equivalent algorithms are accepted. Do not deduct here solely for a missing written explanation or for style issues."
+      },
+      {
+        "name": "Edge cases and robustness",
+        "weight": 15,
+        "description": "Award for correct behavior on the explicitly defined empty, minimal, duplicate, boundary, tie, no-result or other applicable inputs. Do not invent unstated requirements or require prose to demonstrate handling."
+      },
+      {
+        "name": "Efficiency",
+        "weight": 10,
+        "description": "Award for reasonable algorithmic time and space complexity and appropriate data structures for the stated task. Judge the code itself; a separate complexity discussion is not required. Do not deduct here for naming, formatting or other readability issues."
+      },
+      {
+        "name": "Readability and code style",
+        "weight": 10,
+        "description": "Award for code that is easy to read and maintain: clear, descriptive names; sensible structure and decomposition; no dead, commented-out or needlessly duplicated code; consistent formatting and indentation; and idiomatic use of the language. Accept any consistent convention (for example camelCase or snake_case) and do not require comments; do not award points for comments that only restate the code. Style cannot make up for missing logic: if the code does not genuinely attempt the task (for example an empty or placeholder function), award 0 for this criterion."
+      },
+      {
+        "name": "Explanation",
+        "weight": 5,
+        "description": "Award up to five points for an optional concise, technically accurate explanation of the implementation. Missing prose costs at most these five points and must not reduce correctness, edge-case, efficiency, or readability points."
+      }
+    ],
+    "evaluationInstructions": "Assess the code or SQL against the explicit contract and private reference answer. Prioritize behavior and core correctness. Do not require a written explanation, complexity paragraph, or identical algorithm to receive full non-explanation points. Never deduct explanation-related points from other criteria. For SQL, use only the schema and column names shown in the prompt. Do not require executing code, since this evaluation mode currently grades submitted text.",
+    "id": "code-applied-run-length-encode-001",
+    "mode": "Code Style",
+    "prompt": "Implement runLengthEncode(s). Input: a string s. Output: a string containing each consecutive character followed by its run length in decimal. Examples: \"aaabbc\" => \"a3b2c1\"; \"x\" => \"x1\"; \"\" => \"\". Case-sensitive; do not group nonadjacent duplicates.",
+    "difficulty": "Intermediate",
+    "topic": "Strings",
+    "tags": [
+      "strings",
+      "interview"
+    ],
+    "experienceLevels": [
+      "Intermediate",
+      "Experienced"
+    ],
+    "jobRoles": [
+      "software engineer",
+      "backend developer",
+      "full stack developer"
+    ],
+    "priority": 8,
+    "active": true,
+    "referenceAnswer": "Scan once, accumulate the length of the current consecutive run, emit the character and count whenever the run ends. Empty input returns empty string; O(n) time."
+  },
+  {
+    "gradingCriteria": [
+      {
+        "name": "Core correctness",
+        "weight": 60,
+        "description": "Award for functioning logic that satisfies the exact stated input/output contract, required transformations, result format, ordering and value semantics. Judge the submitted code or SQL, not a prose claim. Equivalent algorithms are accepted. Do not deduct here solely for a missing written explanation or for style issues."
+      },
+      {
+        "name": "Edge cases and robustness",
+        "weight": 15,
+        "description": "Award for correct behavior on the explicitly defined empty, minimal, duplicate, boundary, tie, no-result or other applicable inputs. Do not invent unstated requirements or require prose to demonstrate handling."
+      },
+      {
+        "name": "Efficiency",
+        "weight": 10,
+        "description": "Award for reasonable algorithmic time and space complexity and appropriate data structures for the stated task. Judge the code itself; a separate complexity discussion is not required. Do not deduct here for naming, formatting or other readability issues."
+      },
+      {
+        "name": "Readability and code style",
+        "weight": 10,
+        "description": "Award for code that is easy to read and maintain: clear, descriptive names; sensible structure and decomposition; no dead, commented-out or needlessly duplicated code; consistent formatting and indentation; and idiomatic use of the language. Accept any consistent convention (for example camelCase or snake_case) and do not require comments; do not award points for comments that only restate the code. Style cannot make up for missing logic: if the code does not genuinely attempt the task (for example an empty or placeholder function), award 0 for this criterion."
+      },
+      {
+        "name": "Explanation",
+        "weight": 5,
+        "description": "Award up to five points for an optional concise, technically accurate explanation of the implementation. Missing prose costs at most these five points and must not reduce correctness, edge-case, efficiency, or readability points."
+      }
+    ],
+    "evaluationInstructions": "Assess the code or SQL against the explicit contract and private reference answer. Prioritize behavior and core correctness. Do not require a written explanation, complexity paragraph, or identical algorithm to receive full non-explanation points. Never deduct explanation-related points from other criteria. For SQL, use only the schema and column names shown in the prompt. Do not require executing code, since this evaluation mode currently grades submitted text.",
+    "id": "code-applied-merge-intervals-001",
+    "mode": "Code Style",
+    "prompt": "Implement mergeIntervals(intervals). Input: a list of [start,end] integer intervals with start <= end. Output: merged overlapping intervals sorted by start; intervals that share an endpoint are considered overlapping. Example: [[1,3],[2,6],[8,9],[9,11]] => [[1,6],[8,11]]; [] => []. Do not mutate the input.",
+    "difficulty": "Intermediate",
+    "topic": "Intervals",
+    "tags": [
+      "arrays",
+      "interview"
+    ],
+    "experienceLevels": [
+      "Intermediate",
+      "Experienced"
+    ],
+    "jobRoles": [
+      "software engineer",
+      "backend developer",
+      "full stack developer"
+    ],
+    "priority": 8,
+    "active": true,
+    "referenceAnswer": "Sort a copy by start; sweep left-to-right, merging when the next start is <= the last end. Otherwise append a new interval. O(n log n) time and O(n) space."
+  },
+  {
+    "gradingCriteria": [
+      {
+        "name": "Core correctness",
+        "weight": 60,
+        "description": "Award for functioning logic that satisfies the exact stated input/output contract, required transformations, result format, ordering and value semantics. Judge the submitted code or SQL, not a prose claim. Equivalent algorithms are accepted. Do not deduct here solely for a missing written explanation or for style issues."
+      },
+      {
+        "name": "Edge cases and robustness",
+        "weight": 15,
+        "description": "Award for correct behavior on the explicitly defined empty, minimal, duplicate, boundary, tie, no-result or other applicable inputs. Do not invent unstated requirements or require prose to demonstrate handling."
+      },
+      {
+        "name": "Efficiency",
+        "weight": 10,
+        "description": "Award for reasonable algorithmic time and space complexity and appropriate data structures for the stated task. Judge the code itself; a separate complexity discussion is not required. Do not deduct here for naming, formatting or other readability issues."
+      },
+      {
+        "name": "Readability and code style",
+        "weight": 10,
+        "description": "Award for code that is easy to read and maintain: clear, descriptive names; sensible structure and decomposition; no dead, commented-out or needlessly duplicated code; consistent formatting and indentation; and idiomatic use of the language. Accept any consistent convention (for example camelCase or snake_case) and do not require comments; do not award points for comments that only restate the code. Style cannot make up for missing logic: if the code does not genuinely attempt the task (for example an empty or placeholder function), award 0 for this criterion."
+      },
+      {
+        "name": "Explanation",
+        "weight": 5,
+        "description": "Award up to five points for an optional concise, technically accurate explanation of the implementation. Missing prose costs at most these five points and must not reduce correctness, edge-case, efficiency, or readability points."
+      }
+    ],
+    "evaluationInstructions": "Assess the code or SQL against the explicit contract and private reference answer. Prioritize behavior and core correctness. Do not require a written explanation, complexity paragraph, or identical algorithm to receive full non-explanation points. Never deduct explanation-related points from other criteria. For SQL, use only the schema and column names shown in the prompt. Do not require executing code, since this evaluation mode currently grades submitted text.",
+    "id": "code-applied-unique-pairs-001",
+    "mode": "Code Style",
+    "prompt": "Implement countPairsWithSum(nums, target). Input: an integer array and integer target. Output: the number of distinct index pairs (i,j) where i < j and nums[i] + nums[j] = target. Example: [1,1,2,2], target=3 => 4; [], target=5 => 0. Count duplicate-valued elements by index; do not mutate nums.",
+    "difficulty": "Intermediate",
+    "topic": "Arrays",
+    "tags": [
+      "arrays",
+      "interview"
+    ],
+    "experienceLevels": [
+      "Intermediate",
+      "Experienced"
+    ],
+    "jobRoles": [
+      "software engineer",
+      "backend developer",
+      "full stack developer"
+    ],
+    "priority": 8,
+    "active": true,
+    "referenceAnswer": "Maintain a map from value to count of preceding positions. For each number x, add the count for target-x then increment the count of x. O(n) expected time, O(n) space."
+  },
+  {
+    "gradingCriteria": [
+      {
+        "name": "Core correctness",
+        "weight": 60,
+        "description": "Award for functioning logic that satisfies the exact stated input/output contract, required transformations, result format, ordering and value semantics. Judge the submitted code or SQL, not a prose claim. Equivalent algorithms are accepted. Do not deduct here solely for a missing written explanation or for style issues."
+      },
+      {
+        "name": "Edge cases and robustness",
+        "weight": 15,
+        "description": "Award for correct behavior on the explicitly defined empty, minimal, duplicate, boundary, tie, no-result or other applicable inputs. Do not invent unstated requirements or require prose to demonstrate handling."
+      },
+      {
+        "name": "Efficiency",
+        "weight": 10,
+        "description": "Award for reasonable algorithmic time and space complexity and appropriate data structures for the stated task. Judge the code itself; a separate complexity discussion is not required. Do not deduct here for naming, formatting or other readability issues."
+      },
+      {
+        "name": "Readability and code style",
+        "weight": 10,
+        "description": "Award for code that is easy to read and maintain: clear, descriptive names; sensible structure and decomposition; no dead, commented-out or needlessly duplicated code; consistent formatting and indentation; and idiomatic use of the language. Accept any consistent convention (for example camelCase or snake_case) and do not require comments; do not award points for comments that only restate the code. Style cannot make up for missing logic: if the code does not genuinely attempt the task (for example an empty or placeholder function), award 0 for this criterion."
+      },
+      {
+        "name": "Explanation",
+        "weight": 5,
+        "description": "Award up to five points for an optional concise, technically accurate explanation of the implementation. Missing prose costs at most these five points and must not reduce correctness, edge-case, efficiency, or readability points."
+      }
+    ],
+    "evaluationInstructions": "Assess the code or SQL against the explicit contract and private reference answer. Prioritize behavior and core correctness. Do not require a written explanation, complexity paragraph, or identical algorithm to receive full non-explanation points. Never deduct explanation-related points from other criteria. For SQL, use only the schema and column names shown in the prompt. Do not require executing code, since this evaluation mode currently grades submitted text.",
+    "id": "code-applied-balanced-brackets-001",
+    "mode": "Code Style",
+    "prompt": "Implement isBalancedBrackets(s). Input: a string made only of (), [], and {}. Output: true when every opening bracket has a correctly nested matching closing bracket. Examples: \"([])\" => true; \"([)]\" => false; \"\" => true.",
+    "difficulty": "Beginner",
+    "topic": "Stacks",
+    "tags": [
+      "stack",
+      "interview"
+    ],
+    "experienceLevels": [
+      "Beginner",
+      "Intermediate"
+    ],
+    "jobRoles": [
+      "software engineer",
+      "backend developer",
+      "full stack developer"
+    ],
+    "priority": 8,
+    "active": true,
+    "referenceAnswer": "Use a stack for opening brackets. For each closing bracket check and pop the matching opening bracket; reject mismatch or empty stack. Return true only if the stack is empty."
+  },
+  {
+    "gradingCriteria": [
+      {
+        "name": "Core correctness",
+        "weight": 60,
+        "description": "Award for functioning logic that satisfies the exact stated input/output contract, required transformations, result format, ordering and value semantics. Judge the submitted code or SQL, not a prose claim. Equivalent algorithms are accepted. Do not deduct here solely for a missing written explanation or for style issues."
+      },
+      {
+        "name": "Edge cases and robustness",
+        "weight": 15,
+        "description": "Award for correct behavior on the explicitly defined empty, minimal, duplicate, boundary, tie, no-result or other applicable inputs. Do not invent unstated requirements or require prose to demonstrate handling."
+      },
+      {
+        "name": "Efficiency",
+        "weight": 10,
+        "description": "Award for reasonable algorithmic time and space complexity and appropriate data structures for the stated task. Judge the code itself; a separate complexity discussion is not required. Do not deduct here for naming, formatting or other readability issues."
+      },
+      {
+        "name": "Readability and code style",
+        "weight": 10,
+        "description": "Award for code that is easy to read and maintain: clear, descriptive names; sensible structure and decomposition; no dead, commented-out or needlessly duplicated code; consistent formatting and indentation; and idiomatic use of the language. Accept any consistent convention (for example camelCase or snake_case) and do not require comments; do not award points for comments that only restate the code. Style cannot make up for missing logic: if the code does not genuinely attempt the task (for example an empty or placeholder function), award 0 for this criterion."
+      },
+      {
+        "name": "Explanation",
+        "weight": 5,
+        "description": "Award up to five points for an optional concise, technically accurate explanation of the implementation. Missing prose costs at most these five points and must not reduce correctness, edge-case, efficiency, or readability points."
+      }
+    ],
+    "evaluationInstructions": "Assess the code or SQL against the explicit contract and private reference answer. Prioritize behavior and core correctness. Do not require a written explanation, complexity paragraph, or identical algorithm to receive full non-explanation points. Never deduct explanation-related points from other criteria. For SQL, use only the schema and column names shown in the prompt. Do not require executing code, since this evaluation mode currently grades submitted text.",
+    "id": "code-applied-longest-common-prefix-001",
+    "mode": "Code Style",
+    "prompt": "Implement longestCommonPrefix(words). Input: an array of strings. Output: their longest shared prefix. Examples: [\"flower\",\"flow\",\"flight\"] => \"fl\"; [\"a\",\"b\"] => \"\"; [] => \"\". Case-sensitive; preserve inputs.",
+    "difficulty": "Beginner",
+    "topic": "Strings",
+    "tags": [
+      "strings",
+      "interview"
+    ],
+    "experienceLevels": [
+      "Beginner",
+      "Intermediate"
+    ],
+    "jobRoles": [
+      "software engineer",
+      "backend developer",
+      "full stack developer"
+    ],
+    "priority": 8,
+    "active": true,
+    "referenceAnswer": "Take the first word as a candidate prefix, shorten while any other word does not start with it. Empty input returns empty string. O(total characters) is achievable."
+  },
+  {
+    "gradingCriteria": [
+      {
+        "name": "Core correctness",
+        "weight": 60,
+        "description": "Award for functioning logic that satisfies the exact stated input/output contract, required transformations, result format, ordering and value semantics. Judge the submitted code or SQL, not a prose claim. Equivalent algorithms are accepted. Do not deduct here solely for a missing written explanation or for style issues."
+      },
+      {
+        "name": "Edge cases and robustness",
+        "weight": 15,
+        "description": "Award for correct behavior on the explicitly defined empty, minimal, duplicate, boundary, tie, no-result or other applicable inputs. Do not invent unstated requirements or require prose to demonstrate handling."
+      },
+      {
+        "name": "Efficiency",
+        "weight": 10,
+        "description": "Award for reasonable algorithmic time and space complexity and appropriate data structures for the stated task. Judge the code itself; a separate complexity discussion is not required. Do not deduct here for naming, formatting or other readability issues."
+      },
+      {
+        "name": "Readability and code style",
+        "weight": 10,
+        "description": "Award for code that is easy to read and maintain: clear, descriptive names; sensible structure and decomposition; no dead, commented-out or needlessly duplicated code; consistent formatting and indentation; and idiomatic use of the language. Accept any consistent convention (for example camelCase or snake_case) and do not require comments; do not award points for comments that only restate the code. Style cannot make up for missing logic: if the code does not genuinely attempt the task (for example an empty or placeholder function), award 0 for this criterion."
+      },
+      {
+        "name": "Explanation",
+        "weight": 5,
+        "description": "Award up to five points for an optional concise, technically accurate explanation of the implementation. Missing prose costs at most these five points and must not reduce correctness, edge-case, efficiency, or readability points."
+      }
+    ],
+    "evaluationInstructions": "Assess the code or SQL against the explicit contract and private reference answer. Prioritize behavior and core correctness. Do not require a written explanation, complexity paragraph, or identical algorithm to receive full non-explanation points. Never deduct explanation-related points from other criteria. For SQL, use only the schema and column names shown in the prompt. Do not require executing code, since this evaluation mode currently grades submitted text.",
+    "id": "code-applied-rotate-matrix-001",
+    "mode": "Code Style",
+    "prompt": "Implement rotateClockwise(matrix). Input: a rectangular matrix represented by an array of equal-length row arrays. Output: a new matrix rotated 90 degrees clockwise. Example: [[1,2,3],[4,5,6]] => [[4,1],[5,2],[6,3]]; [] => []. Do not modify input rows.",
+    "difficulty": "Experienced",
+    "topic": "Matrices",
+    "tags": [
+      "matrix",
+      "interview"
+    ],
+    "experienceLevels": [
+      "Experienced",
+      "Veteran"
+    ],
+    "jobRoles": [
+      "software engineer",
+      "backend developer",
+      "full stack developer"
+    ],
+    "priority": 8,
+    "active": true,
+    "referenceAnswer": "For each original column from left to right, read rows from bottom to top to build output rows. Handles rectangular sizes; O(rows*cols) time."
+  },
+  {
+    "gradingCriteria": [
+      {
+        "name": "Core correctness",
+        "weight": 60,
+        "description": "Award for functioning logic that satisfies the exact stated input/output contract, required transformations, result format, ordering and value semantics. Judge the submitted code or SQL, not a prose claim. Equivalent algorithms are accepted. Do not deduct here solely for a missing written explanation or for style issues."
+      },
+      {
+        "name": "Edge cases and robustness",
+        "weight": 15,
+        "description": "Award for correct behavior on the explicitly defined empty, minimal, duplicate, boundary, tie, no-result or other applicable inputs. Do not invent unstated requirements or require prose to demonstrate handling."
+      },
+      {
+        "name": "Efficiency",
+        "weight": 10,
+        "description": "Award for reasonable algorithmic time and space complexity and appropriate data structures for the stated task. Judge the code itself; a separate complexity discussion is not required. Do not deduct here for naming, formatting or other readability issues."
+      },
+      {
+        "name": "Readability and code style",
+        "weight": 10,
+        "description": "Award for code that is easy to read and maintain: clear, descriptive names; sensible structure and decomposition; no dead, commented-out or needlessly duplicated code; consistent formatting and indentation; and idiomatic use of the language. Accept any consistent convention (for example camelCase or snake_case) and do not require comments; do not award points for comments that only restate the code. Style cannot make up for missing logic: if the code does not genuinely attempt the task (for example an empty or placeholder function), award 0 for this criterion."
+      },
+      {
+        "name": "Explanation",
+        "weight": 5,
+        "description": "Award up to five points for an optional concise, technically accurate explanation of the implementation. Missing prose costs at most these five points and must not reduce correctness, edge-case, efficiency, or readability points."
+      }
+    ],
+    "evaluationInstructions": "Assess the code or SQL against the explicit contract and private reference answer. Prioritize behavior and core correctness. Do not require a written explanation, complexity paragraph, or identical algorithm to receive full non-explanation points. Never deduct explanation-related points from other criteria. For SQL, use only the schema and column names shown in the prompt. Do not require executing code, since this evaluation mode currently grades submitted text.",
+    "id": "code-applied-shortest-grid-path-001",
+    "mode": "Code Style",
+    "prompt": "Implement shortestGridPath(grid, start, goal). Input: a rectangular 0/1 grid where 0 is passable, and [row,col] start/goal coordinates. Output: minimum number of four-direction moves between them, or -1 if blocked or unreachable. Example: grid=[[0,0],[1,0]], start=[0,0], goal=[1,1] => 2; identical passable start and goal => 0. Do not mutate grid.",
+    "difficulty": "Experienced",
+    "topic": "Graphs",
+    "tags": [
+      "bfs",
+      "interview"
+    ],
+    "experienceLevels": [
+      "Experienced",
+      "Veteran"
+    ],
+    "jobRoles": [
+      "software engineer",
+      "backend developer",
+      "full stack developer"
+    ],
+    "priority": 8,
+    "active": true,
+    "referenceAnswer": "Breadth-first search from start over in-bounds zero-valued cells with a visited set, returning distance at goal; reject blocked endpoints. O(rows*cols) time and space."
+  },
+  {
+    "gradingCriteria": [
+      {
+        "name": "Core correctness",
+        "weight": 60,
+        "description": "Award for functioning logic that satisfies the exact stated input/output contract, required transformations, result format, ordering and value semantics. Judge the submitted code or SQL, not a prose claim. Equivalent algorithms are accepted. Do not deduct here solely for a missing written explanation or for style issues."
+      },
+      {
+        "name": "Edge cases and robustness",
+        "weight": 15,
+        "description": "Award for correct behavior on the explicitly defined empty, minimal, duplicate, boundary, tie, no-result or other applicable inputs. Do not invent unstated requirements or require prose to demonstrate handling."
+      },
+      {
+        "name": "Efficiency",
+        "weight": 10,
+        "description": "Award for reasonable algorithmic time and space complexity and appropriate data structures for the stated task. Judge the code itself; a separate complexity discussion is not required. Do not deduct here for naming, formatting or other readability issues."
+      },
+      {
+        "name": "Readability and code style",
+        "weight": 10,
+        "description": "Award for code that is easy to read and maintain: clear, descriptive names; sensible structure and decomposition; no dead, commented-out or needlessly duplicated code; consistent formatting and indentation; and idiomatic use of the language. Accept any consistent convention (for example camelCase or snake_case) and do not require comments; do not award points for comments that only restate the code. Style cannot make up for missing logic: if the code does not genuinely attempt the task (for example an empty or placeholder function), award 0 for this criterion."
+      },
+      {
+        "name": "Explanation",
+        "weight": 5,
+        "description": "Award up to five points for an optional concise, technically accurate explanation of the implementation. Missing prose costs at most these five points and must not reduce correctness, edge-case, efficiency, or readability points."
+      }
+    ],
+    "evaluationInstructions": "Assess the code or SQL against the explicit contract and private reference answer. Prioritize behavior and core correctness. Do not require a written explanation, complexity paragraph, or identical algorithm to receive full non-explanation points. Never deduct explanation-related points from other criteria. For SQL, use only the schema and column names shown in the prompt. Do not require executing code, since this evaluation mode currently grades submitted text.",
+    "id": "code-applied-group-anagrams-001",
+    "mode": "Code Style",
+    "prompt": "Implement groupAnagrams(words). Input: an array of lowercase ASCII strings. Output: an array of groups such that each group contains anagrams, with members in input order and groups ordered by first appearance. Example: [\"eat\",\"tea\",\"bat\",\"ate\"] => [[\"eat\",\"tea\",\"ate\"],[\"bat\"]]; [] => []. Do not mutate words.",
+    "difficulty": "Intermediate",
+    "topic": "Hash Maps",
+    "tags": [
+      "hash map",
+      "interview"
+    ],
+    "experienceLevels": [
+      "Intermediate",
+      "Experienced"
+    ],
+    "jobRoles": [
+      "software engineer",
+      "backend developer",
+      "full stack developer"
+    ],
+    "priority": 8,
+    "active": true,
+    "referenceAnswer": "Use each word sorted by characters or a 26-count signature as a map key. Append to the associated insertion-ordered group; return groups in creation order."
+  },
+  {
+    "gradingCriteria": [
+      {
+        "name": "Core correctness",
+        "weight": 60,
+        "description": "Award for functioning logic that satisfies the exact stated input/output contract, required transformations, result format, ordering and value semantics. Judge the submitted code or SQL, not a prose claim. Equivalent algorithms are accepted. Do not deduct here solely for a missing written explanation or for style issues."
+      },
+      {
+        "name": "Edge cases and robustness",
+        "weight": 15,
+        "description": "Award for correct behavior on the explicitly defined empty, minimal, duplicate, boundary, tie, no-result or other applicable inputs. Do not invent unstated requirements or require prose to demonstrate handling."
+      },
+      {
+        "name": "Efficiency",
+        "weight": 10,
+        "description": "Award for reasonable algorithmic time and space complexity and appropriate data structures for the stated task. Judge the code itself; a separate complexity discussion is not required. Do not deduct here for naming, formatting or other readability issues."
+      },
+      {
+        "name": "Readability and code style",
+        "weight": 10,
+        "description": "Award for code that is easy to read and maintain: clear, descriptive names; sensible structure and decomposition; no dead, commented-out or needlessly duplicated code; consistent formatting and indentation; and idiomatic use of the language. Accept any consistent convention (for example camelCase or snake_case) and do not require comments; do not award points for comments that only restate the code. Style cannot make up for missing logic: if the code does not genuinely attempt the task (for example an empty or placeholder function), award 0 for this criterion."
+      },
+      {
+        "name": "Explanation",
+        "weight": 5,
+        "description": "Award up to five points for an optional concise, technically accurate explanation of the implementation. Missing prose costs at most these five points and must not reduce correctness, edge-case, efficiency, or readability points."
+      }
+    ],
+    "evaluationInstructions": "Assess the code or SQL against the explicit contract and private reference answer. Prioritize behavior and core correctness. Do not require a written explanation, complexity paragraph, or identical algorithm to receive full non-explanation points. Never deduct explanation-related points from other criteria. For SQL, use only the schema and column names shown in the prompt. Do not require executing code, since this evaluation mode currently grades submitted text.",
+    "id": "code-applied-top-k-frequent-001",
+    "mode": "Code Style",
+    "prompt": "Implement topKFrequent(nums, k). Input: a nonempty integer array nums and 1 <= k <= the number of distinct values. Output: k distinct values ordered by decreasing frequency; break ties by smaller numeric value first. Example: [4,4,2,2,3], k=2 => [2,4]; [-1,-1,3], k=1 => [-1]. Do not mutate nums.",
+    "difficulty": "Experienced",
+    "topic": "Hash Maps",
+    "tags": [
+      "hash map",
+      "interview"
+    ],
+    "experienceLevels": [
+      "Experienced",
+      "Veteran"
+    ],
+    "jobRoles": [
+      "software engineer",
+      "backend developer",
+      "full stack developer"
+    ],
+    "priority": 8,
+    "active": true,
+    "referenceAnswer": "Count frequencies in a hash map. Sort distinct keys by frequency descending and value ascending, return first k. Complexity O(n + d log d) for d distinct values."
+  },
+  {
+    "gradingCriteria": [
+      {
+        "name": "Technical accuracy",
+        "weight": 45,
+        "description": "Explains the central concept correctly without contradictions or major technical errors."
+      },
+      {
+        "name": "Practical reasoning",
+        "weight": 25,
+        "description": "Connects the concept to an appropriate use case, design decision, or operational consequence."
+      },
+      {
+        "name": "Trade-offs and limitations",
+        "weight": 20,
+        "description": "Recognizes important constraints, risks, or trade-offs instead of presenting the concept as universally beneficial."
+      },
+      {
+        "name": "Clarity",
+        "weight": 10,
+        "description": "Communicates the answer in a structured and understandable way with relevant terminology."
+      }
+    ],
+    "evaluationInstructions": "Grade semantic correctness rather than exact wording. Accept equivalent terminology and valid examples. Reward answers that connect the concept to realistic engineering decisions and acknowledge trade-offs; do not require every detail in the reference answer.",
+    "id": "theory-applied-database-deadlocks-001",
+    "mode": "Theoretical Style",
+    "prompt": "Two database transactions each hold a lock the other needs. Explain how a deadlock arises, how a database can detect or avoid it, and one trade-off of your approach.",
+    "difficulty": "Intermediate",
+    "topic": "Databases",
+    "tags": [
+      "database",
+      "interview"
+    ],
+    "experienceLevels": [
+      "Intermediate",
+      "Experienced"
+    ],
+    "jobRoles": [
+      "software engineer",
+      "backend developer",
+      "full stack developer"
+    ],
+    "priority": 8,
+    "active": true,
+    "referenceAnswer": "A wait-for cycle prevents either transaction from progressing. Systems can detect cycles and abort a victim, or use consistent lock ordering/timeouts. Discuss rollback or concurrency costs."
+  },
+  {
+    "gradingCriteria": [
+      {
+        "name": "Technical accuracy",
+        "weight": 45,
+        "description": "Explains the central concept correctly without contradictions or major technical errors."
+      },
+      {
+        "name": "Practical reasoning",
+        "weight": 25,
+        "description": "Connects the concept to an appropriate use case, design decision, or operational consequence."
+      },
+      {
+        "name": "Trade-offs and limitations",
+        "weight": 20,
+        "description": "Recognizes important constraints, risks, or trade-offs instead of presenting the concept as universally beneficial."
+      },
+      {
+        "name": "Clarity",
+        "weight": 10,
+        "description": "Communicates the answer in a structured and understandable way with relevant terminology."
+      }
+    ],
+    "evaluationInstructions": "Grade semantic correctness rather than exact wording. Accept equivalent terminology and valid examples. Reward answers that connect the concept to realistic engineering decisions and acknowledge trade-offs; do not require every detail in the reference answer.",
+    "id": "theory-applied-rate-limit-design-001",
+    "mode": "Theoretical Style",
+    "prompt": "Design a rate limiter for a public API used by many clients. Describe how a token bucket works, how to enforce it across multiple server instances, and one failure mode.",
+    "difficulty": "Experienced",
+    "topic": "Backend Development",
+    "tags": [
+      "api",
+      "interview"
+    ],
+    "experienceLevels": [
+      "Experienced",
+      "Veteran"
+    ],
+    "jobRoles": [
+      "software engineer",
+      "backend developer",
+      "full stack developer"
+    ],
+    "priority": 8,
+    "active": true,
+    "referenceAnswer": "Token buckets refill at a controlled rate and consume tokens per request; shared atomic state such as Redis coordinates instances. Discuss bursts, client identity, clock boundaries, partition failure, or fairness."
+  },
+  {
+    "gradingCriteria": [
+      {
+        "name": "Technical accuracy",
+        "weight": 45,
+        "description": "Explains the central concept correctly without contradictions or major technical errors."
+      },
+      {
+        "name": "Practical reasoning",
+        "weight": 25,
+        "description": "Connects the concept to an appropriate use case, design decision, or operational consequence."
+      },
+      {
+        "name": "Trade-offs and limitations",
+        "weight": 20,
+        "description": "Recognizes important constraints, risks, or trade-offs instead of presenting the concept as universally beneficial."
+      },
+      {
+        "name": "Clarity",
+        "weight": 10,
+        "description": "Communicates the answer in a structured and understandable way with relevant terminology."
+      }
+    ],
+    "evaluationInstructions": "Grade semantic correctness rather than exact wording. Accept equivalent terminology and valid examples. Reward answers that connect the concept to realistic engineering decisions and acknowledge trade-offs; do not require every detail in the reference answer.",
+    "id": "theory-applied-optimistic-vs-pessimistic-001",
+    "mode": "Theoretical Style",
+    "prompt": "Two users may edit the same record at once. Compare optimistic and pessimistic concurrency control, including when each is preferable and what happens on a conflict.",
+    "difficulty": "Intermediate",
+    "topic": "Databases",
+    "tags": [
+      "database",
+      "interview"
+    ],
+    "experienceLevels": [
+      "Intermediate",
+      "Experienced"
+    ],
+    "jobRoles": [
+      "software engineer",
+      "backend developer",
+      "full stack developer"
+    ],
+    "priority": 8,
+    "active": true,
+    "referenceAnswer": "Optimistic control verifies a version at commit and retries/rejects on conflict; pessimistic locking prevents concurrent conflicting access. Discuss contention, latency, and lock duration."
+  },
+  {
+    "gradingCriteria": [
+      {
+        "name": "Technical accuracy",
+        "weight": 45,
+        "description": "Explains the central concept correctly without contradictions or major technical errors."
+      },
+      {
+        "name": "Practical reasoning",
+        "weight": 25,
+        "description": "Connects the concept to an appropriate use case, design decision, or operational consequence."
+      },
+      {
+        "name": "Trade-offs and limitations",
+        "weight": 20,
+        "description": "Recognizes important constraints, risks, or trade-offs instead of presenting the concept as universally beneficial."
+      },
+      {
+        "name": "Clarity",
+        "weight": 10,
+        "description": "Communicates the answer in a structured and understandable way with relevant terminology."
+      }
+    ],
+    "evaluationInstructions": "Grade semantic correctness rather than exact wording. Accept equivalent terminology and valid examples. Reward answers that connect the concept to realistic engineering decisions and acknowledge trade-offs; do not require every detail in the reference answer.",
+    "id": "theory-applied-jwt-revocation-001",
+    "mode": "Theoretical Style",
+    "prompt": "An API accepts signed access tokens without database reads on each request. Explain why immediate token revocation is difficult and describe at least two mitigation strategies.",
+    "difficulty": "Experienced",
+    "topic": "Authentication",
+    "tags": [
+      "security",
+      "interview"
+    ],
+    "experienceLevels": [
+      "Experienced",
+      "Veteran"
+    ],
+    "jobRoles": [
+      "software engineer",
+      "backend developer",
+      "full stack developer"
+    ],
+    "priority": 8,
+    "active": true,
+    "referenceAnswer": "Self-contained valid signatures remain verifiable until expiry unless state is checked. Short access-token lifetimes, refresh-token revocation, deny lists, key rotation, and introspection are trade-offs."
+  },
+  {
+    "gradingCriteria": [
+      {
+        "name": "Technical accuracy",
+        "weight": 45,
+        "description": "Explains the central concept correctly without contradictions or major technical errors."
+      },
+      {
+        "name": "Practical reasoning",
+        "weight": 25,
+        "description": "Connects the concept to an appropriate use case, design decision, or operational consequence."
+      },
+      {
+        "name": "Trade-offs and limitations",
+        "weight": 20,
+        "description": "Recognizes important constraints, risks, or trade-offs instead of presenting the concept as universally beneficial."
+      },
+      {
+        "name": "Clarity",
+        "weight": 10,
+        "description": "Communicates the answer in a structured and understandable way with relevant terminology."
+      }
+    ],
+    "evaluationInstructions": "Grade semantic correctness rather than exact wording. Accept equivalent terminology and valid examples. Reward answers that connect the concept to realistic engineering decisions and acknowledge trade-offs; do not require every detail in the reference answer.",
+    "id": "theory-applied-frontend-focus-001",
+    "mode": "Theoretical Style",
+    "prompt": "A modal dialog is open in a web application. Explain how keyboard focus should behave when it opens and closes, and why this matters.",
+    "difficulty": "Beginner",
+    "topic": "Frontend Development",
+    "tags": [
+      "accessibility",
+      "interview"
+    ],
+    "experienceLevels": [
+      "Beginner",
+      "Intermediate"
+    ],
+    "jobRoles": [
+      "software engineer",
+      "frontend developer",
+      "full stack developer"
+    ],
+    "priority": 8,
+    "active": true,
+    "referenceAnswer": "Move focus into the dialog, maintain appropriate focus trapping or navigation, provide an accessible close path, and restore focus to the triggering control. Explain keyboard and assistive technology usability."
+  },
+  {
+    "gradingCriteria": [
+      {
+        "name": "Technical accuracy",
+        "weight": 45,
+        "description": "Explains the central concept correctly without contradictions or major technical errors."
+      },
+      {
+        "name": "Practical reasoning",
+        "weight": 25,
+        "description": "Connects the concept to an appropriate use case, design decision, or operational consequence."
+      },
+      {
+        "name": "Trade-offs and limitations",
+        "weight": 20,
+        "description": "Recognizes important constraints, risks, or trade-offs instead of presenting the concept as universally beneficial."
+      },
+      {
+        "name": "Clarity",
+        "weight": 10,
+        "description": "Communicates the answer in a structured and understandable way with relevant terminology."
+      }
+    ],
+    "evaluationInstructions": "Grade semantic correctness rather than exact wording. Accept equivalent terminology and valid examples. Reward answers that connect the concept to realistic engineering decisions and acknowledge trade-offs; do not require every detail in the reference answer.",
+    "id": "theory-applied-retry-idempotency-001",
+    "mode": "Theoretical Style",
+    "prompt": "A client times out after sending a payment request and cannot tell whether the server completed it. Explain why blindly retrying can be dangerous and how an idempotency key helps.",
+    "difficulty": "Intermediate",
+    "topic": "Distributed Systems",
+    "tags": [
+      "api",
+      "interview"
+    ],
+    "experienceLevels": [
+      "Intermediate",
+      "Experienced"
+    ],
+    "jobRoles": [
+      "software engineer",
+      "backend developer",
+      "full stack developer"
+    ],
+    "priority": 8,
+    "active": true,
+    "referenceAnswer": "A response timeout does not prove the operation failed. Retrying without deduplication may cause duplicate charges; a stable idempotency key lets the server recognize and return the prior result. Mention persistence and expiry."
+  },
+  {
+    "gradingCriteria": [
+      {
+        "name": "Technical accuracy",
+        "weight": 45,
+        "description": "Explains the central concept correctly without contradictions or major technical errors."
+      },
+      {
+        "name": "Practical reasoning",
+        "weight": 25,
+        "description": "Connects the concept to an appropriate use case, design decision, or operational consequence."
+      },
+      {
+        "name": "Trade-offs and limitations",
+        "weight": 20,
+        "description": "Recognizes important constraints, risks, or trade-offs instead of presenting the concept as universally beneficial."
+      },
+      {
+        "name": "Clarity",
+        "weight": 10,
+        "description": "Communicates the answer in a structured and understandable way with relevant terminology."
+      }
+    ],
+    "evaluationInstructions": "Grade semantic correctness rather than exact wording. Accept equivalent terminology and valid examples. Reward answers that connect the concept to realistic engineering decisions and acknowledge trade-offs; do not require every detail in the reference answer.",
+    "id": "theory-applied-cache-invalidation-001",
+    "mode": "Theoretical Style",
+    "prompt": "A news feed is served from a cache but changes when a user posts a new item. Compare time-based expiration with explicit invalidation and describe a consistency trade-off.",
+    "difficulty": "Intermediate",
+    "topic": "Backend Development",
+    "tags": [
+      "caching",
+      "interview"
+    ],
+    "experienceLevels": [
+      "Intermediate",
+      "Experienced"
+    ],
+    "jobRoles": [
+      "software engineer",
+      "backend developer",
+      "full stack developer"
+    ],
+    "priority": 8,
+    "active": true,
+    "referenceAnswer": "TTL trades freshness for simplicity; event-driven invalidation can update quickly but requires reliable change handling. Discuss stale reads, stampede, and fallback strategy."
+  },
+  {
+    "gradingCriteria": [
+      {
+        "name": "Technical accuracy",
+        "weight": 45,
+        "description": "Explains the central concept correctly without contradictions or major technical errors."
+      },
+      {
+        "name": "Practical reasoning",
+        "weight": 25,
+        "description": "Connects the concept to an appropriate use case, design decision, or operational consequence."
+      },
+      {
+        "name": "Trade-offs and limitations",
+        "weight": 20,
+        "description": "Recognizes important constraints, risks, or trade-offs instead of presenting the concept as universally beneficial."
+      },
+      {
+        "name": "Clarity",
+        "weight": 10,
+        "description": "Communicates the answer in a structured and understandable way with relevant terminology."
+      }
+    ],
+    "evaluationInstructions": "Grade semantic correctness rather than exact wording. Accept equivalent terminology and valid examples. Reward answers that connect the concept to realistic engineering decisions and acknowledge trade-offs; do not require every detail in the reference answer.",
+    "id": "theory-applied-sql-index-tradeoff-001",
+    "mode": "Theoretical Style",
+    "prompt": "Why might adding an index speed up a frequently filtered SQL query but slow down writes? Give an example of a query that benefits.",
+    "difficulty": "Beginner",
+    "topic": "Databases",
+    "tags": [
+      "database",
+      "interview"
+    ],
+    "experienceLevels": [
+      "Beginner",
+      "Intermediate"
+    ],
+    "jobRoles": [
+      "software engineer",
+      "backend developer",
+      "full stack developer"
+    ],
+    "priority": 8,
+    "active": true,
+    "referenceAnswer": "Index search avoids scanning many rows; inserts/updates/deletes maintain index entries and use storage. Good examples filter by selective indexed columns."
+  },
+  {
+    "gradingCriteria": [
+      {
+        "name": "Technical accuracy",
+        "weight": 45,
+        "description": "Explains the central concept correctly without contradictions or major technical errors."
+      },
+      {
+        "name": "Practical reasoning",
+        "weight": 25,
+        "description": "Connects the concept to an appropriate use case, design decision, or operational consequence."
+      },
+      {
+        "name": "Trade-offs and limitations",
+        "weight": 20,
+        "description": "Recognizes important constraints, risks, or trade-offs instead of presenting the concept as universally beneficial."
+      },
+      {
+        "name": "Clarity",
+        "weight": 10,
+        "description": "Communicates the answer in a structured and understandable way with relevant terminology."
+      }
+    ],
+    "evaluationInstructions": "Grade semantic correctness rather than exact wording. Accept equivalent terminology and valid examples. Reward answers that connect the concept to realistic engineering decisions and acknowledge trade-offs; do not require every detail in the reference answer.",
+    "id": "theory-applied-event-loop-block-001",
+    "mode": "Theoretical Style",
+    "prompt": "A Node.js server becomes unresponsive while running a long CPU-heavy calculation. Explain how the event loop is affected and suggest two solutions.",
+    "difficulty": "Intermediate",
+    "topic": "JavaScript",
+    "tags": [
+      "javascript",
+      "interview"
+    ],
+    "experienceLevels": [
+      "Intermediate",
+      "Experienced"
+    ],
+    "jobRoles": [
+      "software engineer",
+      "frontend developer",
+      "full stack developer"
+    ],
+    "priority": 8,
+    "active": true,
+    "referenceAnswer": "A long synchronous task blocks the event loop and delays other callbacks; break work into smaller chunks, use worker threads, or move expensive work to a queue/service. Discuss overhead."
+  },
+  {
+    "gradingCriteria": [
+      {
+        "name": "Technical accuracy",
+        "weight": 45,
+        "description": "Explains the central concept correctly without contradictions or major technical errors."
+      },
+      {
+        "name": "Practical reasoning",
+        "weight": 25,
+        "description": "Connects the concept to an appropriate use case, design decision, or operational consequence."
+      },
+      {
+        "name": "Trade-offs and limitations",
+        "weight": 20,
+        "description": "Recognizes important constraints, risks, or trade-offs instead of presenting the concept as universally beneficial."
+      },
+      {
+        "name": "Clarity",
+        "weight": 10,
+        "description": "Communicates the answer in a structured and understandable way with relevant terminology."
+      }
+    ],
+    "evaluationInstructions": "Grade semantic correctness rather than exact wording. Accept equivalent terminology and valid examples. Reward answers that connect the concept to realistic engineering decisions and acknowledge trade-offs; do not require every detail in the reference answer.",
+    "id": "theory-applied-test-pyramid-001",
+    "mode": "Theoretical Style",
+    "prompt": "A project has hundreds of unit tests but no tests for its login API interacting with its database. Explain what integration tests add and why both levels matter.",
+    "difficulty": "Beginner",
+    "topic": "Testing",
+    "tags": [
+      "testing",
+      "interview"
+    ],
+    "experienceLevels": [
+      "Beginner",
+      "Intermediate"
+    ],
+    "jobRoles": [
+      "software engineer",
+      "backend developer",
+      "full stack developer"
+    ],
+    "priority": 8,
+    "active": true,
+    "referenceAnswer": "Unit tests isolate logic and are fast; integration tests exercise interactions and reveal wiring/database contract problems. Discuss isolation, speed, and environment constraints."
   }
 ]

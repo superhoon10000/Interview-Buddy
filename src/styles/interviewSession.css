@@ -2133,3 +2133,34 @@
     min-height: 280px;
   }
 }
+
+/* Consistent, readable spacing for question text in live interviews. */
+.ibQuestionPrompt {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  min-width: 0;
+  max-width: 100%;
+  color: var(--ib-text);
+  line-height: 1.75;
+}
+
+.ibQuestionPromptSection {
+  margin: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  max-width: 100ch;
+}
+
+.ibQuestionPromptLabel {
+  color: var(--ib-text);
+  font-weight: var(--ib-font-weight-bold);
+}
+
+.sessionQuestionPrompt {
+  font-size: 1rem;
+  line-height: 1.75;
+  padding-top: var(--ib-space-2);
+  padding-bottom: var(--ib-space-5);
+  gap: 0.75rem;
+}

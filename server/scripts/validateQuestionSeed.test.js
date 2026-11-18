@@ -14,13 +14,13 @@ function invalid(change, index = 0) {
 }
 
 describe("validateQuestionSeed H-01 schema and dataset checks", () => {
-  test("accepts the current full 1500-question dataset and all three modes", () => {
+  test("accepts the current full 1540-question dataset and all three modes", () => {
     const summary = validateSeedData(allQuestions);
-    expect(summary.total).toBe(1500);
+    expect(summary.total).toBe(1540);
     for (const mode of ["Quiz Style", "Code Style", "Theoretical Style"]) {
-      expect(summary.modeCounts.get(mode)).toBe(500);
+      expect(summary.modeCounts.get(mode)).toBe(mode === "Quiz Style" ? 520 : 510);
     }
-    expect(formatSummary(summary)).toContain("Validated 1500 questions.");
+    expect(formatSummary(summary)).toContain("Validated 1540 questions.");
   });
 
   test("accepts representative Quiz, Code, and Theoretical fixtures", () => {
@@ -57,6 +57,19 @@ describe("validateQuestionSeed H-01 schema and dataset checks", () => {
       .toThrow(/duplicate options/);
     expect(invalid({ correctAnswer: "Not present" })).toThrow(/outside options/);
     expect(invalid({ explanation: "" })).toThrow(/correctAnswer and explanation/);
+  });
+
+  test("rejects prompts that give away the multiple-choice answer", () => {
+    expect(invalid({ prompt: `The answer is ${quiz.correctAnswer}. Choose it.` }))
+      .toThrow(/reveals the correct answer/);
+    expect(invalid({ prompt: "Which concept is best described by the following definition: a known term." }))
+      .toThrow(/reveals the correct answer/);
+  });
+
+  test("all seeded quiz questions have usable prompts without direct answer leaks", () => {
+    for (const question of allQuestions.filter((item) => item.mode === "Quiz Style")) {
+      expect(() => validateQuestion(question)).not.toThrow();
+    }
   });
 
   test("rejects missing Code and Theoretical rubrics", () => {
