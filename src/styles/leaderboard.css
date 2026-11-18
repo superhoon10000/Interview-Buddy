@@ -1,4 +1,3 @@
-
 /* Leaderboard and friends - uses the shared Interview Buddy design system. */
 .ibRankingPage {
   --ib-ranking-accent: var(--ib-accent);
@@ -370,7 +369,7 @@
   display: flex;
   align-items: baseline;
   gap: 10px;
-  margin-bottom: 28px;
+  margin-bottom: 56px;
 }
 
 .ibRankingStandingValue strong {
@@ -855,4 +854,11 @@
 .ibRankingAddForm input:disabled {
   opacity: 0.65;
   cursor: not-allowed;
+}
+
+/* SCRUM-110: Keep friend-ranking updates within their panel. */
+.ibRankingRefreshStatus {
+  margin: 8px 24px 12px;
+  color: var(--ib-text-secondary);
+  font-size: 0.82rem;
 }
