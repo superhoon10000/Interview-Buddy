@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import PageLayout from "../components/layout/PageLayout";
 import { useAuth } from "../context/AuthContext";
 import { leaderboardService } from "../services/leaderboardService";
@@ -43,7 +43,62 @@ function RankingMessage({ title = "Loading rankings", children, type = "status" 
   );
 }
 
-function RankingTable({ data, currentUserId, currentUsername, onRemove, saving = false, scoreType = "elo" }) {
+//Shows trend arrow for ELO
+//Handles 4 states
+function EloTrend({ change }) {
+  if (!Number.isSafeInteger(change)) {
+    return (
+      <span
+        className="ibRankingTrendUnknown"
+        title="No ELO trend available"
+      >
+        —
+      </span>
+    );
+  }
+
+  const direction =
+    change > 0 ? "up" : change < 0 ? "down" : "flat";
+
+  const label =
+    change > 0
+      ? `ELO increased by ${change}`
+      : change < 0
+        ? `ELO decreased by ${Math.abs(change)}`
+        : "ELO unchanged";
+
+  const arrow =
+    direction === "up"
+      ? "↑"
+      : direction === "down"
+        ? "↓"
+        : "→";
+
+  const amount =
+    change > 0 ? `+${change}` : String(change);
+
+  return (
+    <span
+      className={`ibRankingTrend ibRankingTrend--${direction}`}
+      role="img"
+      aria-label={label}
+      title={`${label} after the last ranked interview`}
+    >
+      <span aria-hidden="true">{arrow}</span>
+      <span aria-hidden="true">{amount}</span>
+    </span>
+  );
+}
+
+function RankingTable({
+  data,
+  currentUserId,
+  currentUsername,
+  onRemove,
+  saving = false,
+  emptyTitle = "No available data",
+  emptyDescription = "There are no rankings to display yet.",
+}) {
   const { status, error, data: users } = data;
   if (status === "loading") {
     return <RankingMessage>Loading rankings from the server...</RankingMessage>;
@@ -54,8 +109,14 @@ function RankingTable({ data, currentUserId, currentUsername, onRemove, saving =
   if (status === "error") {
     return <RankingMessage title="Unable to load rankings" type="alert">{error}</RankingMessage>;
   }
+
+  //Allows Global and Friends to show the same table component while displaying diff messages when empty
   if (!users.length) {
-    return <RankingMessage title="No available data">There are no rankings to display yet.</RankingMessage>;
+    return (
+      <RankingMessage title={emptyTitle}>
+        {emptyDescription}
+      </RankingMessage>
+    );
   }
 
   return (
@@ -65,7 +126,7 @@ function RankingTable({ data, currentUserId, currentUsername, onRemove, saving =
           <tr>
             <th scope="col">Rank</th>
             <th scope="col">User</th>
-            <th scope="col">{scoreType === "points" ? "Points" : "ELO Score"}</th>
+            <th scope="col">ELO Score</th>
             {onRemove && <th scope="col" className="ibRankingActionHeading">Action</th>}
           </tr>
         </thead>
@@ -83,9 +144,19 @@ function RankingTable({ data, currentUserId, currentUsername, onRemove, saving =
                     {isCurrentUser && <span className="ibRankingYou">You</span>}
                   </div>
                 </td>
-                <td className="ibRankingScore">{(scoreType === "points" ? entry.points : entry.elo) == null
-                  ? "—"
-                  : scoreFormatter.format(scoreType === "points" ? entry.points : entry.elo)}</td>
+                <td className="ibRankingScore">
+                  <span className="ibRankingScoreContent">
+                    <span>
+                      {entry.elo == null
+                        ? "—"
+                        : scoreFormatter.format(entry.elo)}
+                    </span>
+
+                    {entry.elo != null && (
+                      <EloTrend change={entry.lastEloChange} />
+                    )}
+                  </span>
+                </td>
                 {onRemove && (
                   <td className="ibRankingActionCell">
                     <button
@@ -267,11 +338,32 @@ function LeaderboardPage({ currentPage, onNavigate }) {
   const [visibleFriends, setVisibleFriends] = useState(PAGE_SIZE);
   const [refreshKey, setRefreshKey] = useState(0);
   const [searchInput, setSearchInput] = useState("");
+  const [searchResults, setSearchResults] = useState(null);
+  const [searching, setSearching] = useState(false);
   const [addStatus, setAddStatus] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [friendsRefreshing, setFriendsRefreshing] = useState(false);
+  // Requests can overlap when switching tabs, refreshing, or changing friendships.
+  // Only the latest response for each dataset may update the view.
+  const friendsRequestId = useRef(0);
+  const acceptedFriendsRequestId = useRef(0);
+  const friendsTabRequestPending = useRef(false);
+  const openedFriendsTab = useRef(false);
+  const mounted = useRef(false);
+
+  useEffect(() => {
+    mounted.current = true;
+    return () => { mounted.current = false; };
+  }, []);
 
   useEffect(() => {
     let active = true;
+    const friendsId = ++friendsRequestId.current;
+    const acceptedId = ++acceptedFriendsRequestId.current;
+    friendsTabRequestPending.current = false;
+    // New accounts should not inherit another user's tab-visit history.
+    openedFriendsTab.current = false;
+    setFriendsRefreshing(false);
     setGlobal(initialCollection);
     setFriends(initialCollection);
     setAcceptedFriends(initialCollection);
@@ -297,22 +389,42 @@ function LeaderboardPage({ currentPage, onNavigate }) {
       if (!active) return;
 
       setGlobal(resolveResult(globalResult, []));
-      setFriends(resolveResult(friendsResult, []));
+      if (friendsId === friendsRequestId.current) {
+        setFriends(resolveResult(friendsResult, []));
+      }
       setStanding(resolveResult(standingResult, null));
       setRequests(resolveResult(requestsResult, emptyRequests));
-      setAcceptedFriends(resolveResult(acceptedResult, []));
+      if (acceptedId === acceptedFriendsRequestId.current) {
+        setAcceptedFriends(resolveResult(acceptedResult, []));
+      }
     });
 
     //Cleanup
-    return () => { active = false; };
+    return () => {
+      active = false;
+      friendsRequestId.current += 1;
+      acceptedFriendsRequestId.current += 1;
+      friendsTabRequestPending.current = false;
+    };
   }, [user?.uid, refreshKey]);
 
   const friendRankings = useMemo(() => friends.data, [friends.data]);
   const currentUser = standing.status === "success" ? standing.data : null;
-  const rankBadge = getEloRankBadge(currentUser?.elo);
+  const rankBadge = getEloRankBadge(currentUser?.elo, currentUser?.rank);
   const hasFriends = acceptedFriends.status === "success";
   const friendCount = hasFriends ? acceptedFriends.data.length : null;
   const rankedFriendCount = friends.status === "success" ? friendRankings.length : null;
+
+  //Empty messages for no friends or no ranked friends
+  const friendsEmptyTitle = hasFriends
+    ? (friendCount === 0 ? "No friends yet" : "No ranked friends yet")
+    : "No available data";
+
+  const friendsEmptyDescription = hasFriends
+    ? (friendCount === 0
+        ? "Add a friend to compare ELO rankings here."
+        : "Your accepted friends will appear here once they have a ranked interview.")
+    : "There are no rankings to display yet.";
 
   //Make sure no items are loading
   const canRefresh = [
@@ -327,15 +439,65 @@ function LeaderboardPage({ currentPage, onNavigate }) {
     setVisibleGlobal(PAGE_SIZE);
     setVisibleFriends(PAGE_SIZE);
     setAddStatus(null);
+    setSearchResults(null);
     setRefreshKey((previous) => previous + 1);
   }
 
   async function reloadFriends() {
+    const requestId = ++friendsRequestId.current;
+    friendsTabRequestPending.current = false;
+    setFriendsRefreshing(false);
     try {
       const records = await leaderboardService.getFriendsLeaderboard();
-      setFriends({ status: "success", data: records, error: "" });
+      if (mounted.current && requestId === friendsRequestId.current) {
+        setFriends({ status: "success", data: records, error: "" });
+      }
     } catch (error) {
-      setFriends(resolveResult({ status: "rejected", reason: error }, []));
+      if (mounted.current && requestId === friendsRequestId.current) {
+        setFriends(resolveResult({ status: "rejected", reason: error }, []));
+      }
+    }
+  }
+
+  // SCRUM-110: Refresh both friend rankings and accepted-friend membership
+  // when entering Friends. The server owns ELO sorting, ties and eligibility.
+  async function refreshFriendsTab() {
+    // The initial page load already fetches these datasets. Avoid duplicating it.
+    if (friends.status === "loading" || acceptedFriends.status === "loading" || friendsTabRequestPending.current) return;
+
+    const friendsId = ++friendsRequestId.current;
+    const acceptedId = ++acceptedFriendsRequestId.current;
+    friendsTabRequestPending.current = true;
+    setFriendsRefreshing(true);
+    setFriends(initialCollection);
+    setAcceptedFriends(initialCollection);
+
+    const [rankingResult, acceptedResult] = await Promise.allSettled([
+      leaderboardService.getFriendsLeaderboard(),
+      leaderboardService.getAcceptedFriends(),
+    ]);
+
+    if (mounted.current && friendsId === friendsRequestId.current) {
+      setFriends(resolveResult(rankingResult, []));
+      setVisibleFriends(PAGE_SIZE);
+      friendsTabRequestPending.current = false;
+      setFriendsRefreshing(false);
+    }
+    if (mounted.current && acceptedId === acceptedFriendsRequestId.current) {
+      setAcceptedFriends(resolveResult(acceptedResult, []));
+    }
+  }
+
+  function selectTab(tab) {
+    if (tab === activeTab) return;
+    setActiveTab(tab);
+    if (tab === "friends") {
+      // Initial page load already fetched these datasets. Refresh on subsequent
+      // visits after leaving Friends; avoid duplicating the first fetch.
+      if (openedFriendsTab.current) {
+        void refreshFriendsTab();
+      }
+      openedFriendsTab.current = true;
     }
   }
 
@@ -359,21 +521,16 @@ function LeaderboardPage({ currentPage, onNavigate }) {
   }
 
   async function reloadAcceptedFriends() {
+    const requestId = ++acceptedFriendsRequestId.current;
     try {
       const records = await leaderboardService.getAcceptedFriends();
-
-      setAcceptedFriends({
-        status: "success",
-        data: records,
-        error: "",
-      });
+      if (mounted.current && requestId === acceptedFriendsRequestId.current) {
+        setAcceptedFriends({ status: "success", data: records, error: "" });
+      }
     } catch (error) {
-      setAcceptedFriends(
-        resolveResult(
-          { status: "rejected", reason: error },
-          []
-        )
-      );
+      if (mounted.current && requestId === acceptedFriendsRequestId.current) {
+        setAcceptedFriends(resolveResult({ status: "rejected", reason: error }, []));
+      }
     }
   }
 
@@ -405,6 +562,7 @@ function LeaderboardPage({ currentPage, onNavigate }) {
         reloadFriends(),
         reloadAcceptedFriends(),
       ]);
+      setSearchResults(null);
 
       setAddStatus({
         type: "success",
@@ -425,6 +583,49 @@ function LeaderboardPage({ currentPage, onNavigate }) {
     }
   }
 
+  async function handleSearchFriends() {
+    const query = searchInput.trim();
+    if (!hasFriends || searching || saving) return;
+    if (query.length < 2 || query.length > 64) {
+      setSearchResults({ status: "error", data: [], error: "Enter 2 to 64 characters to search usernames." });
+      return;
+    }
+    setSearching(true);
+    setAddStatus(null);
+    setSearchResults({ status: "loading", data: [], error: "" });
+    try {
+      const users = await leaderboardService.searchFriends(query);
+      setSearchResults({ status: "success", data: users, error: "" });
+    } catch (error) {
+      setSearchResults({ status: "error", data: [], error: error.message || "Unable to search usernames." });
+    } finally {
+      setSearching(false);
+    }
+  }
+
+  async function handleSearchRequest(entry) {
+    if (saving || searching || entry.relationship !== "none") return;
+    setSaving(true);
+    setAddStatus(null);
+    try {
+      await leaderboardService.sendFriendRequest(entry.username);
+      setSearchResults((current) => current?.status === "success"
+        ? {
+            ...current,
+            data: current.data.map((user) => user.uid === entry.uid
+              ? { ...user, relationship: "outgoing" }
+              : user),
+          }
+        : current);
+      await reloadRequests();
+      setAddStatus({ type: "success", message: `Friend request sent to "${entry.username}".` });
+    } catch (error) {
+      setAddStatus({ type: "error", message: error.message || "Unable to send the friend request." });
+    } finally {
+      setSaving(false);
+    }
+  }
+
   async function handleAddFriend(event) {
     event.preventDefault();
     const name = searchInput.trim();
@@ -435,6 +636,7 @@ function LeaderboardPage({ currentPage, onNavigate }) {
       await leaderboardService.sendFriendRequest(name);
       setAddStatus({ type: "success", message: `Friend request sent to "${name}". They will appear after accepting.` });
       setSearchInput("");
+      setSearchResults(null);
       await Promise.all([
         reloadFriends(),
         reloadRequests(),
@@ -456,6 +658,7 @@ function LeaderboardPage({ currentPage, onNavigate }) {
         reloadFriends(),
         reloadAcceptedFriends(),
       ]);
+      setSearchResults(null);
       setAddStatus({ type: "success", message: `Removed "${friend.username}" from your friends.` });
     } catch (error) {
       setAddStatus({ type: "error", message: error.message || "Unable to remove the friend." });
@@ -475,8 +678,8 @@ function LeaderboardPage({ currentPage, onNavigate }) {
         <div className="ibRankingMain">
           <div className="ibRankingToolbar">
             <div className="ibRankingTabs" role="tablist" aria-label="Leaderboard views">
-              <button type="button" role="tab" id="ib-global-tab" aria-selected={activeTab === "global"} aria-controls="ib-global-panel" className={activeTab === "global" ? "ibRankingTab is-active" : "ibRankingTab"} onClick={() => setActiveTab("global")}>Global</button>
-              <button type="button" role="tab" id="ib-friends-tab" aria-selected={activeTab === "friends"} aria-controls="ib-friends-panel" className={activeTab === "friends" ? "ibRankingTab is-active" : "ibRankingTab"} onClick={() => setActiveTab("friends")}>Friends</button>
+              <button type="button" role="tab" id="ib-global-tab" aria-selected={activeTab === "global"} aria-controls="ib-global-panel" className={activeTab === "global" ? "ibRankingTab is-active" : "ibRankingTab"} onClick={() => selectTab("global")}>Global</button>
+              <button type="button" role="tab" id="ib-friends-tab" aria-selected={activeTab === "friends"} aria-controls="ib-friends-panel" className={activeTab === "friends" ? "ibRankingTab is-active" : "ibRankingTab"} onClick={() => selectTab("friends")}>Friends</button>
             </div>
             <div className="ibRankingToolbarActions">
               <p className="ibRankingToolbarNote">
@@ -488,27 +691,108 @@ function LeaderboardPage({ currentPage, onNavigate }) {
 
           {activeTab === "global" ? (
             <section className="ibRankingPanel" role="tabpanel" id="ib-global-panel" aria-labelledby="ib-global-tab">
-              <RankingTable data={{ ...global, data: global.data.slice(0, visibleGlobal) }} currentUserId={user?.uid} currentUsername={currentUser?.username} scoreType="points" />
+              <RankingTable data={{ ...global, data: global.data.slice(0, visibleGlobal) }} currentUserId={user?.uid} currentUsername={currentUser?.username} />
               {global.status === "success" && visibleGlobal < global.data.length && (
                 <button type="button" className="ibRankingLoadMore" onClick={() => setVisibleGlobal((count) => count + PAGE_SIZE)}>Load More Rankings</button>
               )}
             </section>
           ) : (
             <div id="ib-friends-panel" role="tabpanel" aria-labelledby="ib-friends-tab" className="ibRankingFriendsContent">
+              <section className="ibRankingPanel" aria-label="Friends leaderboard">
+                <div className="ibRankingPanelTitle">
+                  <h2>Friends Rankings</h2>
+                  <span>
+                    {rankedFriendCount == null
+                      ? "No available data"
+                      : `${rankedFriendCount} ranked ${
+                          rankedFriendCount === 1 ? "friend" : "friends"
+                        }`}
+                  </span>
+                </div>
+
+                <p className="ibRankingRefreshStatus">
+                  Ordered by ELO. Equal ELO scores share the same rank.
+                </p>
+                {friendsRefreshing && (
+                  <p className="ibRankingRefreshStatus" role="status">Updating friends rankings...</p>
+                )}
+                <RankingTable
+                  data={{
+                    ...friends,
+                    data: friends.data.slice(0, visibleFriends),
+                  }}
+                  currentUserId={user?.uid}
+                  currentUsername={currentUser?.username}
+                  onRemove={hasFriends ? handleRemoveFriend : undefined}
+                  saving={saving}
+                  emptyTitle={friendsEmptyTitle}
+                  emptyDescription={friendsEmptyDescription}
+                />
+
+                {(friends.status === "error" || friends.status === "unavailable" ||
+                  acceptedFriends.status === "error" || acceptedFriends.status === "unavailable") && (
+                  <button
+                    type="button"
+                    className="ibRankingRefresh"
+                    onClick={refreshFriendsTab}
+                    disabled={friendsRefreshing || saving}
+                  >
+                    Retry Friends Rankings
+                  </button>
+                )}
+                {friends.status === "success" &&
+                  visibleFriends < friends.data.length && (
+                    <button
+                      type="button"
+                      className="ibRankingLoadMore"
+                      onClick={() =>
+                        setVisibleFriends((count) => count + PAGE_SIZE)
+                      }
+                    >
+                      Load More Friends
+                    </button>
+                  )}
+              </section>
+
               <section className="ibRankingAddCard" aria-labelledby="ib-add-friend-title">
                 <div className="ibRankingAddHeading">
                   <div>
                     <h2 id="ib-add-friend-title">Add a Friend</h2>
-                    <p>Send a request by username when the friends service is available.</p>
+                    <p>Search for usernames or send a request to an exact username.</p>
                   </div>
                   <span className="ibRankingAddIcon" aria-hidden="true">+</span>
                 </div>
                 <form className="ibRankingAddForm" onSubmit={handleAddFriend}>
                   <label className="ibRankingVisuallyHidden" htmlFor="ib-friend-username">Username</label>
-                  <input id="ib-friend-username" type="text" autoComplete="off" placeholder="Enter a username..." value={searchInput} disabled={!hasFriends || saving} onChange={(event) => { setSearchInput(event.target.value); setAddStatus(null); }} />
-                  <button type="submit" disabled={!hasFriends || !searchInput.trim() || saving}>{saving ? "Saving..." : "Add Friend"}</button>
+                  <input id="ib-friend-username" type="text" autoComplete="off" maxLength={128} placeholder="Enter a username..." value={searchInput} disabled={!hasFriends || saving || searching} onChange={(event) => { setSearchInput(event.target.value); setAddStatus(null); setSearchResults(null); }} />
+                  <button type="button" disabled={!hasFriends || !searchInput.trim() || searching || saving} onClick={handleSearchFriends}>{searching ? "Searching..." : "Search"}</button>
+                  <button type="submit" disabled={!hasFriends || !searchInput.trim() || saving || searching}>{saving ? "Saving..." : "Add Friend"}</button>
                 </form>
                 {!hasFriends && <p className="ibRankingFormHint">Friend requests are unavailable until the friends backend is implemented.</p>}
+                {searchResults?.status === "loading" && <p className="ibRankingFormHint" role="status">Searching usernames...</p>}
+                {searchResults?.status === "error" && <p className="ibRankingFormStatus ibRankingFormStatus--error" role="alert">{searchResults.error}</p>}
+                {searchResults?.status === "success" && (
+                  <div className="ibRankingSearchResults" aria-label="User search results" role="region">
+                    {searchResults.data.length === 0 ? (
+                      <p className="ibRankingFormHint">No matching users found.</p>
+                    ) : (
+                      <ul className="ibRankingRequestList">
+                        {searchResults.data.map((entry) => (
+                          <li key={entry.uid} className="ibRankingRequestRow">
+                            <strong>{entry.username}</strong>
+                            {entry.relationship === "none" ? (
+                              <button type="button" className="ibRankingAcceptButton" disabled={saving} onClick={() => handleSearchRequest(entry)} aria-label={`Send friend request to ${entry.username}`}>Send Request</button>
+                            ) : (
+                              <span className="ibRankingPendingLabel">
+                                {entry.relationship === "friends" ? "Already friends" : entry.relationship === "outgoing" ? "Request sent" : "Respond in incoming requests"}
+                              </span>
+                            )}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                )}
                 {addStatus && <p className={`ibRankingFormStatus ibRankingFormStatus--${addStatus.type}`} role="status">{addStatus.message}</p>}
               </section>
 
@@ -534,26 +818,9 @@ function LeaderboardPage({ currentPage, onNavigate }) {
                 onRemove={handleRemoveFriend}
                 saving={saving}
               />
-
-              <section className="ibRankingPanel" aria-label="Friends leaderboard">
-                <div className="ibRankingPanelTitle">
-                  <h2>Friends Rankings</h2>
-                  <span>
-                    {rankedFriendCount == null
-                      ? "No available data"
-                      : `${rankedFriendCount} ranked ${
-                          rankedFriendCount === 1 ? "friend" : "friends"
-                        }`}
-                  </span>
-                </div>
-                <RankingTable data={{ ...friends, data: friends.data.slice(0, visibleFriends) }} currentUserId={user?.uid} currentUsername={currentUser?.username} onRemove={hasFriends ? handleRemoveFriend : undefined} saving={saving} />
-                {friends.status === "success" && visibleFriends < friends.data.length && (
-                  <button type="button" className="ibRankingLoadMore" onClick={() => setVisibleFriends((count) => count + PAGE_SIZE)}>Load More Friends</button>
-                )}
-              </section>
             </div>
           )}
-          <p className="ibRankingFootnote">Global rankings use cumulative points earned from completed interviews, not ELO. Friends features and ELO progression are separate upcoming work. No sample rankings are displayed.</p>
+          <p className="ibRankingFootnote">Global and friends rankings are ordered by ELO. Complete at least five questions in an interview to earn or lose ELO. No sample rankings are displayed.</p>
         </div>
 
         <aside className="ibRankingAside" aria-label="Ranking summary">
@@ -577,7 +844,7 @@ function LeaderboardPage({ currentPage, onNavigate }) {
               <span>Global Rank</span>
             </div>
             <div className="ibRankingStandingStats">
-              <div><span>Total Points</span><strong>{currentUser?.points != null ? scoreFormatter.format(currentUser.points) : "—"}</strong></div>
+              <div><span>Current ELO</span><strong>{currentUser?.elo != null ? scoreFormatter.format(currentUser.elo) : "—"}</strong></div>
               <div><span>Friends</span><strong>{friendCount == null ? "—" : friendCount}</strong></div>
             </div>
             {standing.status === "loading" && <p className="ibRankingStandingHint">Loading your standing...</p>}
@@ -628,7 +895,7 @@ function LeaderboardPage({ currentPage, onNavigate }) {
                 No friends available yet.
               </p>
             )}
-            {activeTab !== "friends" && <button type="button" className="ibRankingViewFriends" onClick={() => setActiveTab("friends")}>View Friends</button>}
+            {activeTab !== "friends" && <button type="button" className="ibRankingViewFriends" onClick={() => selectTab("friends")}>View Friends</button>}
           </section>
         </aside>
       </div>

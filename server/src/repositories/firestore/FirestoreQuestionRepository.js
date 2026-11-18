@@ -93,7 +93,7 @@ class FirestoreQuestionRepository extends QuestionRepository {
     }
 
     // Firestore batched writes have a finite operation limit. The expanded
-    // Interview Buddy seed contains 1,500 questions, so writing the entire
+    // Interview Buddy seed contains more than 1,500 questions, so writing the entire
     // seed in one batch would fail. Keep each commit comfortably below the
     // platform limit and continue until every question has been upserted.
     const batchSize = 400;

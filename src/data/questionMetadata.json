@@ -31,8 +31,8 @@
           "security",
           "http",
           "frontend",
-          "system design",
           "testing",
+          "system design",
           "api",
           "performance",
           "queue",
@@ -43,20 +43,24 @@
           "graph",
           "sql",
           "binary search",
+          "networking",
+          "tree",
           "web",
           "async",
+          "fundamentals",
           "javascript",
-          "networking",
           "optimization",
           "quality",
           "react",
           "recursion",
           "strings",
           "transactions",
-          "tree",
+          "devops",
+          "concurrency",
           "css",
           "databases",
           "fifo",
+          "hash map",
           "joins",
           "rest",
           "status codes",
@@ -66,11 +70,9 @@
           "bfs",
           "caching",
           "ci/cd",
-          "concurrency",
           "cookies",
           "cors",
           "data modeling",
-          "devops",
           "dfs",
           "distributed systems",
           "dns",
@@ -78,7 +80,6 @@
           "effects",
           "event loop",
           "greedy",
-          "hash map",
           "heap",
           "https",
           "indexes",
@@ -123,6 +124,7 @@
             "http",
             "system design",
             "api",
+            "testing",
             "performance",
             "queue",
             "stack",
@@ -130,19 +132,22 @@
             "authentication",
             "complexity",
             "graph",
-            "testing",
             "sql",
             "binary search",
-            "web",
             "networking",
+            "tree",
+            "web",
             "optimization",
             "quality",
             "recursion",
             "strings",
             "transactions",
-            "tree",
+            "fundamentals",
+            "devops",
+            "concurrency",
             "databases",
             "fifo",
+            "hash map",
             "joins",
             "rest",
             "status codes",
@@ -151,17 +156,14 @@
             "bfs",
             "caching",
             "ci/cd",
-            "concurrency",
             "cookies",
             "cors",
             "data modeling",
-            "devops",
             "dfs",
             "distributed systems",
             "dns",
             "dynamic programming",
             "greedy",
-            "hash map",
             "heap",
             "https",
             "indexes",
@@ -190,11 +192,12 @@
             "beginner": [
               "algorithms",
               "data structures",
-              "database",
               "security",
+              "database",
               "http",
               "system design",
               "api",
+              "testing",
               "queue",
               "stack",
               "arrays",
@@ -202,9 +205,8 @@
               "complexity",
               "graph",
               "performance",
-              "testing",
-              "binary search",
               "sql",
+              "binary search",
               "web",
               "networking",
               "optimization",
@@ -214,7 +216,9 @@
               "transactions",
               "tree",
               "databases",
+              "devops",
               "fifo",
+              "fundamentals",
               "joins",
               "rest",
               "status codes",
@@ -227,7 +231,6 @@
               "cookies",
               "cors",
               "data modeling",
-              "devops",
               "dfs",
               "distributed systems",
               "dns",
@@ -266,6 +269,7 @@
               "http",
               "system design",
               "api",
+              "testing",
               "performance",
               "queue",
               "stack",
@@ -273,19 +277,22 @@
               "authentication",
               "complexity",
               "graph",
-              "testing",
               "sql",
               "binary search",
-              "web",
               "networking",
+              "tree",
+              "web",
               "optimization",
               "quality",
               "recursion",
               "strings",
               "transactions",
-              "tree",
+              "fundamentals",
+              "devops",
+              "concurrency",
               "databases",
               "fifo",
+              "hash map",
               "joins",
               "rest",
               "status codes",
@@ -294,17 +301,14 @@
               "bfs",
               "caching",
               "ci/cd",
-              "concurrency",
               "cookies",
               "cors",
               "data modeling",
-              "devops",
               "dfs",
               "distributed systems",
               "dns",
               "dynamic programming",
               "greedy",
-              "hash map",
               "heap",
               "https",
               "indexes",
@@ -346,33 +350,34 @@
               "stack",
               "testing",
               "sql",
-              "binary search",
               "networking",
+              "tree",
+              "binary search",
               "optimization",
               "quality",
               "recursion",
               "strings",
               "transactions",
-              "tree",
               "web",
+              "fundamentals",
+              "devops",
+              "concurrency",
+              "hash map",
               "acid",
               "backtracking",
               "bfs",
               "caching",
               "ci/cd",
-              "concurrency",
               "cookies",
               "cors",
               "data modeling",
               "databases",
-              "devops",
               "dfs",
               "distributed systems",
               "dns",
               "dynamic programming",
               "fifo",
               "greedy",
-              "hash map",
               "heap",
               "https",
               "indexes",
@@ -469,7 +474,8 @@
               "tls",
               "two pointers",
               "udp",
-              "unit test"
+              "unit test",
+              "fundamentals"
             ]
           }
         },
@@ -1068,9 +1074,11 @@
             "unit test",
             "algorithms",
             "data structures",
+            "fundamentals",
             "binary search",
             "fifo",
             "queue",
+            "security",
             "stack"
           ],
           "byLevel": {
@@ -1099,6 +1107,7 @@
               "data structures",
               "binary search",
               "fifo",
+              "fundamentals",
               "queue",
               "stack"
             ],
@@ -1125,9 +1134,11 @@
               "unit test",
               "algorithms",
               "data structures",
+              "fundamentals",
               "binary search",
               "fifo",
               "queue",
+              "security",
               "stack"
             ],
             "experienced": [
@@ -1150,7 +1161,9 @@
               "state",
               "status codes",
               "unit test",
-              "web"
+              "web",
+              "fundamentals",
+              "security"
             ],
             "veteran": [
               "frontend",
@@ -1191,16 +1204,18 @@
             "frontend",
             "security",
             "api",
+            "testing",
             "arrays",
             "authentication",
             "complexity",
             "graph",
             "stack",
-            "testing",
             "sql",
             "performance",
+            "tree",
             "async",
             "binary search",
+            "fundamentals",
             "javascript",
             "optimization",
             "quality",
@@ -1209,9 +1224,10 @@
             "recursion",
             "strings",
             "transactions",
-            "tree",
+            "concurrency",
             "css",
             "databases",
+            "hash map",
             "joins",
             "rest",
             "status codes",
@@ -1220,7 +1236,6 @@
             "acid",
             "backtracking",
             "bfs",
-            "concurrency",
             "cookies",
             "cors",
             "data modeling",
@@ -1230,7 +1245,6 @@
             "event loop",
             "fifo",
             "greedy",
-            "hash map",
             "heap",
             "indexes",
             "integration test",
@@ -1248,23 +1262,25 @@
             "sorting",
             "state",
             "two pointers",
-            "unit test"
+            "unit test",
+            "devops",
+            "networking"
           ],
           "byLevel": {
             "beginner": [
               "algorithms",
               "data structures",
               "database",
-              "http",
               "frontend",
+              "http",
               "security",
               "api",
+              "testing",
               "arrays",
               "authentication",
               "complexity",
               "graph",
               "stack",
-              "testing",
               "sql",
               "async",
               "binary search",
@@ -1278,6 +1294,7 @@
               "strings",
               "transactions",
               "tree",
+              "fundamentals",
               "css",
               "databases",
               "joins",
@@ -1316,7 +1333,8 @@
               "sorting",
               "state",
               "two pointers",
-              "unit test"
+              "unit test",
+              "devops"
             ],
             "intermediate": [
               "algorithms",
@@ -1326,14 +1344,15 @@
               "frontend",
               "security",
               "api",
+              "testing",
               "arrays",
               "authentication",
               "complexity",
               "graph",
               "stack",
-              "testing",
               "sql",
               "performance",
+              "tree",
               "async",
               "binary search",
               "javascript",
@@ -1344,9 +1363,11 @@
               "recursion",
               "strings",
               "transactions",
-              "tree",
+              "fundamentals",
+              "concurrency",
               "css",
               "databases",
+              "hash map",
               "joins",
               "rest",
               "status codes",
@@ -1355,7 +1376,6 @@
               "acid",
               "backtracking",
               "bfs",
-              "concurrency",
               "cookies",
               "cors",
               "data modeling",
@@ -1365,7 +1385,6 @@
               "event loop",
               "fifo",
               "greedy",
-              "hash map",
               "heap",
               "indexes",
               "integration test",
@@ -1383,15 +1402,17 @@
               "sorting",
               "state",
               "two pointers",
-              "unit test"
+              "unit test",
+              "devops",
+              "networking"
             ],
             "experienced": [
               "algorithms",
               "data structures",
               "database",
-              "frontend",
               "http",
               "security",
+              "frontend",
               "api",
               "arrays",
               "authentication",
@@ -1399,8 +1420,9 @@
               "graph",
               "stack",
               "testing",
-              "performance",
               "sql",
+              "performance",
+              "tree",
               "async",
               "binary search",
               "javascript",
@@ -1411,12 +1433,13 @@
               "recursion",
               "strings",
               "transactions",
-              "tree",
+              "fundamentals",
+              "concurrency",
+              "hash map",
               "accessibility",
               "acid",
               "backtracking",
               "bfs",
-              "concurrency",
               "cookies",
               "cors",
               "css",
@@ -1428,7 +1451,6 @@
               "event loop",
               "fifo",
               "greedy",
-              "hash map",
               "heap",
               "indexes",
               "integration test",
@@ -1450,7 +1472,9 @@
               "status codes",
               "two pointers",
               "unit test",
-              "web"
+              "web",
+              "devops",
+              "networking"
             ],
             "veteran": [
               "algorithms",
@@ -1517,7 +1541,8 @@
               "status codes",
               "two pointers",
               "unit test",
-              "web"
+              "web",
+              "fundamentals"
             ]
           }
         },
@@ -2409,33 +2434,37 @@
             "database",
             "security",
             "frontend",
+            "testing",
             "http",
             "system design",
-            "testing",
+            "api",
             "performance",
             "queue",
             "stack",
-            "api",
             "arrays",
             "authentication",
             "complexity",
             "graph",
             "sql",
             "binary search",
-            "async",
-            "javascript",
             "networking",
+            "tree",
+            "async",
+            "fundamentals",
+            "javascript",
             "optimization",
             "quality",
             "react",
             "recursion",
             "strings",
             "transactions",
-            "tree",
             "web",
+            "devops",
+            "concurrency",
             "css",
             "databases",
             "fifo",
+            "hash map",
             "joins",
             "accessibility",
             "acid",
@@ -2443,11 +2472,9 @@
             "bfs",
             "caching",
             "ci/cd",
-            "concurrency",
             "cookies",
             "cors",
             "data modeling",
-            "devops",
             "dfs",
             "distributed systems",
             "dns",
@@ -2455,7 +2482,6 @@
             "effects",
             "event loop",
             "greedy",
-            "hash map",
             "heap",
             "https",
             "indexes",
@@ -2489,22 +2515,22 @@
             "beginner": [
               "algorithms",
               "data structures",
-              "database",
               "security",
+              "database",
               "frontend",
+              "testing",
               "http",
               "system design",
-              "testing",
+              "api",
               "queue",
               "stack",
-              "api",
               "arrays",
               "authentication",
               "complexity",
               "graph",
               "performance",
-              "binary search",
               "sql",
+              "binary search",
               "async",
               "javascript",
               "networking",
@@ -2516,8 +2542,10 @@
               "transactions",
               "tree",
               "web",
+              "fundamentals",
               "css",
               "databases",
+              "devops",
               "fifo",
               "joins",
               "accessibility",
@@ -2530,7 +2558,6 @@
               "cookies",
               "cors",
               "data modeling",
-              "devops",
               "dfs",
               "distributed systems",
               "dns",
@@ -2571,36 +2598,40 @@
             "intermediate": [
               "algorithms",
               "data structures",
-              "database",
               "security",
+              "database",
               "frontend",
+              "testing",
               "http",
               "system design",
-              "testing",
+              "api",
               "performance",
               "queue",
               "stack",
-              "api",
               "arrays",
               "authentication",
               "complexity",
               "graph",
               "sql",
               "binary search",
+              "networking",
+              "tree",
               "async",
               "javascript",
-              "networking",
               "optimization",
               "quality",
               "react",
               "recursion",
               "strings",
               "transactions",
-              "tree",
               "web",
+              "fundamentals",
+              "devops",
+              "concurrency",
               "css",
               "databases",
               "fifo",
+              "hash map",
               "joins",
               "accessibility",
               "acid",
@@ -2608,11 +2639,9 @@
               "bfs",
               "caching",
               "ci/cd",
-              "concurrency",
               "cookies",
               "cors",
               "data modeling",
-              "devops",
               "dfs",
               "distributed systems",
               "dns",
@@ -2620,7 +2649,6 @@
               "effects",
               "event loop",
               "greedy",
-              "hash map",
               "heap",
               "https",
               "indexes",
@@ -2655,8 +2683,8 @@
               "data structures",
               "database",
               "security",
-              "frontend",
               "http",
+              "frontend",
               "system design",
               "testing",
               "performance",
@@ -2668,31 +2696,33 @@
               "queue",
               "stack",
               "sql",
+              "networking",
+              "tree",
               "async",
               "binary search",
               "javascript",
-              "networking",
               "optimization",
               "quality",
               "react",
               "recursion",
               "strings",
               "transactions",
-              "tree",
               "web",
+              "fundamentals",
+              "devops",
+              "concurrency",
+              "hash map",
               "accessibility",
               "acid",
               "backtracking",
               "bfs",
               "caching",
               "ci/cd",
-              "concurrency",
               "cookies",
               "cors",
               "css",
               "data modeling",
               "databases",
-              "devops",
               "dfs",
               "distributed systems",
               "dns",
@@ -2701,7 +2731,6 @@
               "event loop",
               "fifo",
               "greedy",
-              "hash map",
               "heap",
               "https",
               "indexes",
@@ -2812,7 +2841,8 @@
               "tls",
               "two pointers",
               "udp",
-              "unit test"
+              "unit test",
+              "fundamentals"
             ]
           }
         }
@@ -2821,12 +2851,12 @@
         "beginner": [
           "algorithms",
           "data structures",
-          "database",
           "security",
-          "http",
+          "database",
           "frontend",
-          "system design",
+          "http",
           "testing",
+          "system design",
           "api",
           "queue",
           "stack",
@@ -2835,8 +2865,8 @@
           "complexity",
           "graph",
           "performance",
-          "binary search",
           "sql",
+          "binary search",
           "web",
           "async",
           "javascript",
@@ -2848,8 +2878,10 @@
           "strings",
           "transactions",
           "tree",
+          "fundamentals",
           "css",
           "databases",
+          "devops",
           "fifo",
           "joins",
           "rest",
@@ -2864,7 +2896,6 @@
           "cookies",
           "cors",
           "data modeling",
-          "devops",
           "dfs",
           "distributed systems",
           "dns",
@@ -2903,12 +2934,12 @@
         "intermediate": [
           "algorithms",
           "data structures",
-          "database",
           "security",
+          "database",
           "http",
           "frontend",
-          "system design",
           "testing",
+          "system design",
           "api",
           "performance",
           "queue",
@@ -2919,20 +2950,24 @@
           "graph",
           "sql",
           "binary search",
+          "networking",
+          "tree",
           "web",
           "async",
           "javascript",
-          "networking",
           "optimization",
           "quality",
           "react",
           "recursion",
           "strings",
           "transactions",
-          "tree",
+          "fundamentals",
+          "devops",
+          "concurrency",
           "css",
           "databases",
           "fifo",
+          "hash map",
           "joins",
           "rest",
           "status codes",
@@ -2942,11 +2977,9 @@
           "bfs",
           "caching",
           "ci/cd",
-          "concurrency",
           "cookies",
           "cors",
           "data modeling",
-          "devops",
           "dfs",
           "distributed systems",
           "dns",
@@ -2954,7 +2987,6 @@
           "effects",
           "event loop",
           "greedy",
-          "hash map",
           "heap",
           "https",
           "indexes",
@@ -2987,8 +3019,8 @@
           "data structures",
           "database",
           "security",
-          "frontend",
           "http",
+          "frontend",
           "system design",
           "testing",
           "performance",
@@ -3000,31 +3032,33 @@
           "queue",
           "stack",
           "sql",
+          "networking",
+          "tree",
           "async",
           "binary search",
           "javascript",
-          "networking",
           "optimization",
           "quality",
           "react",
           "recursion",
           "strings",
           "transactions",
-          "tree",
           "web",
+          "fundamentals",
+          "devops",
+          "concurrency",
+          "hash map",
           "accessibility",
           "acid",
           "backtracking",
           "bfs",
           "caching",
           "ci/cd",
-          "concurrency",
           "cookies",
           "cors",
           "css",
           "data modeling",
           "databases",
-          "devops",
           "dfs",
           "distributed systems",
           "dns",
@@ -3033,7 +3067,6 @@
           "event loop",
           "fifo",
           "greedy",
-          "hash map",
           "heap",
           "https",
           "indexes",
@@ -3144,7 +3177,8 @@
           "tls",
           "two pointers",
           "udp",
-          "unit test"
+          "unit test",
+          "fundamentals"
         ]
       },
       "countIndex": [
@@ -6390,6 +6424,262 @@
             "stack"
           ],
           "count": 1
+        },
+        {
+          "jobRoles": [
+            "backend developer",
+            "full stack developer",
+            "software engineer"
+          ],
+          "experienceLevels": [
+            "experienced",
+            "intermediate"
+          ],
+          "tags": [
+            "fundamentals",
+            "http"
+          ],
+          "count": 1
+        },
+        {
+          "jobRoles": [
+            "backend developer",
+            "full stack developer",
+            "software engineer"
+          ],
+          "experienceLevels": [
+            "experienced",
+            "intermediate"
+          ],
+          "tags": [
+            "fundamentals",
+            "sql"
+          ],
+          "count": 2
+        },
+        {
+          "jobRoles": [
+            "backend developer",
+            "full stack developer",
+            "software engineer"
+          ],
+          "experienceLevels": [
+            "experienced",
+            "intermediate"
+          ],
+          "tags": [
+            "concurrency",
+            "fundamentals"
+          ],
+          "count": 1
+        },
+        {
+          "jobRoles": [
+            "frontend developer",
+            "full stack developer",
+            "software engineer"
+          ],
+          "experienceLevels": [
+            "experienced",
+            "intermediate"
+          ],
+          "tags": [
+            "fundamentals",
+            "security"
+          ],
+          "count": 1
+        },
+        {
+          "jobRoles": [
+            "backend developer",
+            "full stack developer",
+            "software engineer"
+          ],
+          "experienceLevels": [
+            "beginner",
+            "intermediate"
+          ],
+          "tags": [
+            "fundamentals",
+            "sql"
+          ],
+          "count": 1
+        },
+        {
+          "jobRoles": [
+            "backend developer",
+            "full stack developer",
+            "software engineer"
+          ],
+          "experienceLevels": [
+            "beginner",
+            "intermediate"
+          ],
+          "tags": [
+            "algorithms",
+            "fundamentals"
+          ],
+          "count": 1
+        },
+        {
+          "jobRoles": [
+            "backend developer",
+            "full stack developer",
+            "software engineer"
+          ],
+          "experienceLevels": [
+            "experienced",
+            "intermediate"
+          ],
+          "tags": [
+            "devops",
+            "fundamentals"
+          ],
+          "count": 2
+        },
+        {
+          "jobRoles": [
+            "backend developer",
+            "full stack developer",
+            "software engineer"
+          ],
+          "experienceLevels": [
+            "beginner",
+            "intermediate"
+          ],
+          "tags": [
+            "api",
+            "fundamentals"
+          ],
+          "count": 2
+        },
+        {
+          "jobRoles": [
+            "backend developer",
+            "full stack developer",
+            "software engineer"
+          ],
+          "experienceLevels": [
+            "beginner",
+            "intermediate"
+          ],
+          "tags": [
+            "fundamentals",
+            "testing"
+          ],
+          "count": 2
+        },
+        {
+          "jobRoles": [
+            "frontend developer",
+            "full stack developer",
+            "software engineer"
+          ],
+          "experienceLevels": [
+            "beginner",
+            "intermediate"
+          ],
+          "tags": [
+            "frontend",
+            "fundamentals"
+          ],
+          "count": 1
+        },
+        {
+          "jobRoles": [
+            "backend developer",
+            "full stack developer",
+            "software engineer"
+          ],
+          "experienceLevels": [
+            "experienced",
+            "intermediate"
+          ],
+          "tags": [
+            "fundamentals",
+            "hash map"
+          ],
+          "count": 1
+        },
+        {
+          "jobRoles": [
+            "backend developer",
+            "full stack developer",
+            "software engineer"
+          ],
+          "experienceLevels": [
+            "experienced",
+            "veteran"
+          ],
+          "tags": [
+            "database",
+            "fundamentals"
+          ],
+          "count": 1
+        },
+        {
+          "jobRoles": [
+            "backend developer",
+            "full stack developer",
+            "software engineer"
+          ],
+          "experienceLevels": [
+            "experienced",
+            "intermediate"
+          ],
+          "tags": [
+            "fundamentals",
+            "networking"
+          ],
+          "count": 1
+        },
+        {
+          "jobRoles": [
+            "backend developer",
+            "full stack developer",
+            "software engineer"
+          ],
+          "experienceLevels": [
+            "experienced",
+            "intermediate"
+          ],
+          "tags": [
+            "fundamentals",
+            "tree"
+          ],
+          "count": 1
+        },
+        {
+          "jobRoles": [
+            "backend developer",
+            "full stack developer",
+            "software engineer"
+          ],
+          "experienceLevels": [
+            "beginner",
+            "intermediate"
+          ],
+          "tags": [
+            "devops",
+            "fundamentals"
+          ],
+          "count": 1
+        },
+        {
+          "jobRoles": [
+            "backend developer",
+            "full stack developer",
+            "software engineer"
+          ],
+          "experienceLevels": [
+            "beginner",
+            "intermediate"
+          ],
+          "tags": [
+            "fundamentals",
+            "security"
+          ],
+          "count": 1
         }
       ]
     },
@@ -6435,12 +6725,12 @@
           "tree",
           "optimization",
           "stack",
+          "matrix",
           "async",
           "database",
           "heap",
           "intervals",
           "javascript",
-          "matrix",
           "pointers",
           "queue",
           "api",
@@ -6448,6 +6738,7 @@
           "caching",
           "data processing",
           "frontend",
+          "interview",
           "joins",
           "logs",
           "pagination",
@@ -6488,16 +6779,17 @@
             "tree",
             "optimization",
             "stack",
+            "matrix",
             "database",
             "heap",
             "intervals",
-            "matrix",
             "pointers",
             "queue",
             "api",
             "backend",
             "caching",
             "data processing",
+            "interview",
             "joins",
             "logs",
             "pagination",
@@ -6528,11 +6820,11 @@
               "linked list",
               "optimization",
               "tree",
+              "stack",
               "database",
               "heap",
               "intervals",
               "matrix",
-              "stack",
               "api",
               "backend",
               "caching",
@@ -6548,7 +6840,8 @@
               "sliding window",
               "sql",
               "system design",
-              "topological sort"
+              "topological sort",
+              "interview"
             ],
             "intermediate": [
               "algorithms",
@@ -6588,7 +6881,8 @@
               "sliding window",
               "sql",
               "system design",
-              "topological sort"
+              "topological sort",
+              "interview"
             ],
             "experienced": [
               "algorithms",
@@ -6608,17 +6902,18 @@
               "linked list",
               "tree",
               "optimization",
+              "matrix",
               "stack",
               "database",
               "heap",
               "intervals",
-              "matrix",
               "pointers",
               "queue",
               "api",
               "backend",
               "caching",
               "data processing",
+              "interview",
               "joins",
               "logs",
               "pagination",
@@ -6648,10 +6943,10 @@
               "linked list",
               "optimization",
               "tree",
+              "matrix",
               "database",
               "heap",
               "intervals",
-              "matrix",
               "stack",
               "api",
               "backend",
@@ -6668,7 +6963,8 @@
               "sliding window",
               "sql",
               "system design",
-              "topological sort"
+              "topological sort",
+              "interview"
             ]
           }
         },
@@ -7123,18 +7419,19 @@
             "linked list",
             "optimization",
             "tree",
+            "matrix",
+            "stack",
             "async",
             "database",
             "heap",
             "intervals",
             "javascript",
-            "matrix",
-            "stack",
             "api",
             "backend",
             "caching",
             "data processing",
             "frontend",
+            "interview",
             "joins",
             "logs",
             "pagination",
@@ -7168,13 +7465,13 @@
               "linked list",
               "optimization",
               "tree",
+              "stack",
               "async",
               "database",
               "heap",
               "intervals",
               "javascript",
               "matrix",
-              "stack",
               "api",
               "backend",
               "caching",
@@ -7192,7 +7489,8 @@
               "sliding window",
               "sql",
               "system design",
-              "topological sort"
+              "topological sort",
+              "interview"
             ],
             "intermediate": [
               "algorithms",
@@ -7212,13 +7510,13 @@
               "linked list",
               "optimization",
               "tree",
+              "stack",
               "async",
               "database",
               "heap",
               "intervals",
               "javascript",
               "matrix",
-              "stack",
               "api",
               "backend",
               "caching",
@@ -7236,7 +7534,8 @@
               "sliding window",
               "sql",
               "system design",
-              "topological sort"
+              "topological sort",
+              "interview"
             ],
             "experienced": [
               "algorithms",
@@ -7256,18 +7555,19 @@
               "linked list",
               "optimization",
               "tree",
+              "matrix",
               "async",
               "database",
               "heap",
               "intervals",
               "javascript",
-              "matrix",
               "stack",
               "api",
               "backend",
               "caching",
               "data processing",
               "frontend",
+              "interview",
               "joins",
               "logs",
               "pagination",
@@ -7300,12 +7600,12 @@
               "linked list",
               "optimization",
               "tree",
+              "matrix",
               "async",
               "database",
               "heap",
               "intervals",
               "javascript",
-              "matrix",
               "stack",
               "api",
               "backend",
@@ -7324,7 +7624,8 @@
               "sliding window",
               "sql",
               "system design",
-              "topological sort"
+              "topological sort",
+              "interview"
             ]
           }
         },
@@ -8024,12 +8325,12 @@
             "tree",
             "optimization",
             "stack",
+            "matrix",
             "async",
             "database",
             "heap",
             "intervals",
             "javascript",
-            "matrix",
             "pointers",
             "queue",
             "api",
@@ -8037,6 +8338,7 @@
             "caching",
             "data processing",
             "frontend",
+            "interview",
             "joins",
             "logs",
             "pagination",
@@ -8068,13 +8370,13 @@
               "linked list",
               "optimization",
               "tree",
+              "stack",
               "async",
               "database",
               "heap",
               "intervals",
               "javascript",
               "matrix",
-              "stack",
               "api",
               "backend",
               "caching",
@@ -8092,7 +8394,8 @@
               "sliding window",
               "sql",
               "system design",
-              "topological sort"
+              "topological sort",
+              "interview"
             ],
             "intermediate": [
               "algorithms",
@@ -8136,7 +8439,8 @@
               "sliding window",
               "sql",
               "system design",
-              "topological sort"
+              "topological sort",
+              "interview"
             ],
             "experienced": [
               "algorithms",
@@ -8156,13 +8460,13 @@
               "linked list",
               "tree",
               "optimization",
+              "matrix",
               "stack",
               "async",
               "database",
               "heap",
               "intervals",
               "javascript",
-              "matrix",
               "pointers",
               "queue",
               "api",
@@ -8170,6 +8474,7 @@
               "caching",
               "data processing",
               "frontend",
+              "interview",
               "joins",
               "logs",
               "pagination",
@@ -8200,12 +8505,12 @@
               "linked list",
               "optimization",
               "tree",
+              "matrix",
               "async",
               "database",
               "heap",
               "intervals",
               "javascript",
-              "matrix",
               "stack",
               "api",
               "backend",
@@ -8224,7 +8529,8 @@
               "sliding window",
               "sql",
               "system design",
-              "topological sort"
+              "topological sort",
+              "interview"
             ]
           }
         }
@@ -8248,13 +8554,13 @@
           "linked list",
           "optimization",
           "tree",
+          "stack",
           "async",
           "database",
           "heap",
           "intervals",
           "javascript",
           "matrix",
-          "stack",
           "api",
           "backend",
           "caching",
@@ -8272,7 +8578,8 @@
           "sliding window",
           "sql",
           "system design",
-          "topological sort"
+          "topological sort",
+          "interview"
         ],
         "intermediate": [
           "algorithms",
@@ -8316,7 +8623,8 @@
           "sliding window",
           "sql",
           "system design",
-          "topological sort"
+          "topological sort",
+          "interview"
         ],
         "experienced": [
           "algorithms",
@@ -8336,13 +8644,13 @@
           "linked list",
           "tree",
           "optimization",
+          "matrix",
           "stack",
           "async",
           "database",
           "heap",
           "intervals",
           "javascript",
-          "matrix",
           "pointers",
           "queue",
           "api",
@@ -8350,6 +8658,7 @@
           "caching",
           "data processing",
           "frontend",
+          "interview",
           "joins",
           "logs",
           "pagination",
@@ -8380,12 +8689,12 @@
           "linked list",
           "optimization",
           "tree",
+          "matrix",
           "async",
           "database",
           "heap",
           "intervals",
           "javascript",
-          "matrix",
           "stack",
           "api",
           "backend",
@@ -8404,7 +8713,8 @@
           "sliding window",
           "sql",
           "system design",
-          "topological sort"
+          "topological sort",
+          "interview"
         ]
       },
       "countIndex": [
@@ -11066,6 +11376,134 @@
             "matrix"
           ],
           "count": 3
+        },
+        {
+          "jobRoles": [
+            "backend developer",
+            "full stack developer",
+            "software engineer"
+          ],
+          "experienceLevels": [
+            "beginner",
+            "intermediate"
+          ],
+          "tags": [
+            "interview",
+            "strings"
+          ],
+          "count": 2
+        },
+        {
+          "jobRoles": [
+            "backend developer",
+            "full stack developer",
+            "software engineer"
+          ],
+          "experienceLevels": [
+            "experienced",
+            "intermediate"
+          ],
+          "tags": [
+            "interview",
+            "strings"
+          ],
+          "count": 1
+        },
+        {
+          "jobRoles": [
+            "backend developer",
+            "full stack developer",
+            "software engineer"
+          ],
+          "experienceLevels": [
+            "experienced",
+            "intermediate"
+          ],
+          "tags": [
+            "arrays",
+            "interview"
+          ],
+          "count": 2
+        },
+        {
+          "jobRoles": [
+            "backend developer",
+            "full stack developer",
+            "software engineer"
+          ],
+          "experienceLevels": [
+            "beginner",
+            "intermediate"
+          ],
+          "tags": [
+            "interview",
+            "stack"
+          ],
+          "count": 1
+        },
+        {
+          "jobRoles": [
+            "backend developer",
+            "full stack developer",
+            "software engineer"
+          ],
+          "experienceLevels": [
+            "experienced",
+            "veteran"
+          ],
+          "tags": [
+            "interview",
+            "matrix"
+          ],
+          "count": 1
+        },
+        {
+          "jobRoles": [
+            "backend developer",
+            "full stack developer",
+            "software engineer"
+          ],
+          "experienceLevels": [
+            "experienced",
+            "veteran"
+          ],
+          "tags": [
+            "bfs",
+            "interview"
+          ],
+          "count": 1
+        },
+        {
+          "jobRoles": [
+            "backend developer",
+            "full stack developer",
+            "software engineer"
+          ],
+          "experienceLevels": [
+            "experienced",
+            "intermediate"
+          ],
+          "tags": [
+            "hash map",
+            "interview"
+          ],
+          "count": 1
+        },
+        {
+          "jobRoles": [
+            "backend developer",
+            "full stack developer",
+            "software engineer"
+          ],
+          "experienceLevels": [
+            "experienced",
+            "veteran"
+          ],
+          "tags": [
+            "hash map",
+            "interview"
+          ],
+          "count": 1
         }
       ]
     },
@@ -11097,8 +11535,8 @@
           "data structures",
           "database",
           "security",
-          "http",
           "testing",
+          "http",
           "frontend",
           "system design",
           "api",
@@ -11109,9 +11547,9 @@
           "arrays",
           "complexity",
           "graph",
+          "javascript",
           "sql",
           "async",
-          "javascript",
           "networking",
           "web",
           "binary search",
@@ -11122,6 +11560,8 @@
           "strings",
           "transactions",
           "tree",
+          "accessibility",
+          "caching",
           "concurrency",
           "event loop",
           "fifo",
@@ -11134,11 +11574,9 @@
           "tcp",
           "udp",
           "unit test",
-          "accessibility",
           "acid",
           "backtracking",
           "bfs",
-          "caching",
           "ci/cd",
           "cookies",
           "cors",
@@ -11155,6 +11593,7 @@
           "hash map",
           "heap",
           "https",
+          "interview",
           "joins",
           "jwt",
           "layout",
@@ -11191,11 +11630,11 @@
             "http",
             "system design",
             "api",
+            "testing",
             "authentication",
             "performance",
             "queue",
             "stack",
-            "testing",
             "arrays",
             "complexity",
             "graph",
@@ -11209,6 +11648,7 @@
             "strings",
             "transactions",
             "tree",
+            "caching",
             "concurrency",
             "fifo",
             "indexes",
@@ -11222,7 +11662,6 @@
             "acid",
             "backtracking",
             "bfs",
-            "caching",
             "ci/cd",
             "cookies",
             "cors",
@@ -11252,25 +11691,26 @@
             "sorting",
             "status codes",
             "tls",
-            "two pointers"
+            "two pointers",
+            "interview"
           ],
           "byLevel": {
             "beginner": [
               "algorithms",
               "data structures",
-              "security",
               "database",
+              "security",
               "http",
               "system design",
               "authentication",
               "queue",
               "stack",
+              "testing",
               "api",
               "arrays",
               "complexity",
               "graph",
               "performance",
-              "testing",
               "web",
               "binary search",
               "networking",
@@ -11324,7 +11764,8 @@
               "tls",
               "two pointers",
               "udp",
-              "unit test"
+              "unit test",
+              "interview"
             ],
             "intermediate": [
               "algorithms",
@@ -11334,11 +11775,11 @@
               "http",
               "system design",
               "api",
+              "testing",
               "authentication",
               "performance",
               "queue",
               "stack",
-              "testing",
               "arrays",
               "complexity",
               "graph",
@@ -11352,6 +11793,7 @@
               "strings",
               "transactions",
               "tree",
+              "caching",
               "concurrency",
               "fifo",
               "indexes",
@@ -11365,7 +11807,6 @@
               "acid",
               "backtracking",
               "bfs",
-              "caching",
               "ci/cd",
               "cookies",
               "cors",
@@ -11395,7 +11836,8 @@
               "sorting",
               "status codes",
               "tls",
-              "two pointers"
+              "two pointers",
+              "interview"
             ],
             "experienced": [
               "algorithms",
@@ -11423,6 +11865,7 @@
               "strings",
               "transactions",
               "tree",
+              "caching",
               "concurrency",
               "indexes",
               "integration test",
@@ -11434,7 +11877,6 @@
               "acid",
               "backtracking",
               "bfs",
-              "caching",
               "ci/cd",
               "cookies",
               "cors",
@@ -11466,13 +11908,14 @@
               "sorting",
               "status codes",
               "tls",
-              "two pointers"
+              "two pointers",
+              "interview"
             ],
             "veteran": [
               "algorithms",
               "data structures",
-              "database",
               "security",
+              "database",
               "http",
               "system design",
               "api",
@@ -11537,7 +11980,8 @@
               "tls",
               "two pointers",
               "udp",
-              "unit test"
+              "unit test",
+              "interview"
             ]
           }
         },
@@ -12118,15 +12562,15 @@
             "testing",
             "api",
             "http",
-            "async",
             "javascript",
+            "async",
             "quality",
             "react",
+            "accessibility",
             "event loop",
             "integration test",
             "promises",
             "unit test",
-            "accessibility",
             "css",
             "effects",
             "layout",
@@ -12134,6 +12578,7 @@
             "state",
             "status codes",
             "web",
+            "interview",
             "data structures",
             "fifo",
             "lifo",
@@ -12164,6 +12609,7 @@
               "web",
               "data structures",
               "fifo",
+              "interview",
               "lifo",
               "queue",
               "stack"
@@ -12173,8 +12619,36 @@
               "testing",
               "api",
               "http",
-              "async",
               "javascript",
+              "async",
+              "quality",
+              "react",
+              "accessibility",
+              "event loop",
+              "integration test",
+              "promises",
+              "unit test",
+              "css",
+              "effects",
+              "layout",
+              "rest",
+              "state",
+              "status codes",
+              "web",
+              "interview",
+              "data structures",
+              "fifo",
+              "lifo",
+              "queue",
+              "stack"
+            ],
+            "experienced": [
+              "frontend",
+              "testing",
+              "api",
+              "http",
+              "javascript",
+              "async",
               "quality",
               "react",
               "event loop",
@@ -12189,33 +12663,7 @@
               "state",
               "status codes",
               "web",
-              "data structures",
-              "fifo",
-              "lifo",
-              "queue",
-              "stack"
-            ],
-            "experienced": [
-              "frontend",
-              "testing",
-              "api",
-              "http",
-              "async",
-              "javascript",
-              "quality",
-              "react",
-              "event loop",
-              "integration test",
-              "promises",
-              "unit test",
-              "accessibility",
-              "css",
-              "effects",
-              "layout",
-              "rest",
-              "state",
-              "status codes",
-              "web"
+              "interview"
             ],
             "veteran": [
               "frontend",
@@ -12252,19 +12700,19 @@
             "algorithms",
             "data structures",
             "database",
-            "http",
             "security",
+            "http",
             "frontend",
             "api",
-            "authentication",
             "testing",
+            "authentication",
             "arrays",
             "complexity",
             "graph",
             "stack",
+            "javascript",
             "sql",
             "async",
-            "javascript",
             "performance",
             "binary search",
             "optimization",
@@ -12275,6 +12723,7 @@
             "strings",
             "transactions",
             "tree",
+            "accessibility",
             "event loop",
             "indexes",
             "integration test",
@@ -12283,7 +12732,6 @@
             "rest",
             "unit test",
             "web",
-            "accessibility",
             "acid",
             "backtracking",
             "bfs",
@@ -12300,6 +12748,7 @@
             "greedy",
             "hash map",
             "heap",
+            "interview",
             "joins",
             "jwt",
             "layout",
@@ -12314,6 +12763,7 @@
             "state",
             "status codes",
             "two pointers",
+            "caching",
             "networking",
             "tcp",
             "udp"
@@ -12327,12 +12777,12 @@
               "frontend",
               "http",
               "authentication",
+              "testing",
               "api",
               "arrays",
               "complexity",
               "graph",
               "stack",
-              "testing",
               "async",
               "binary search",
               "javascript",
@@ -12346,8 +12796,8 @@
               "strings",
               "transactions",
               "tree",
-              "web",
               "accessibility",
+              "web",
               "acid",
               "backtracking",
               "bfs",
@@ -12384,7 +12834,8 @@
               "state",
               "status codes",
               "two pointers",
-              "unit test"
+              "unit test",
+              "interview"
             ],
             "intermediate": [
               "algorithms",
@@ -12394,15 +12845,15 @@
               "security",
               "frontend",
               "api",
-              "authentication",
               "testing",
+              "authentication",
               "arrays",
               "complexity",
               "graph",
               "stack",
+              "javascript",
               "sql",
               "async",
-              "javascript",
               "performance",
               "binary search",
               "optimization",
@@ -12413,6 +12864,7 @@
               "strings",
               "transactions",
               "tree",
+              "accessibility",
               "event loop",
               "indexes",
               "integration test",
@@ -12421,7 +12873,6 @@
               "rest",
               "unit test",
               "web",
-              "accessibility",
               "acid",
               "backtracking",
               "bfs",
@@ -12452,6 +12903,8 @@
               "state",
               "status codes",
               "two pointers",
+              "interview",
+              "caching",
               "networking",
               "tcp",
               "udp"
@@ -12460,8 +12913,8 @@
               "algorithms",
               "data structures",
               "database",
-              "http",
               "security",
+              "http",
               "frontend",
               "api",
               "authentication",
@@ -12470,9 +12923,9 @@
               "complexity",
               "graph",
               "stack",
+              "javascript",
               "sql",
               "async",
-              "javascript",
               "performance",
               "binary search",
               "optimization",
@@ -12508,6 +12961,7 @@
               "greedy",
               "hash map",
               "heap",
+              "interview",
               "joins",
               "jwt",
               "layout",
@@ -12522,6 +12976,7 @@
               "state",
               "status codes",
               "two pointers",
+              "caching",
               "networking",
               "tcp",
               "udp"
@@ -12530,9 +12985,9 @@
               "algorithms",
               "data structures",
               "database",
+              "security",
               "frontend",
               "http",
-              "security",
               "api",
               "arrays",
               "authentication",
@@ -12591,7 +13046,8 @@
               "status codes",
               "two pointers",
               "unit test",
-              "web"
+              "web",
+              "interview"
             ]
           }
         },
@@ -13482,8 +13938,8 @@
             "data structures",
             "database",
             "security",
-            "http",
             "testing",
+            "http",
             "frontend",
             "system design",
             "api",
@@ -13494,9 +13950,9 @@
             "arrays",
             "complexity",
             "graph",
+            "javascript",
             "sql",
             "async",
-            "javascript",
             "networking",
             "web",
             "binary search",
@@ -13507,6 +13963,8 @@
             "strings",
             "transactions",
             "tree",
+            "accessibility",
+            "caching",
             "concurrency",
             "event loop",
             "fifo",
@@ -13519,11 +13977,9 @@
             "tcp",
             "udp",
             "unit test",
-            "accessibility",
             "acid",
             "backtracking",
             "bfs",
-            "caching",
             "ci/cd",
             "cookies",
             "cors",
@@ -13540,6 +13996,7 @@
             "hash map",
             "heap",
             "https",
+            "interview",
             "joins",
             "jwt",
             "layout",
@@ -13563,12 +14020,12 @@
             "beginner": [
               "algorithms",
               "data structures",
-              "security",
               "database",
+              "security",
+              "testing",
               "frontend",
               "http",
               "system design",
-              "testing",
               "authentication",
               "queue",
               "stack",
@@ -13590,9 +14047,9 @@
               "strings",
               "transactions",
               "tree",
+              "accessibility",
               "fifo",
               "lifo",
-              "accessibility",
               "acid",
               "backtracking",
               "bfs",
@@ -13640,15 +14097,16 @@
               "tls",
               "two pointers",
               "udp",
-              "unit test"
+              "unit test",
+              "interview"
             ],
             "intermediate": [
               "algorithms",
               "data structures",
               "database",
               "security",
-              "http",
               "testing",
+              "http",
               "frontend",
               "system design",
               "api",
@@ -13659,9 +14117,9 @@
               "arrays",
               "complexity",
               "graph",
+              "javascript",
               "sql",
               "async",
-              "javascript",
               "networking",
               "web",
               "binary search",
@@ -13672,6 +14130,8 @@
               "strings",
               "transactions",
               "tree",
+              "accessibility",
+              "caching",
               "concurrency",
               "event loop",
               "fifo",
@@ -13684,11 +14144,9 @@
               "tcp",
               "udp",
               "unit test",
-              "accessibility",
               "acid",
               "backtracking",
               "bfs",
-              "caching",
               "ci/cd",
               "cookies",
               "cors",
@@ -13722,7 +14180,8 @@
               "state",
               "status codes",
               "tls",
-              "two pointers"
+              "two pointers",
+              "interview"
             ],
             "experienced": [
               "algorithms",
@@ -13741,9 +14200,9 @@
               "graph",
               "queue",
               "stack",
+              "javascript",
               "sql",
               "async",
-              "javascript",
               "networking",
               "web",
               "binary search",
@@ -13754,6 +14213,7 @@
               "strings",
               "transactions",
               "tree",
+              "caching",
               "concurrency",
               "event loop",
               "indexes",
@@ -13768,7 +14228,6 @@
               "acid",
               "backtracking",
               "bfs",
-              "caching",
               "ci/cd",
               "cookies",
               "cors",
@@ -13786,6 +14245,7 @@
               "hash map",
               "heap",
               "https",
+              "interview",
               "joins",
               "jwt",
               "layout",
@@ -13809,8 +14269,8 @@
             "veteran": [
               "algorithms",
               "data structures",
-              "database",
               "security",
+              "database",
               "frontend",
               "http",
               "system design",
@@ -13886,7 +14346,8 @@
               "tls",
               "two pointers",
               "udp",
-              "unit test"
+              "unit test",
+              "interview"
             ]
           }
         }
@@ -13895,12 +14356,12 @@
         "beginner": [
           "algorithms",
           "data structures",
-          "security",
           "database",
+          "security",
+          "testing",
           "frontend",
           "http",
           "system design",
-          "testing",
           "authentication",
           "queue",
           "stack",
@@ -13922,9 +14383,9 @@
           "strings",
           "transactions",
           "tree",
+          "accessibility",
           "fifo",
           "lifo",
-          "accessibility",
           "acid",
           "backtracking",
           "bfs",
@@ -13972,15 +14433,16 @@
           "tls",
           "two pointers",
           "udp",
-          "unit test"
+          "unit test",
+          "interview"
         ],
         "intermediate": [
           "algorithms",
           "data structures",
           "database",
           "security",
-          "http",
           "testing",
+          "http",
           "frontend",
           "system design",
           "api",
@@ -13991,9 +14453,9 @@
           "arrays",
           "complexity",
           "graph",
+          "javascript",
           "sql",
           "async",
-          "javascript",
           "networking",
           "web",
           "binary search",
@@ -14004,6 +14466,8 @@
           "strings",
           "transactions",
           "tree",
+          "accessibility",
+          "caching",
           "concurrency",
           "event loop",
           "fifo",
@@ -14016,11 +14480,9 @@
           "tcp",
           "udp",
           "unit test",
-          "accessibility",
           "acid",
           "backtracking",
           "bfs",
-          "caching",
           "ci/cd",
           "cookies",
           "cors",
@@ -14054,7 +14516,8 @@
           "state",
           "status codes",
           "tls",
-          "two pointers"
+          "two pointers",
+          "interview"
         ],
         "experienced": [
           "algorithms",
@@ -14073,9 +14536,9 @@
           "graph",
           "queue",
           "stack",
+          "javascript",
           "sql",
           "async",
-          "javascript",
           "networking",
           "web",
           "binary search",
@@ -14086,6 +14549,7 @@
           "strings",
           "transactions",
           "tree",
+          "caching",
           "concurrency",
           "event loop",
           "indexes",
@@ -14100,7 +14564,6 @@
           "acid",
           "backtracking",
           "bfs",
-          "caching",
           "ci/cd",
           "cookies",
           "cors",
@@ -14118,6 +14581,7 @@
           "hash map",
           "heap",
           "https",
+          "interview",
           "joins",
           "jwt",
           "layout",
@@ -14141,8 +14605,8 @@
         "veteran": [
           "algorithms",
           "data structures",
-          "database",
           "security",
+          "database",
           "frontend",
           "http",
           "system design",
@@ -14218,7 +14682,8 @@
           "tls",
           "two pointers",
           "udp",
-          "unit test"
+          "unit test",
+          "interview"
         ]
       },
       "countIndex": [
@@ -17468,6 +17933,150 @@
             "integration test",
             "testing",
             "unit test"
+          ],
+          "count": 1
+        },
+        {
+          "jobRoles": [
+            "backend developer",
+            "full stack developer",
+            "software engineer"
+          ],
+          "experienceLevels": [
+            "experienced",
+            "intermediate"
+          ],
+          "tags": [
+            "database",
+            "interview"
+          ],
+          "count": 2
+        },
+        {
+          "jobRoles": [
+            "backend developer",
+            "full stack developer",
+            "software engineer"
+          ],
+          "experienceLevels": [
+            "experienced",
+            "veteran"
+          ],
+          "tags": [
+            "api",
+            "interview"
+          ],
+          "count": 1
+        },
+        {
+          "jobRoles": [
+            "backend developer",
+            "full stack developer",
+            "software engineer"
+          ],
+          "experienceLevels": [
+            "experienced",
+            "veteran"
+          ],
+          "tags": [
+            "interview",
+            "security"
+          ],
+          "count": 1
+        },
+        {
+          "jobRoles": [
+            "frontend developer",
+            "full stack developer",
+            "software engineer"
+          ],
+          "experienceLevels": [
+            "beginner",
+            "intermediate"
+          ],
+          "tags": [
+            "accessibility",
+            "interview"
+          ],
+          "count": 1
+        },
+        {
+          "jobRoles": [
+            "backend developer",
+            "full stack developer",
+            "software engineer"
+          ],
+          "experienceLevels": [
+            "experienced",
+            "intermediate"
+          ],
+          "tags": [
+            "api",
+            "interview"
+          ],
+          "count": 1
+        },
+        {
+          "jobRoles": [
+            "backend developer",
+            "full stack developer",
+            "software engineer"
+          ],
+          "experienceLevels": [
+            "experienced",
+            "intermediate"
+          ],
+          "tags": [
+            "caching",
+            "interview"
+          ],
+          "count": 1
+        },
+        {
+          "jobRoles": [
+            "backend developer",
+            "full stack developer",
+            "software engineer"
+          ],
+          "experienceLevels": [
+            "beginner",
+            "intermediate"
+          ],
+          "tags": [
+            "database",
+            "interview"
+          ],
+          "count": 1
+        },
+        {
+          "jobRoles": [
+            "frontend developer",
+            "full stack developer",
+            "software engineer"
+          ],
+          "experienceLevels": [
+            "experienced",
+            "intermediate"
+          ],
+          "tags": [
+            "interview",
+            "javascript"
+          ],
+          "count": 1
+        },
+        {
+          "jobRoles": [
+            "backend developer",
+            "full stack developer",
+            "software engineer"
+          ],
+          "experienceLevels": [
+            "beginner",
+            "intermediate"
+          ],
+          "tags": [
+            "interview",
+            "testing"
           ],
           "count": 1
         }

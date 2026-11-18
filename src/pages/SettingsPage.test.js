@@ -73,6 +73,9 @@ beforeEach(() => {
   });
 
   useAuth.mockReturnValue({
+    user: {
+      providerIds: ["password"],
+    },
     updateProfileCache: jest.fn(),
   });
 
@@ -246,7 +249,7 @@ function enterPasswords(current, next, confirmation) {
   );
 }
 
-test("renders active password fields and disabled account deletion", async () => {
+test("renders password controls for a password-linked account", async () => {
   renderPage();
 
   await screen.findByDisplayValue("original_name");
@@ -269,7 +272,7 @@ test("renders active password fields and disabled account deletion", async () =>
 
   expect(
     screen.getByRole("button", { name: "Delete Account" })
-  ).toBeDisabled();
+  ).toBeEnabled();
 });
 
 test("updates password and clears fields on success", async () => {
@@ -399,4 +402,174 @@ test("prevents duplicate submissions while updating", async () => {
   ).toBeInTheDocument();
 });
 
+//Google only accounts do not see unusable password controls
+test("hides password form for Google-only accounts", async () => {
+  useAuth.mockReturnValue({
+    user: {
+      providerIds: ["google.com"],
+    },
+    updateProfileCache: jest.fn(),
+  });
 
+  renderPage();
+
+  await screen.findByDisplayValue("original_name");
+
+  expect(
+    screen.queryByLabelText("Current Password")
+  ).not.toBeInTheDocument();
+
+  expect(
+    screen.getByText(/password changes require a linked/i)
+  ).toBeInTheDocument();
+
+  await waitFor(() => {
+    expect(
+      screen.getByRole("button", { name: "Delete Account" })
+    ).toBeEnabled();
+  });
+});
+
+//Covers password reuse prevention and stale error-message handling.
+test("rejects using the current password as the new password", async () => {
+  renderPage();
+  await screen.findByDisplayValue("original_name");
+
+  enterPasswords(
+    "samePassword123",
+    "samePassword123",
+    "samePassword123"
+  );
+
+  fireEvent.click(
+    screen.getByRole("button", { name: "Update Security" })
+  );
+
+  expect(
+    await screen.findByRole("alert")
+  ).toHaveTextContent(
+    "New password must differ from the current password."
+  );
+
+  expect(authService.changePassword).not.toHaveBeenCalled();
+});
+
+test("clears password errors when the user edits a field", async () => {
+  authService.changePassword.mockRejectedValueOnce(
+    new Error("Current password is incorrect.")
+  );
+
+  renderPage();
+  await screen.findByDisplayValue("original_name");
+
+  enterPasswords(
+    "wrongPassword123",
+    "newPassword123",
+    "newPassword123"
+  );
+
+  fireEvent.click(
+    screen.getByRole("button", { name: "Update Security" })
+  );
+
+  expect(
+    await screen.findByRole("alert")
+  ).toHaveTextContent("Current password is incorrect.");
+
+  fireEvent.change(
+    screen.getByLabelText("Current Password"),
+    { target: { value: "correctedPassword123" } }
+  );
+
+  expect(
+    screen.queryByText("Current password is incorrect.")
+  ).not.toBeInTheDocument();
+
+  expect(authService.changePassword).toHaveBeenCalledTimes(1);
+});
+
+//Unsupported deletion is explained
+test("explains when account deletion is unavailable", async () => {
+  useAuth.mockReturnValue({
+    user: {
+      providerIds: [],
+    },
+    updateProfileCache: jest.fn(),
+  });
+
+  renderPage();
+
+  await screen.findByDisplayValue("original_name");
+
+  expect(
+    screen.getByRole("button", { name: "Delete Account" })
+  ).toBeDisabled();
+
+  expect(
+    screen.getByText(/account deletion is not available/i)
+  ).toBeInTheDocument();
+});
+
+//Canceling a username edit doesnt save anything
+test("cancels unsaved username changes", async () => {
+  renderPage();
+
+  const usernameInput =
+    await screen.findByLabelText("Username");
+
+  fireEvent.change(usernameInput, {
+    target: { value: "temporary_name" },
+  });
+
+  expect(usernameInput).toHaveValue("temporary_name");
+
+  fireEvent.click(
+    screen.getByRole("button", {
+      name: "Cancel Changes",
+    })
+  );
+
+  expect(usernameInput).toHaveValue("original_name");
+
+  expect(
+    userService.updateProfile
+  ).not.toHaveBeenCalled();
+
+  expect(
+    screen.getByRole("button", {
+      name: "Save Profile Changes",
+    })
+  ).toBeDisabled();
+});
+
+//Users can dismiss a successful message
+test("allows dismissing settings feedback", async () => {
+  renderPage();
+
+  const usernameInput =
+    await screen.findByLabelText("Username");
+
+  fireEvent.change(usernameInput, {
+    target: { value: "new_name" },
+  });
+
+  fireEvent.click(
+    screen.getByRole("button", {
+      name: "Save Profile Changes",
+    })
+  );
+
+  expect(
+    await screen.findByText("Profile changes saved.")
+  ).toBeInTheDocument();
+
+  fireEvent.click(
+    screen.getByRole("button", {
+      name: "Dismiss settings message",
+    })
+  );
+
+  expect(
+    screen.queryByText("Profile changes saved.")
+  ).not.toBeInTheDocument();
+});

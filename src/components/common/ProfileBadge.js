@@ -18,7 +18,15 @@ function ProfileBadge({
       className="sidebarProfileBadge"
       title={`${username}'s profile badge`}
     >
-      {!imageFailed ? (
+      {imageSrc === null ? (
+        <span
+          className="sidebarProfileBadgeFallback"
+          aria-label="Rank badge unavailable"
+          role="img"
+        >
+          ?
+        </span>
+      ) : !imageFailed ? (
         <img
           src={imageSrc}
           alt={badgeAlt}

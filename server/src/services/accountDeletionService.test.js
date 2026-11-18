@@ -129,3 +129,119 @@ test("failed relationship cleanup retains Auth identity and profile deletion mar
     { deleting: true, status: "deleting" }, { merge: true }
   );
 });
+
+//Checks multiple session batches, username claim ownership, and cleanup failure.
+test("removes multiple session batches and reports the total", async () => {
+  const { service, db, authClient, sessions } = setup();
+  const sessionQuery = sessions.where("userId", "==", "u1");
+
+  const refs = [
+    { path: "sessions/one" },
+    { path: "sessions/two" },
+    { path: "sessions/three" },
+  ];
+
+  sessionQuery.get.mockReset()
+    .mockResolvedValueOnce({
+      empty: false,
+      docs: refs.slice(0, 2).map((ref) => ({ ref })),
+    })
+    .mockResolvedValueOnce({
+      empty: false,
+      docs: refs.slice(2).map((ref) => ({ ref })),
+    })
+    .mockResolvedValueOnce({
+      empty: true,
+      docs: [],
+    });
+
+  await expect(service.deleteAccount("u1")).resolves.toEqual({
+    deleted: true,
+    deletedSessions: 3,
+  });
+
+  for (const ref of refs) {
+    expect(db.recursiveDelete).toHaveBeenCalledWith(ref);
+  }
+
+  expect(sessionQuery.limit).toHaveBeenCalledWith(50);
+  expect(authClient.deleteUser).toHaveBeenCalledWith("u1");
+});
+
+test("does not delete username claims reassigned to another user", async () => {
+  const { service, db, authClient } = setup();
+
+  const ownedRef = { path: "usernames/owned" };
+  const reassignedRef = { path: "usernames/reassigned" };
+
+  const originalCollection = db.collection.getMockImplementation();
+
+  db.collection.mockImplementation((name) =>
+    name === "usernames"
+      ? {
+          where: jest.fn(() => ({
+            get: jest.fn().mockResolvedValue({
+              docs: [{ ref: ownedRef }, { ref: reassignedRef }],
+            }),
+          })),
+        }
+      : originalCollection(name)
+  );
+
+  const transaction = {
+    get: jest.fn()
+      .mockResolvedValueOnce({
+        exists: true,
+        data: () => ({ uid: "u1" }),
+      })
+      .mockResolvedValueOnce({
+        exists: true,
+        data: () => ({ uid: "u2" }),
+      }),
+    delete: jest.fn(),
+  };
+
+  db.runTransaction = jest.fn(async (callback) => callback(transaction));
+
+  await expect(service.deleteAccount("u1")).resolves.toMatchObject({
+    deleted: true,
+  });
+
+  expect(db.runTransaction).toHaveBeenCalledTimes(2);
+  expect(transaction.delete).toHaveBeenCalledTimes(1);
+  expect(transaction.delete).toHaveBeenCalledWith(ownedRef);
+  expect(transaction.delete).not.toHaveBeenCalledWith(reassignedRef);
+  expect(authClient.deleteUser).toHaveBeenCalledWith("u1");
+});
+
+test("reports partial deletion when username cleanup fails", async () => {
+  const { service, db, authClient, profile } = setup();
+
+  const originalCollection = db.collection.getMockImplementation();
+
+  db.collection.mockImplementation((name) =>
+    name === "usernames"
+      ? {
+          where: jest.fn(() => ({
+            get: jest.fn().mockResolvedValue({
+              docs: [{ ref: { path: "usernames/old" } }],
+            }),
+          })),
+        }
+      : originalCollection(name)
+  );
+
+  db.runTransaction = jest.fn()
+    .mockRejectedValue(new Error("Username transaction failed"));
+
+  await expect(service.deleteAccount("u1")).rejects.toMatchObject({
+    code: "account-deletion-partial",
+  });
+
+  expect(authClient.deleteUser).toHaveBeenCalledWith("u1");
+  expect(db.recursiveDelete).not.toHaveBeenCalledWith(profile);
+  expect(profile.set).toHaveBeenCalledWith(
+    { deleting: true, status: "deleting" },
+    { merge: true }
+  );
+});

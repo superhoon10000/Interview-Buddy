@@ -1,12 +1,12 @@
-import { ELO_BADGE_TIERS, getEloRankBadge } from "./eloRankBadge";
+import { ELO_BADGE_TIERS, GLOBAL_TOP_THREE_BADGES, getEloRankBadge } from "./eloRankBadge";
 
 test("unavailable or invalid ELO never invents a rank badge", () => {
   [undefined, null, "2150", NaN, Infinity, -1].forEach((value) => {
-    expect(getEloRankBadge(value)).toBeNull();
+    expect(getEloRankBadge(value, 1)).toBeNull();
   });
 });
 
-test("selects the correct badge at each provisional ELO boundary", () => {
+test("selects the regular badge at each ELO boundary", () => {
   ELO_BADGE_TIERS.forEach((tier) => {
     const atBoundary = getEloRankBadge(tier.minElo);
     expect(atBoundary.name).toBe(tier.name);
@@ -18,5 +18,43 @@ test("selects the correct badge at each provisional ELO boundary", () => {
     expect(getEloRankBadge(next.minElo - 1).name).toBe(tier.name);
   });
 
-  expect(getEloRankBadge(100000).name).toBe("Tech CEO");
+  // Company badges are no longer awarded solely for high ELO.
+  expect(getEloRankBadge(100000).name).toBe("Senior Developer");
+});
+
+test("global ranks 1, 2 and 3 always receive their special badges", () => {
+  Object.entries(GLOBAL_TOP_THREE_BADGES).forEach(([rank, special]) => {
+    for (const elo of [0, 51, 1200, 9000]) {
+      const badge = getEloRankBadge(elo, Number(rank));
+      expect(badge.name).toBe(special.name);
+      expect(badge.src).toBe(`/${encodeURIComponent(special.image)}`);
+    }
+  });
+});
+
+test("outside global top three, or without a valid rank, ELO decides the badge", () => {
+  expect(getEloRankBadge(51, 4).name).toBe("Bum");
+  expect(getEloRankBadge(3000, 5).name).toBe("Senior Developer");
+  expect(getEloRankBadge(900, null).name).toBe("Bum");
+  expect(getEloRankBadge(1400, "2").name).toBe("Senior Developer");
+  expect(getEloRankBadge(1400, 0).name).toBe("Senior Developer");
+});
+
+// Lock in the current ELO thresholds, independently of the tier metadata.
+test.each([
+  [0, "Bum"],
+  [999, "Bum"],
+  [1000, "Graduate"],
+  [1019, "Graduate"],
+  [1020, "Janitor"],
+  [1039, "Janitor"],
+  [1040, "Unpaid Intern"],
+  [1059, "Unpaid Intern"],
+  [1060, "Paid Intern"],
+  [1079, "Paid Intern"],
+  [1080, "Junior Developer"],
+  [1099, "Junior Developer"],
+  [1100, "Senior Developer"],
+])("regular ELO %i uses the %s badge", (elo, name) => {
+  expect(getEloRankBadge(elo, 4).name).toBe(name);
 });

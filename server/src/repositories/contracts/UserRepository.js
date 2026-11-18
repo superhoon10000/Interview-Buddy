@@ -22,8 +22,18 @@ class UserRepository {
     throw new Error("findById() must be implemented.");
   }
 
+  // SCRUM-117: Read a persisted rating; session-completion ELO writes are
+  // handled atomically by the existing SCRUM-112 repository workflow.
+  async getElo(_uid) {
+    throw new Error("getElo(uid) must be implemented.");
+  }
+
   async findByUsername(username) {
     throw new Error("findByUsername() must be implemented.");
+  }
+
+  async searchByUsernamePrefix(_prefix) {
+    throw new Error("searchByUsernamePrefix() must be implemented.");
   }
 
   async listRankingProfiles() {

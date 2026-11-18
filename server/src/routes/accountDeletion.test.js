@@ -81,4 +81,82 @@ describe("DELETE /api/users/account", () => {
     await handler(req, response(), next);
     expect(next).toHaveBeenCalledWith(expect.objectContaining({ message: "cleanup failed" }));
   });
+
+  //Expand testing to verify:
+  //Account deletion blocked without auth user or valid Bearer token
+  //Invalid and susp. auth timestamps are rejected
+  //Partial deletion failures return an appropriate error instead of reporting success
+  //Unauth requests never reach deletion service
+  test("rejects requests without an authenticated user", async () => {
+    req.user = null;
+
+    const res = response();
+    await handler(req, res, jest.fn());
+
+    expect(res.statusCode).toBe(401);
+    expect(res.body.code).toBe("auth-required");
+    expect(authClient.verifyIdToken).not.toHaveBeenCalled();
+    expect(accountDeletionService.deleteAccount).not.toHaveBeenCalled();
+  });
+
+  test("rejects requests without a valid Bearer authorization header", async () => {
+    req.get = () => "Basic invalid-token";
+
+    const res = response();
+    await handler(req, res, jest.fn());
+
+    expect(res.statusCode).toBe(401);
+    expect(res.body.code).toBe("auth-token-required");
+    expect(authClient.verifyIdToken).not.toHaveBeenCalled();
+    expect(accountDeletionService.deleteAccount).not.toHaveBeenCalled();
+  });
+
+  test("rejects tokens without a valid authentication timestamp", async () => {
+    authClient.verifyIdToken.mockResolvedValue({
+      uid: "u1",
+      auth_time: "invalid",
+    });
+
+    const res = response();
+    await handler(req, res, jest.fn());
+
+    expect(res.statusCode).toBe(403);
+    expect(res.body.code).toBe("recent-login-required");
+    expect(accountDeletionService.deleteAccount).not.toHaveBeenCalled();
+  });
+
+  test("rejects authentication timestamps too far in the future", async () => {
+    authClient.verifyIdToken.mockResolvedValue({
+      uid: "u1",
+      auth_time: Math.floor(Date.now() / 1000) + 120,
+    });
+
+    const res = response();
+    await handler(req, res, jest.fn());
+
+    expect(res.statusCode).toBe(403);
+    expect(res.body.code).toBe("recent-login-required");
+    expect(accountDeletionService.deleteAccount).not.toHaveBeenCalled();
+  });
+
+  test("reports partial deletion failure without returning success", async () => {
+    const error = new Error(
+      "The login was deleted, but final profile cleanup failed."
+    );
+    error.code = "account-deletion-partial";
+
+    accountDeletionService.deleteAccount.mockRejectedValue(error);
+
+    const res = response();
+    const next = jest.fn();
+
+    await handler(req, res, next);
+
+    expect(res.statusCode).toBe(500);
+    expect(res.body).toEqual({
+      error: error.message,
+      code: "account-deletion-partial",
+    });
+    expect(next).not.toHaveBeenCalled();
+  });
 });

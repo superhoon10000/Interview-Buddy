@@ -357,7 +357,8 @@ class FirestoreSessionRepository extends SessionRepository {
     return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
   }
 
-  async getSessionPage({ userId, status = null, pageSize = 25, cursor = null }) {
+  async getSessionPage({ userId, status = null, pageSize = 25, cursor = null,
+    startDate = null, endDate = null, endDateExclusive = false, summaryOnly = false }) {
     if (!userId) throw new Error("userId is required.");
     if (!Number.isSafeInteger(pageSize) || pageSize < 1 || pageSize > SESSION_HISTORY_PAGE_MAX) {
       const error = sessionError("Invalid history page size.", 400);
@@ -370,16 +371,44 @@ class FirestoreSessionRepository extends SessionRepository {
       throw error;
     }
 
+    const hasRange = startDate !== null || endDate !== null;
+    if ((hasRange || summaryOnly) && status !== "completed") {
+      const error = sessionError("Analytics queries require completed sessions.", 400);
+      error.code = "SESSION_STATUS_INVALID";
+      throw error;
+    }
+    if ([startDate, endDate].some((date) => date !== null &&
+        (!(date instanceof Date) || !Number.isFinite(date.getTime()))) ||
+        typeof endDateExclusive !== "boolean" || (endDateExclusive && !endDate) ||
+        (startDate && endDate && (endDateExclusive
+          ? startDate.getTime() >= endDate.getTime()
+          : startDate.getTime() > endDate.getTime()))) {
+      const error = sessionError("Invalid session date range.", 400);
+      error.code = "SESSION_DATE_RANGE_INVALID";
+      throw error;
+    }
+
     let query = this.sessions.where("userId", "==", userId);
     if (status === "completed") query = query.where("status", "==", "completed");
+    // Firestore can use the already-declared (userId,status,completedAt DESC)
+    // composite index for these timestamp-range filters and this sort order.
+    if (startDate) query = query.where("completedAt", ">=", startDate);
+    if (endDate) query = query.where("completedAt", endDateExclusive ? "<" : "<=", endDate);
     query = query.orderBy(status === "completed" ? "completedAt" : "createdAt", "desc");
 
     if (cursor) {
       // A cursor is a session document ID, never a client-supplied offset or query.
       const cursorSnap = await this.sessions.doc(cursor).get();
       const cursorData = cursorSnap.exists ? cursorSnap.data() : null;
+      const cursorValue = cursorData?.completedAt;
+      const cursorDate = cursorValue?.toDate?.() ||
+        (cursorValue ? new Date(cursorValue) : null);
+      const cursorOutsideRange = hasRange &&
+        (!(cursorDate instanceof Date) || !Number.isFinite(cursorDate.getTime()) ||
+          (startDate && cursorDate < startDate) ||
+          (endDate && (endDateExclusive ? cursorDate >= endDate : cursorDate > endDate)));
       if (!cursorData || cursorData.userId !== userId ||
-          (status === "completed" && cursorData.status !== "completed")) {
+          (status === "completed" && cursorData.status !== "completed") || cursorOutsideRange) {
         const error = sessionError("Invalid history cursor.", 400);
         error.code = "SESSION_CURSOR_INVALID";
         throw error;
@@ -391,7 +420,24 @@ class FirestoreSessionRepository extends SessionRepository {
     const snapshot = await query.limit(pageSize + 1).get();
     const docs = snapshot.docs.slice(0, pageSize);
     return {
-      sessions: docs.map((doc) => ({ id: doc.id, ...doc.data() })),
+      sessions: docs.map((doc) => {
+        const data = doc.data();
+        if (!summaryOnly) return { id: doc.id, ...data };
+        // Analytics needs only the fields used by calculateAnalytics().
+        // The default history and session-details responses remain unchanged.
+        return {
+          id: doc.id,
+          mode: data.mode ?? null,
+          status: data.status ?? null,
+          completedAt: data.completedAt ?? null,
+          score: data.score ?? null,
+          completionStatus: data.completionStatus ?? null,
+          result: data.result ? {
+            score: data.result.score ?? null,
+            completionStatus: data.result.completionStatus ?? null,
+          } : null,
+        };
+      }),
       nextCursor: snapshot.docs.length > pageSize ? docs[docs.length - 1].id : null,
     };
   }
@@ -705,9 +751,9 @@ class FirestoreSessionRepository extends SessionRepository {
           session.activeExpiresAtMs <= this.now().getTime();
         if (expired) result.rankEligible = false;
 
-        // SCRUM-84 + SCRUM-112: Award ranking points and ELO atomically with
-        // the session completion. Repeated, partial, abandoned, and expired
-        // completions do not award either kind of ranking credit.
+        // Award ELO and retain legacy score statistics atomically. Sessions
+        // with fewer than five questions, partial/abandoned/expired sessions,
+        // and duplicate completions never change either ranking field.
         let userRef = null;
         let updatedRanking = null;
         if (result.rankEligible === true && result.completionStatus === "completed") {
@@ -724,6 +770,8 @@ class FirestoreSessionRepository extends SessionRepository {
             eloUpdate = calculateEloUpdate({
               currentElo: savedRanking?.elo,
               sessionScore: result.score,
+              experienceLevel: session.experienceLevel,
+              questionCount: session.questionCount,
             });
           } catch (error) {
             if (error?.code !== "INVALID_ELO_INPUT") throw error;
@@ -737,6 +785,7 @@ class FirestoreSessionRepository extends SessionRepository {
             ...savedRanking,
             ...pointsUpdate,
             elo: eloUpdate.newElo,
+            lastEloChange: eloUpdate.eloChange,
           };
 
           // Record the *awarded* change on this session for stable history.

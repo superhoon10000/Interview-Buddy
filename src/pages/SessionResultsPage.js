@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 
 import PageLayout from "../components/layout/PageLayout";
+import QuestionPrompt from "../components/interview/QuestionPrompt";
 import { PAGES } from "../utils/constants";
 import { historyService } from "../services/historyService";
 import { normalizeHistorySession } from "../utils/historyResults";
@@ -226,21 +227,16 @@ function SessionResultsPage({
     savedSummary.eloChange ??
     null;
 
-  const hasEloEstimate =
+  const hasSavedEloChange =
     isEligibleForElo &&
-    savedElo !== null &&
-    savedElo !== undefined;
+    typeof savedElo === "string" &&
+    /^[+-]?[0-9]+$/.test(savedElo);
 
-  const eloChange = hasEloEstimate
+  const eloChange = hasSavedEloChange
     ? savedElo
     : isNotRanked
       ? "Not ranked"
       : "—";
-
-  const eloLabel =
-    hasEloEstimate
-      ? "Estimated ELO Change"
-      : "ELO Change";
 
   const heroEyebrow =
     completionStatus === "completed"
@@ -405,19 +401,12 @@ function SessionResultsPage({
 
               <div className="ibResultsStat">
                 <span>
-                  {eloLabel}
+                  ELO Change
                 </span>
 
                 <strong>
                   {eloChange}
                 </strong>
-
-                {hasEloEstimate && (
-                  <small>
-                    Display estimate only; not a
-                    confirmed ranking update.
-                  </small>
-                )}
               </div>
             </div>
 
@@ -514,11 +503,12 @@ function SessionResultsPage({
                           </div>
                         </div>
 
-                        <p className="ibResultsPrompt">
-                          {question.prompt ||
+                        <QuestionPrompt
+                          className="ibResultsPrompt"
+                          prompt={question.prompt ||
                             question.question ||
                             "Question prompt unavailable"}
-                        </p>
+                        />
 
                         {question.userAnswer && (
                           <div className="ibResultsAnswer">

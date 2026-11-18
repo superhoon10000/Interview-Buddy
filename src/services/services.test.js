@@ -552,6 +552,18 @@ describe("historyService", () => {
     );
   });
 
+  test("getSessionPage passes optional analytics ranges and compact-summary request", async () => {
+    const page = { sessions: [], nextCursor: null };
+    global.fetch = jest.fn().mockResolvedValue({ ok: true, json: async () => page });
+    await expect(historyService.getSessionPage({ pageSize: 50,
+      startDate: "2026-10-01", endDate: "2026-10-31", summaryOnly: true,
+    })).resolves.toEqual(page);
+    expect(global.fetch).toHaveBeenCalledWith(
+      "http://localhost:5001/api/sessions?status=completed&pageSize=50&startDate=2026-10-01&endDate=2026-10-31&summaryOnly=1",
+      { headers: { Authorization: "Bearer test-id-token" } }
+    );
+  });
+
   test("getSessionById retrieves an authorized saved session", async () => {
     global.fetch = jest.fn().mockResolvedValue({ ok: true, json: async () => completedSession });
     expect(await historyService.getSessionById("saved-1")).toEqual(completedSession);
@@ -585,18 +597,20 @@ describe("leaderboardService", () => {
     global.fetch = jest.fn();
   });
 
-  test("GET global leaderboard uses the Firebase token and sorts database points", async () => {
+  test("GET global leaderboard uses the Firebase token and orders ELO rankings by server rank", async () => {
     global.fetch.mockResolvedValue({
       ok: true,
       status: 200,
       json: async () => ({ rankings: [
-        { uid: "two", username: "Second", rank: 2, points: 120, rankedSessions: 2, averageScore: 60, elo: null },
-        { uid: "one", username: "First", rank: 1, points: 180, rankedSessions: 2, averageScore: 90, elo: null },
+        { uid: "two", username: "Second", rank: 2, elo: 1120, points: 200, rankedSessions: 2, averageScore: 90 },
+        { uid: "one", username: "First", rank: 1, elo: 1400, points: 50, rankedSessions: 1, averageScore: 50 },
       ] }),
     });
     const result = await leaderboardService.getGlobalLeaderboard();
-    expect(result.map((r) => r.username)).toEqual(["First", "Second"]);
-    expect(result[0]).toMatchObject({ points: 180, rankedSessions: 2, averageScore: 90, elo: null });
+    expect(result).toEqual([
+      { uid: "one", username: "First", rank: 1, elo: 1400 },
+      { uid: "two", username: "Second", rank: 2, elo: 1120 },
+    ]);
     expect(global.fetch).toHaveBeenCalledWith(
       "http://localhost:5001/api/leaderboard/global",
       { headers: { Authorization: "Bearer test-id-token" } }
@@ -631,27 +645,24 @@ describe("leaderboardService", () => {
     global.fetch.mockResolvedValue({ ok: true, status: 200, json: async () => ({ rankings: [{ uid: "a", username: "Alex", rank: null, elo: null }] }) });
     expect(await leaderboardService.getGlobalLeaderboard()).toEqual([{
       uid: "a", username: "Alex", rank: null, elo: null,
-      points: null, rankedSessions: null, averageScore: null,
     }]);
   });
 
-  test("personal rank preserves legitimate zero points without assigning ELO", async () => {
+  test("personal rank preserves a legitimate zero ELO and omits legacy points", async () => {
     global.fetch.mockResolvedValue({ ok: true, status: 200, json: async () => ({
-      ranking: { uid: "u", username: "Zero", rank: 1, points: 0, rankedSessions: 1, averageScore: 0, elo: null },
+      ranking: { uid: "u", username: "Zero", rank: 1, elo: 0, points: 50, rankedSessions: 1, averageScore: 0 },
     }) });
     await expect(leaderboardService.getUserRanking()).resolves.toEqual({
-      uid: "u", username: "Zero", rank: 1,
-      points: 0, rankedSessions: 1, averageScore: 0, elo: null,
+      uid: "u", username: "Zero", rank: 1, elo: 0,
     });
   });
 
-  test("friends rankings retain future ELO data without inventing points", async () => {
+  test("friends rankings preserve ELO without exposing legacy points", async () => {
     global.fetch.mockResolvedValue({ ok: true, status: 200, json: async () => ({
-      rankings: [{ uid: "friend", username: "Friend", rank: 4, elo: 1600 }],
+      rankings: [{ uid: "friend", username: "Friend", rank: 4, elo: 1600, points: 999 }],
     }) });
     expect(await leaderboardService.getFriendsLeaderboard()).toEqual([{
       uid: "friend", username: "Friend", rank: 4, elo: 1600,
-      points: null, rankedSessions: null, averageScore: null,
     }]);
   });
 
@@ -671,6 +682,45 @@ describe("leaderboardService", () => {
       "http://localhost:5001/api/friends/u%2F1",
       { method: "DELETE", headers: { Authorization: "Bearer test-id-token" } }
     );
+  });
+
+  //Ensures that ELO trends are preserved
+  test("preserves numeric ELO trends including zero", async () => {
+    global.fetch.mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        rankings: [
+          {
+            uid: "up",
+            username: "Up",
+            rank: 1,
+            elo: 1200,
+            lastEloChange: 16,
+          },
+          {
+            uid: "down",
+            username: "Down",
+            rank: 2,
+            elo: 1100,
+            lastEloChange: -8,
+          },
+          {
+            uid: "flat",
+            username: "Flat",
+            rank: 3,
+            elo: 1000,
+            lastEloChange: 0,
+          },
+        ],
+      }),
+    });
+
+    const rankings =
+      await leaderboardService.getGlobalLeaderboard();
+
+    expect(rankings.map((entry) => entry.lastEloChange))
+      .toEqual([16, -8, 0]);
   });
 });
 
