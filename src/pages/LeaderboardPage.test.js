@@ -1197,3 +1197,98 @@ describe("SCRUM-110 friends-only ranking refresh workflow", () => {
     expect(screen.getByText(/Equal ELO scores share the same rank/)).toBeInTheDocument();
   });
 });
+
+describe("D-03 application-level friends and ELO workflow regression", () => {
+  const entry = (uid, username, rank, elo) => ({ uid, username, rank, elo });
+
+  test("D03-T07 refresh displays the new server ELO and updated global rank", async () => {
+    leaderboardService.getGlobalLeaderboard
+      .mockResolvedValueOnce([
+        entry("rival", "Rival", 1, 1010),
+        entry("test-user", "Me", 2, 1000),
+      ])
+      .mockResolvedValueOnce([
+        entry("test-user", "Me", 1, 1016),
+        entry("rival", "Rival", 2, 1010),
+      ]);
+    leaderboardService.getUserRanking
+      .mockResolvedValueOnce(entry("test-user", "Me", 2, 1000))
+      .mockResolvedValueOnce(entry("test-user", "Me", 1, 1016));
+    leaderboardService.getFriendsLeaderboard.mockResolvedValue([]);
+
+    render(<LeaderboardPage currentPage="/leaderboard" onNavigate={() => {}} />);
+    const globalPanel = screen.getByRole("tabpanel", { name: "Global" });
+    expect(await within(globalPanel).findByText("Rival")).toBeInTheDocument();
+    expect(await screen.findByText("#2")).toBeInTheDocument();
+    expect(within(globalPanel).getAllByRole("row")[1]).toHaveTextContent("Rival");
+
+    const refreshButton = screen.getByRole("button", { name: /Refresh/i });
+    await waitFor(() => expect(refreshButton).toBeEnabled());
+    fireEvent.click(refreshButton);
+
+    await waitFor(() => {
+      expect(within(globalPanel).getAllByRole("row")[1]).toHaveTextContent("Me");
+    });
+
+    expect(await screen.findByText("#1")).toBeInTheDocument();
+    expect(within(globalPanel).getByText("1,016")).toBeInTheDocument();
+    expect(leaderboardService.getGlobalLeaderboard).toHaveBeenCalledTimes(2);
+    expect(leaderboardService.getUserRanking).toHaveBeenCalledTimes(2);
+  });
+
+  test("D03-T03/T04 self and duplicate request errors leave friends unchanged", async () => {
+    leaderboardService.getGlobalLeaderboard.mockResolvedValue([]);
+    leaderboardService.getFriendsLeaderboard.mockResolvedValue([]);
+    leaderboardService.getUserRanking.mockResolvedValue(null);
+    leaderboardService.sendFriendRequest
+      .mockRejectedValueOnce(new Error("Cannot send a friend request to yourself."))
+      .mockRejectedValueOnce(new Error("Friend request already exists."));
+
+    render(<LeaderboardPage currentPage="/leaderboard" onNavigate={() => {}} />);
+    fireEvent.click(screen.getByRole("tab", { name: "Friends" }));
+    const input = await screen.findByRole("textbox", { name: "Username" });
+    await waitFor(() => expect(input).toBeEnabled());
+
+    fireEvent.change(input, { target: { value: "test-user" } });
+    fireEvent.click(screen.getByRole("button", { name: "Add Friend" }));
+    expect(await screen.findByText("Cannot send a friend request to yourself.")).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByRole("button", { name: "Add Friend" })).toBeEnabled());
+
+    fireEvent.change(input, { target: { value: "Bob" } });
+    fireEvent.click(screen.getByRole("button", { name: "Add Friend" }));
+    expect(await screen.findByText("Friend request already exists.")).toBeInTheDocument();
+
+    expect(screen.queryByText(/Friend request sent to/)).not.toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Accepted Friends" })).toHaveTextContent("No accepted friends");
+    expect(leaderboardService.getAcceptedFriends).toHaveBeenCalledTimes(1);
+    expect(leaderboardService.getFriendRequests).toHaveBeenCalledTimes(1);
+  });
+
+  test("D03-T11 failed global refresh hides stale rankings and allows recovery", async () => {
+    leaderboardService.getGlobalLeaderboard
+      .mockResolvedValueOnce([entry("old", "OldLeader", 1, 1200)])
+      .mockRejectedValueOnce(new Error("Unable to retrieve rankings."))
+      .mockResolvedValueOnce([entry("new", "RecoveredLeader", 1, 1300)]);
+    leaderboardService.getFriendsLeaderboard.mockResolvedValue([]);
+    leaderboardService.getUserRanking.mockResolvedValue(null);
+
+    render(<LeaderboardPage currentPage="/leaderboard" onNavigate={() => {}} />);
+    const globalPanel = screen.getByRole("tabpanel", { name: "Global" });
+    expect(await within(globalPanel).findByText("OldLeader")).toBeInTheDocument();
+
+    const refreshButton = screen.getByRole("button", { name: /Refresh/i });
+    await waitFor(() => expect(refreshButton).toBeEnabled());
+    fireEvent.click(refreshButton);
+
+    expect(await within(globalPanel).findByRole("alert")).toHaveTextContent("Unable to retrieve rankings.");
+    expect(within(globalPanel).queryByText("OldLeader")).not.toBeInTheDocument();
+
+    await waitFor(() => expect(refreshButton).toBeEnabled());
+    fireEvent.click(refreshButton);
+
+    expect(await within(globalPanel).findByText("RecoveredLeader")).toBeInTheDocument();
+    expect(within(globalPanel).getByText("1,300")).toBeInTheDocument();
+    expect(within(globalPanel).queryByText("OldLeader")).not.toBeInTheDocument();
+    expect(leaderboardService.getGlobalLeaderboard).toHaveBeenCalledTimes(3);
+  });
+});
