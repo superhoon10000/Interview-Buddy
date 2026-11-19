@@ -17,9 +17,9 @@ export const ELO_BADGE_TIERS = Object.freeze([
 ]);
 
 export const GLOBAL_TOP_THREE_BADGES = Object.freeze({
-  1: { name: "NVIDIA", image: "NVIDIA Neon Mascot Tech Badge.png" },
-  2: { name: "Bill Gates", image: "Tech CEO Mascot Innovation Badge.png" },
-  3: { name: "Meta", image: "Meta Mascot Tech Keynote Badge.png" },
+  1: { name: "NVIDIA", image: "NPICIA Capybara Tech Badge.png" },
+  2: { name: "Bill Gates", image: "Minisofty Capybara Innovation Badge.png" },
+  3: { name: "Meta", image: "Capyark’s Neta Office Badge.png" },
 });
 
 /** Returns null if no valid ELO has been supplied by the backend. */
