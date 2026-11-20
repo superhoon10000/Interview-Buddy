@@ -2,11 +2,11 @@
 /* Clip the slide at the viewport edge without blocking the page underneath. */
 .ibRankingCapyCorner {
   position: fixed;
-  top: 0;
+  bottom: 0;
   right: 0;
   z-index: 30;
   width: 80px;
-  aspect-ratio: 1;
+  height: 80px;
   overflow: hidden;
   pointer-events: none;
 }
@@ -82,6 +82,38 @@
   cursor: pointer;
 }
 
+.ibRankingCapyLyrics {
+  position: absolute;
+  right: 4vw;
+  left: 4vw;
+  bottom: max(100px, 14vh);
+  display: grid;
+  place-items: center;
+  text-align: center;
+}
+
+.ibRankingCapyLyric {
+  margin: 0;
+  max-width: 100%;
+  padding: 0.5em 0.85em;
+  border: 1px solid rgba(255, 204, 112, 0.65);
+  border-radius: 20px;
+  background: rgba(8, 18, 38, 0.9);
+  color: #fff4ce;
+  box-shadow: 0 8px 32px rgba(8, 18, 38, 0.25);
+  font-size: clamp(1.25rem, 3.5vw, 3.5rem);
+  font-weight: 800;
+  line-height: 1.25;
+  text-wrap: balance;
+  animation: ibRankingLyricReveal linear both;
+}
+
+@keyframes ibRankingLyricReveal {
+  0% { opacity: 0; transform: translateY(24px) scale(0.94); }
+  12% { opacity: 1; transform: translateY(-3px) scale(1.02); }
+  20%, 100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
 .ibRankingCapyError {
   position: fixed;
   top: 84px;
@@ -98,6 +130,9 @@
 @media (prefers-reduced-motion: reduce) {
   .ibRankingCapyButton {
     transition: none;
+  }
+  .ibRankingCapyLyric {
+    animation: none;
   }
 }
 
