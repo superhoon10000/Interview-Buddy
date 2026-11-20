@@ -3,12 +3,14 @@ import {
   useState,
 } from "react";
 
+
 import {
   Link,
 } from "react-router-dom";
 
 import AuthShell from "../components/auth/AuthShell";
 import EmailVerificationNotice from "../components/auth/EmailVerificationNotice";
+import PasswordInput from "../components/auth/PasswordInput";
 
 import {
   useAuth,
@@ -1066,10 +1068,8 @@ function LoginPage({
             </Link>
           </div>
 
-          <input
+            <PasswordInput
             id="ib-login-password"
-            className="ib-input ib-auth-input"
-            type="password"
             placeholder="Password"
             value={password}
             onChange={(

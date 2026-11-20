@@ -331,3 +331,54 @@
 .ib-auth-verification-help .ib-auth-switch {
   margin-top: var(--ib-space-4);
 }
+
+
+
+
+/* Password field with the app's own Show/Hide button (PasswordInput.js). */
+.ib-password-field {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.ib-password-field .ib-password-input {
+  width: 100%;
+  padding-right: 72px;
+}
+
+/* Hide Microsoft Edge's built-in reveal icon so there is only one button.
+   Edge removes its icon after the field loses focus, which looked like the
+   password could only be revealed once. */
+.ib-password-input::-ms-reveal,
+.ib-password-input::-ms-clear {
+  display: none;
+}
+
+.ib-password-toggle {
+  position: absolute;
+  right: 8px;
+  padding: 6px 10px;
+  border: none;
+  border-radius: var(--ib-radius-xs);
+  background: transparent;
+  color: var(--ib-accent-700);
+  font-size: var(--ib-font-size-sm);
+  font-weight: var(--ib-font-weight-semibold);
+  cursor: pointer;
+}
+
+.ib-password-toggle:hover:not(:disabled) {
+  text-decoration: underline;
+}
+
+.ib-password-toggle:focus-visible {
+  outline: 3px solid var(--ib-focus-ring);
+  outline-offset: 1px;
+}
+
+.ib-password-toggle:disabled {
+  opacity: 0.68;
+  cursor: not-allowed;
+}
+
