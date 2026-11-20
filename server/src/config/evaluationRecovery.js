@@ -45,8 +45,37 @@ const AI_REVIEW_DELAY_MS = boundedPositiveInteger(
   86400000
 );
 
+// Bounded retries (see providerRetry.js). Only errors that prove the model
+// never ran (429, 529, connection refused) are retried. 1 disables retries.
+const AI_PROVIDER_MAX_ATTEMPTS = boundedPositiveInteger(
+  process.env.AI_PROVIDER_MAX_ATTEMPTS,
+  3,
+  1,
+  5
+);
+
+// First retry waits about this long; each later retry doubles it.
+const AI_RETRY_BASE_DELAY_MS = boundedPositiveInteger(
+  process.env.AI_RETRY_BASE_DELAY_MS,
+  500,
+  100,
+  10000
+);
+
+// Cap on total waiting between retries, kept below the provider status
+// grace window so a concurrent request still sees "in progress".
+const AI_RETRY_MAX_TOTAL_DELAY_MS = boundedPositiveInteger(
+  process.env.AI_RETRY_MAX_TOTAL_DELAY_MS,
+  4000,
+  0,
+  20000
+);
+
 module.exports = {
   AI_PROVIDER_TIMEOUT_MS,
+  AI_PROVIDER_MAX_ATTEMPTS,
+  AI_RETRY_BASE_DELAY_MS,
+  AI_RETRY_MAX_TOTAL_DELAY_MS,
   AI_UNDISPATCHED_LEASE_MS,
   AI_REVIEW_DELAY_MS,
 };

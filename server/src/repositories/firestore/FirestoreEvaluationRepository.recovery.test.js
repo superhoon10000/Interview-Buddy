@@ -169,3 +169,72 @@ describe("SEC-04 provider uncertainty and bounded reservation recovery", () => {
       .rejects.toMatchObject({ code: "SESSION_NOT_ACTIVE" });
   });
 });
+
+
+describe("Retry/fallback: releasing an evaluation the provider never processed", () => {
+  async function startedAttempt(f) {
+    const reserved = await f.repo.reserveEvaluation(f.input);
+    await f.repo.markProviderStarted({ ...f.input, attemptId: reserved.attemptId });
+    return reserved.attemptId;
+  }
+
+  test("moves a provider_started attempt to failed", async () => {
+    const f = fixture();
+    const attemptId = await startedAttempt(f);
+
+    await expect(
+      f.repo.failUndeliveredEvaluation({ ...f.input, attemptId })
+    ).resolves.toBe(true);
+
+    expect(f.attempt()).toMatchObject({
+      state: "failed",
+      failureReason: "provider_unavailable",
+    });
+  });
+
+  test("lets the user submit again after the question is released", async () => {
+    const f = fixture();
+    const attemptId = await startedAttempt(f);
+    await f.repo.failUndeliveredEvaluation({ ...f.input, attemptId });
+
+    const retried = await f.repo.reserveEvaluation(f.input);
+
+    expect(retried.kind).toBe("reserved");
+    expect(retried.attemptId).not.toBe(attemptId);
+    expect(f.attempt()).toMatchObject({ state: "processing", attemptCount: 2 });
+  });
+
+  test("does nothing for a different attempt", async () => {
+    const f = fixture();
+    await startedAttempt(f);
+
+    await expect(
+      f.repo.failUndeliveredEvaluation({ ...f.input, attemptId: "someone-else" })
+    ).resolves.toBe(false);
+    expect(f.attempt().state).toBe("provider_started");
+  });
+
+  test("never unlocks an attempt already marked for review", async () => {
+    const f = fixture();
+    const attemptId = await startedAttempt(f);
+    await f.repo.markUncertainEvaluation({ ...f.input, attemptId });
+
+    await expect(
+      f.repo.failUndeliveredEvaluation({ ...f.input, attemptId })
+    ).resolves.toBe(false);
+    expect(f.attempt().state).toBe("review_required");
+  });
+
+  test("does nothing once a grade has been saved", async () => {
+    const f = fixture();
+    const attemptId = await startedAttempt(f);
+    f.store.set(
+      `sessions/${f.input.sessionId}/responses/${f.input.questionId}`,
+      { evaluation: { score: 90 } }
+    );
+
+    await expect(
+      f.repo.failUndeliveredEvaluation({ ...f.input, attemptId })
+    ).resolves.toBe(false);
+  });
+});

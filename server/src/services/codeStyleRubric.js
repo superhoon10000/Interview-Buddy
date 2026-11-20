@@ -44,3 +44,4 @@ const CODE_STYLE_RUBRIC = Object.freeze(
 );
 
 module.exports = { CODE_STYLE_RUBRIC };
+

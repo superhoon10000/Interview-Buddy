@@ -1,8 +1,13 @@
 
+
 "use strict";
 
 const express = require("express");
 const aiService = require("../services/aiService");
+const {
+  PROVIDER_ERROR_CLASSES,
+  classifyProviderError,
+} = require("../services/providerRetry");
 
 const {
   AI_GRADABLE_MODES,
@@ -311,14 +316,58 @@ function createEvaluateRouter({
 
       let evaluation;
       try {
-        // Exactly one application-level attempt; SDK retries are disabled.
+        // SDK retries stay disabled. aiService retries only errors that prove
+        // the model never ran (see providerRetry.js).
         evaluation = await aiService.generateEvaluation({
           question,
           candidateResponse: answer,
+          attemptId: admission.attemptId,
         });
-      } catch (_providerError) {
-        // Connection reset, timeout, invalid response, or SDK error does not
-        // prove the provider did not process and bill this evaluation.
+      } catch (providerError) {
+        const classification =
+          providerError?.classification ||
+          classifyProviderError(providerError);
+
+        // Log why grading failed. Never log the answer, prompt or keys.
+        console.warn(
+          `[ai-eval] question=${question.id} attemptId=${admission.attemptId} ` +
+            `failed classification=${classification} ` +
+            `attempts=${providerError?.attempts || 1}`
+        );
+
+        // Fallback 1: every attempt was rejected before the model ran, so
+        // nothing was processed. Release the question so the user can retry.
+        // No placeholder score is ever returned; it would flow into ELO.
+        if (
+          classification === PROVIDER_ERROR_CLASSES.RETRYABLE &&
+          typeof evaluationRepository.failUndeliveredEvaluation === "function"
+        ) {
+          let released = false;
+          try {
+            released = await evaluationRepository.failUndeliveredEvaluation({
+              userId: req.user.uid,
+              sessionId,
+              questionId: question.id,
+              attemptId: admission.attemptId,
+            });
+          } catch (stateError) {
+            console.error("Unable to release undelivered AI evaluation:", stateError);
+          }
+
+          if (released) {
+            return res.status(503).json({
+              error: "The AI grader is busy right now. Your answer was not graded. Please try again shortly.",
+              code: "AI_TEMPORARILY_UNAVAILABLE",
+              retryAfterSeconds: providerError?.retryAfterSeconds || 5,
+              requestId,
+            });
+          }
+          // If the release failed, fall through and fail closed for review.
+        }
+
+        // Fallback 2: connection reset, timeout, invalid response, or SDK
+        // error does not prove the provider did not process and bill this
+        // evaluation.
         try {
           await evaluationRepository.markUncertainEvaluation({
             userId: req.user.uid,

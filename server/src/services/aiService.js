@@ -6,13 +6,16 @@ const {
   redactReferenceLeaks,
 } = require("./evaluationContract");
 
+const { withProviderRetry } = require("./providerRetry");
+
 const PROVIDERS = {
   anthropic: anthropicProvider,
 };
 
 // SEC-04:
-// No automatic application-level retries.
-// A failed network request may still have been billed.
+// A failed network request may still have been billed, so only errors that
+// prove the model never ran (429, 529, connection refused) are retried, a
+// bounded number of times. See providerRetry.js.
 function getActiveProvider() {
   const activeProviderName =
     process.env.AI_PROVIDER || "anthropic";
@@ -42,6 +45,7 @@ function getActiveProvider() {
 async function generateEvaluation({
   question,
   candidateResponse,
+  attemptId,
 } = {}) {
   if (!question) {
     throw new Error(
@@ -73,14 +77,24 @@ async function generateEvaluation({
 
   const provider = getActiveProvider();
 
-  // ONE provider invocation. No retry loop.
-  const evaluation = await provider.generateEvaluation({
-    question,
-    candidateResponse: String(
-      candidateResponse
-    ).trim(),
-    gradingCriteria: question.gradingCriteria,
-  });
+   // Retries only happen for errors that prove the model never ran.
+  // Timeouts and other uncertain errors are thrown after one attempt.
+  const evaluation = await withProviderRetry(
+    () =>
+      provider.generateEvaluation({
+        question,
+        candidateResponse: String(
+          candidateResponse
+        ).trim(),
+        gradingCriteria: question.gradingCriteria,
+      }),
+    {
+      context: {
+        question: question.id || "unknown",
+        attemptId,
+      },
+    }
+  );
 
   // CC6.6 / B-SOC-04: never let copied reference-answer text reach the
   // candidate, even if the model ignores the prompt's non-disclosure rule.

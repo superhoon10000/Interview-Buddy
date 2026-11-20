@@ -36,7 +36,14 @@ class EvaluationRepository {
       "completeReservedEvaluation() must be implemented."
     );
   }
+  
+    async failUndeliveredEvaluation(_options) {
+    throw new Error(
+      "failUndeliveredEvaluation() must be implemented."
+    );
+  }
 
+  
   async failReservedEvaluation(_options) {
     throw new Error(
       "failReservedEvaluation() must be implemented."

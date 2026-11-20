@@ -1,4 +1,3 @@
-
 "use strict";
 
 const crypto = require("node:crypto");
@@ -383,6 +382,34 @@ class FirestoreEvaluationRepository extends EvaluationRepository {
         candidateResponse, evaluation, evaluatedAt: timestamp,
       });
       tx.update(attemptRef, { state: "completed", updatedAt: timestamp });
+    });
+  }
+
+  // Retry/fallback: the provider was dispatched, but every attempt failed with
+  // an error that proves the model never ran (429, 529, connection refused;
+  // see providerRetry.js). Nothing was processed, so the question is released
+  // as "failed" instead of being locked for review. Uncertain failures
+  // (timeouts, resets, 5xx) must still use markUncertainEvaluation.
+  async failUndeliveredEvaluation({ userId, sessionId, questionId, attemptId }) {
+    const { attemptRef, responseRef } = this.getRefs(sessionId, questionId);
+    return this.db.runTransaction(async (tx) => {
+      const responseSnap = await tx.get(responseRef);
+      const attemptSnap = await tx.get(attemptRef);
+      const attempt = attemptSnap.exists ? attemptSnap.data() : null;
+      if (
+        responseSnap.exists ||
+        attempt?.userId !== userId ||
+        attempt?.attemptId !== attemptId ||
+        attempt?.state !== "provider_started"
+      ) {
+        return false;
+      }
+      tx.update(attemptRef, {
+        state: "failed",
+        failureReason: "provider_unavailable",
+        updatedAt: this.getTimestamp(),
+      });
+      return true;
     });
   }
 
