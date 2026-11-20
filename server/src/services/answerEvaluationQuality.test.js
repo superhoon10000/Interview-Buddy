@@ -1,18 +1,7 @@
-
-//These three tests are designed to verify that the AI evaluation system can correctly process different
-//levels of candidate responses, including strong, partially correct, and incorrect answers.
-//Testing how IB processes AI evals, rather than testing Anthropic's AI intelligence.
-//anthropicProvider.js prepares eval requests, comms with Anthropic, and processes returned evals
-//evaluationContract.js validates evaluation results and calcs the final score using weighted rubric
-//We are verifying that these components handle (3) different eval scenarios properly.
-
-//Pipeline: Jest test -> Anthropic Provider (builds request) -> mock response (predetermined score and feedback)
-//          -> Evaulation Contract (validates and calcs score).
-//Jest checks whether final eval matches expectations
-//1. Strong response (95/100)
-//2. Partial (55/100)
-//3. Incorrect (5/100)
-//Verifies calculated score, overall feedback, weaknesses, grading criteria, & provider request call count
+// CI/CD-24: deterministic AI evaluation regression tests for both Code Style
+// and Theoretical Style. Strong, partial and incorrect answers are represented
+// by fixed provider responses; these tests verify processing, rubric scores,
+// required feedback fields and prompt assembly, NOT live model accuracy.
 
 const mockCreate = jest.fn();
 
@@ -98,6 +87,34 @@ function mockEvaluation({
   });
 }
 
+// Regression contract shared by both AI-graded interview modes. Scores are
+// deterministic here because the provider response is mocked; model accuracy
+// is a separate, controlled live-AI testing activity.
+function expectStructuredEvaluation(result, expectedCriteria) {
+  expect(Number.isInteger(result.score)).toBe(true);
+  expect(result.score).toBeGreaterThanOrEqual(0);
+  expect(result.score).toBeLessThanOrEqual(100);
+  expect(typeof result.feedback).toBe("string");
+  expect(result.feedback.trim().length).toBeGreaterThan(0);
+  for (const field of ["strengths", "weaknesses", "suggestions"]) {
+    expect(Array.isArray(result[field])).toBe(true);
+    expect(result[field].every((item) => typeof item === "string")).toBe(true);
+  }
+  expect(result.criterionResults).toHaveLength(expectedCriteria.length);
+  result.criterionResults.forEach((criterion, index) => {
+    expect(criterion.name).toBe(expectedCriteria[index].name);
+    expect(criterion.maxPoints).toBe(expectedCriteria[index].weight);
+    expect(typeof criterion.awardedPoints).toBe("number");
+    expect(criterion.awardedPoints).toBeGreaterThanOrEqual(0);
+    expect(criterion.awardedPoints).toBeLessThanOrEqual(criterion.maxPoints);
+    expect(typeof criterion.feedback).toBe("string");
+    expect(criterion.feedback.trim().length).toBeGreaterThan(0);
+  });
+  expect(result.score).toBe(Math.round(result.criterionResults.reduce(
+    (sum, criterion) => sum + criterion.awardedPoints, 0
+  )));
+}
+
 describe("AI Evaluation - Answer Quality Tests", () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -139,6 +156,7 @@ describe("AI Evaluation - Answer Quality Tests", () => {
       gradingCriteria: question.gradingCriteria,
     });
 
+    expectStructuredEvaluation(result, question.gradingCriteria);
     expect(result.score).toBe(96);
     expect(result.score).toBeGreaterThanOrEqual(80);
     expect(result.feedback).toContain("Excellent");
@@ -188,6 +206,7 @@ describe("AI Evaluation - Answer Quality Tests", () => {
       gradingCriteria: question.gradingCriteria,
     });
 
+    expectStructuredEvaluation(result, question.gradingCriteria);
     expect(result.score).toBe(56);
     expect(result.score).toBeGreaterThanOrEqual(40);
     expect(result.score).toBeLessThan(80);
@@ -238,6 +257,7 @@ describe("AI Evaluation - Answer Quality Tests", () => {
       gradingCriteria: question.gradingCriteria,
     });
 
+    expectStructuredEvaluation(result, question.gradingCriteria);
     expect(result.score).toBe(6);
     expect(result.score).toBeLessThan(40);
 
@@ -253,5 +273,80 @@ describe("AI Evaluation - Answer Quality Tests", () => {
     const prompt = mockCreate.mock.calls[0][0].messages[0].content;
 
     expect(prompt).toContain(candidateResponse.trim());
+  });
+});
+
+// The second AI-graded mode must obey the same output contract. Code is
+// evaluated as text, not executed; the mock controls the returned rubric points.
+const codeQuestion = {
+  id: "quality-code-1",
+  mode: "Code Style",
+  topic: "Algorithms",
+  difficulty: "Beginner",
+  prompt: "Write a JavaScript function that returns the largest number in a nonempty array.",
+  referenceAnswer: "Iterate through all items, tracking and returning the maximum value.",
+  gradingCriteria: [
+    { name: "Correctness", weight: 70, description: "Returns the maximum value correctly." },
+    { name: "Edge Cases", weight: 30, description: "Handles negative numbers and singleton arrays." },
+  ],
+};
+
+describe("AI Evaluation - Code Style Answer Quality Regression", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    getAiConfig.mockResolvedValue({ anthropicApiKey: "test-key" });
+  });
+
+  test.each([
+    {
+      category: "strong",
+      answer: "function maximum(a) { let max = a[0]; for (const n of a) max = Math.max(max, n); return max; }",
+      awarded: [63, 27],
+      expectedScore: 90,
+    },
+    {
+      category: "partial",
+      answer: "function maximum(a) { let max = 0; for (const n of a) if (n > max) max = n; return max; }",
+      awarded: [35, 15],
+      expectedScore: 50,
+    },
+    {
+      category: "incorrect",
+      answer: "function maximum(a) { return a[0]; }",
+      awarded: [7, 0],
+      expectedScore: 7,
+    },
+  ])("$category Code Style response preserves score and feedback contract", async ({
+    category, answer, awarded, expectedScore,
+  }) => {
+    mockCreate.mockResolvedValue({
+      content: [{
+        type: "text",
+        text: JSON.stringify({
+          feedback: `${category} code response evaluation`,
+          strengths: category === "incorrect" ? [] : ["Includes a relevant code attempt."],
+          weaknesses: category === "strong" ? [] : ["Does not handle all input arrays."],
+          suggestions: ["Review input edge cases."],
+          criterionResults: codeQuestion.gradingCriteria.map((criterion, index) => ({
+            name: criterion.name,
+            awardedPoints: awarded[index],
+            feedback: `${category} assessment of ${criterion.name}`,
+          })),
+        }),
+      }],
+    });
+
+    const result = await generateEvaluation({
+      question: codeQuestion,
+      candidateResponse: answer,
+      gradingCriteria: codeQuestion.gradingCriteria,
+    });
+    expectStructuredEvaluation(result, codeQuestion.gradingCriteria);
+    expect(result.score).toBe(expectedScore);
+    expect(mockCreate).toHaveBeenCalledTimes(1);
+    const prompt = mockCreate.mock.calls[0][0].messages[0].content;
+    expect(prompt).toContain("Code Style");
+    expect(prompt).toContain(answer);
+    expect(prompt).toContain(codeQuestion.referenceAnswer);
   });
 });
