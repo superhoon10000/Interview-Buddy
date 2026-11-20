@@ -82,10 +82,10 @@ it("requires both answers to pass, allows retry, and never records failed interv
   state = act(state, "RETRY");
   expect(state.phase).toBe("intro");
   state = act(state, "START", { questions });
-  questions.forEach((question) => {
+  for (const question of questions) {
     state = act(state, "ANSWER", { index: question.correct });
     state = act(state, "CONTINUE");
-  });
+  }
   expect(state.completed).toEqual({ beginner: "passed" });
 });
 
@@ -109,10 +109,10 @@ it("lets the hidden referral skip exactly one interview, then wins after all fiv
     expect(act(state, "SKIP")).toBe(state);
     const questions = selectQuestions(npc.id, () => 0);
     state = act(state, "START", { questions });
-    questions.forEach((question) => {
+    for (const question of questions) {
       state = act(state, "ANSWER", { index: question.correct });
       state = act(state, "CONTINUE");
-    });
+    }
     if (npc.id !== "random") state = act(state, "EXPLORE");
   }
   expect(Object.keys(state.completed)).toHaveLength(5);
@@ -170,10 +170,10 @@ it("finishes all five successfully without using the optional referral", () => {
     state = act(state, "INTERACT");
     expect(state.activeId).toBe(npc.id);
     state = act(state, "START", { questions: selectQuestions(npc.id, () => 0) });
-    state.questions.forEach((question) => {
+    for (const question of state.questions) {
       state = act(state, "ANSWER", { index: question.correct });
       state = act(state, "CONTINUE");
-    });
+    }
     if (npc.id !== "random") state = act(state, "EXPLORE");
   }
   expect(state.phase).toBe("won");

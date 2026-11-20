@@ -32,7 +32,7 @@ it("stays completely invisible until a full correct code, then closes and can re
 });
 
 it("does not read a code typed into a normal input, textarea, or contenteditable", () => {
-  const { container } = render(
+  render(
     <>
       <input aria-label="Regular input" />
       <textarea aria-label="Regular textarea" />
@@ -49,7 +49,7 @@ it("does not read a code typed into a normal input, textarea, or contenteditable
     enterCode(target);
     expect(gameDialog()).not.toBeInTheDocument();
   }
-  expect(container.querySelector(".officeQuestWindow")).not.toBeInTheDocument();
+  expect(gameDialog()).not.toBeInTheDocument();
 });
 
 it("does not complete a code with modifiers, held keys, or an interrupted sequence", () => {
