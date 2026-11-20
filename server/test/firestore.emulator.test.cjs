@@ -589,3 +589,163 @@ test("H-S06: cross-user repository writes are denied without altering session or
   assert.deepEqual((await ref.get()).data(), before);
   assert.deepEqual(await sessions.listResponses(session.id), []);
 });
+
+// SCRUM-241 / H-04: Firestore Emulator integration coverage for friends and rankings.
+// Unlike the Jest repository doubles, these tests exercise actual Firestore
+// transactions, composite-index queries, field projections and persisted writes.
+const FirestoreFriendshipRepository = require("../src/repositories/firestore/FirestoreFriendshipRepository");
+const FirestoreUserRepository = require("../src/repositories/firestore/FirestoreUserRepository");
+const { rankProfiles } = require("../src/services/leaderboardRanking");
+const friendships = new FirestoreFriendshipRepository({ db, admin });
+const users = new FirestoreUserRepository({ db, admin });
+
+async function createFriendProfiles(profiles) {
+  await Promise.all(Object.entries(profiles).map(([uid, options]) => {
+    const { elo = 1000, rankedSessions = 1, ...extra } = options;
+    return db.collection("users").doc(uid).set({
+      uid, username: uid, status: "active",
+      ranking: { elo, rankedSessions, points: 0, averageScore: 0 },
+      ...extra,
+    });
+  }));
+}
+
+async function acceptFriend(requester, recipient) {
+  await friendships.createRequest(requester, recipient);
+  return friendships.acceptRequest(requester, recipient, recipient);
+}
+
+test("H-F01: pending friendship persists in Firestore and is visible in directed queries", async () => {
+  await createFriendProfiles({ alice: {}, bob: {} });
+  const created = await friendships.createRequest("alice", "bob");
+  const stored = await friendships.relationshipRef("bob", "alice").get();
+  assert.equal(stored.exists, true);
+  assert.equal(stored.id, created.id);
+  assert.deepEqual(stored.data().participants, ["alice", "bob"]);
+  assert.equal(stored.data().requesterUid, "alice");
+  assert.equal(stored.data().recipientUid, "bob");
+  assert.equal(stored.data().status, "pending");
+  assert.equal(stored.data().respondedAt, null);
+  assert.ok(stored.data().createdAt?.toDate?.() instanceof Date);
+  assert.deepEqual((await friendships.listIncomingRequests("bob")).map((r) => r.id), [created.id]);
+  assert.deepEqual((await friendships.listOutgoingRequests("alice")).map((r) => r.id), [created.id]);
+  assert.deepEqual(await friendships.listFriends("alice"), []);
+  assert.deepEqual(await friendships.listIncomingRequests("alice"), []);
+});
+
+test("H-F02: accepting and declining requests persist separate, final states", async () => {
+  await createFriendProfiles({ alice: {}, bob: {}, carol: {}, dave: {} });
+  await friendships.createRequest("alice", "bob");
+  await friendships.createRequest("carol", "dave");
+  await assert.rejects(friendships.acceptRequest("alice", "bob", "alice"),
+    (error) => error.code === "friend-request-forbidden");
+  await friendships.acceptRequest("alice", "bob", "bob");
+  await friendships.declineRequest("carol", "dave", "dave");
+
+  const accepted = (await friendships.relationshipRef("alice", "bob").get()).data();
+  const declined = (await friendships.relationshipRef("carol", "dave").get()).data();
+  assert.equal(accepted.status, "accepted");
+  assert.ok(accepted.respondedAt?.toDate?.() instanceof Date);
+  assert.ok(accepted.acceptedAt?.toDate?.() instanceof Date);
+  assert.equal(declined.status, "declined");
+  assert.ok(declined.respondedAt?.toDate?.() instanceof Date);
+  assert.equal(declined.acceptedAt, null);
+  assert.deepEqual((await friendships.listFriends("alice")).map((r) => r.friendUid), ["bob"]);
+  assert.deepEqual((await friendships.listFriends("bob")).map((r) => r.friendUid), ["alice"]);
+  assert.deepEqual(await friendships.listFriends("carol"), []);
+  assert.deepEqual((await friendships.listIncomingRequests("dave", "declined"))
+    .map((r) => r.requesterUid), ["carol"]);
+  await assert.rejects(friendships.acceptRequest("carol", "dave", "dave"),
+    (error) => error.code === "friend-request-finalized");
+});
+
+test("H-F03: repeat, reverse, invalid and missing-user requests cannot corrupt relationships", async () => {
+  await createFriendProfiles({ alice: {}, bob: {}, deleting: { status: "deleting" } });
+  const first = await friendships.createRequest("alice", "bob");
+  const repeated = await friendships.createRequest("alice", "bob");
+  assert.equal(repeated.id, first.id);
+  await assert.rejects(friendships.createRequest("bob", "alice"),
+    (error) => error.code === "friend-request-pending");
+  await assert.rejects(friendships.createRequest("alice", "alice"),
+    (error) => error.code === "self-friend-request");
+  await assert.rejects(friendships.createRequest("alice", "not/a/uid"),
+    (error) => error.code === "invalid-friend-uid");
+  await assert.rejects(friendships.createRequest("alice", "missing"),
+    (error) => error.code === "friend-user-not-found");
+  await assert.rejects(friendships.createRequest("alice", "deleting"),
+    (error) => error.code === "friend-user-unavailable");
+  assert.equal((await db.collection("friendRelationships").get()).size, 1);
+  assert.equal((await friendships.findRelationship("alice", "bob")).status, "pending");
+  assert.equal(await friendships.findRelationship("alice", "missing"), null);
+});
+
+test("H-F04: global ranking uses real Firestore projections and ELO ordering", async () => {
+  await createFriendProfiles({
+    alice: { elo: 1200 }, bob: { elo: 1450 }, carol: { elo: 1450 },
+    unranked: { elo: 1800, rankedSessions: 0 },
+    hidden: { elo: 1900, deleting: true },
+    malformed: { ranking: { elo: "invalid", rankedSessions: 2 } },
+    legacy: { ranking: { rankedSessions: 1 } },
+    incomplete: { ranking: {} },
+  });
+  const rankings = rankProfiles(await users.listRankingProfiles());
+  assert.deepEqual(rankings.map(({ uid, elo, rank }) => [uid, elo, rank]), [
+    ["bob", 1450, 1], ["carol", 1450, 1], ["alice", 1200, 3], ["legacy", 1000, 4],
+  ]);
+  assert.ok(rankings.every((row) => !Object.hasOwn(row, "email") && !Object.hasOwn(row, "ranking")));
+});
+
+test("H-F05: friends leaderboard uses accepted relationships only and excludes private user data", async () => {
+  await createFriendProfiles({
+    alice: { elo: 1250, email: "private-alice@example.invalid" },
+    bob: { elo: 1400, email: "private-bob@example.invalid" },
+    carol: { elo: 1250 },
+    pending: { elo: 2000 },
+    declined: { elo: 2100 },
+    outsider: { elo: 2200 },
+    unranked: { elo: 1900, rankedSessions: 0 },
+  });
+  await acceptFriend("alice", "bob");
+  await acceptFriend("carol", "alice");
+  await acceptFriend("alice", "unranked");
+  await friendships.createRequest("alice", "pending");
+  await friendships.createRequest("alice", "declined");
+  await friendships.declineRequest("alice", "declined", "declined");
+  const rows = await friendships.listFriendsLeaderboard("alice");
+  assert.deepEqual(rows.map(({ uid, elo, rank }) => [uid, elo, rank]), [
+    ["bob", 1400, 1], ["alice", 1250, 2], ["carol", 1250, 2],
+  ]);
+  assert.ok(rows.every((row) => !Object.hasOwn(row, "email") &&
+    !Object.hasOwn(row, "ranking") && !Object.hasOwn(row, "points")));
+  assert.deepEqual((await friendships.listFriends("pending")), []);
+  assert.deepEqual((await friendships.listFriends("declined")), []);
+});
+
+test("H-F06: updated persisted ELO changes global/friends rankings and missing profiles are skipped", async () => {
+  await createFriendProfiles({ alice: { elo: 1100 }, bob: { elo: 1200 }, carol: { elo: 1300 } });
+  await acceptFriend("alice", "bob");
+  await acceptFriend("alice", "carol");
+  assert.deepEqual((await friendships.listFriendsLeaderboard("alice")).map((r) => r.uid),
+    ["carol", "bob", "alice"]);
+  await db.collection("users").doc("bob").update({ "ranking.elo": 1500 });
+  assert.deepEqual((await friendships.listFriendsLeaderboard("alice")).map((r) => r.uid),
+    ["bob", "carol", "alice"]);
+  assert.deepEqual(rankProfiles(await users.listRankingProfiles()).map((r) => r.uid),
+    ["bob", "carol", "alice"]);
+  await db.collection("users").doc("carol").delete();
+  assert.deepEqual((await friendships.listFriendsLeaderboard("alice")).map((r) => r.uid),
+    ["bob", "alice"]);
+  await db.collection("users").doc("bob").update({ ranking: { rankedSessions: 1 } });
+  assert.deepEqual((await friendships.listFriendsLeaderboard("alice")).map(({ uid, elo }) => [uid, elo]),
+    [["alice", 1100], ["bob", 1000]]);
+});
+
+test("H-F07: corrupted stored friendship data is rejected instead of silently being trusted", async () => {
+  await createFriendProfiles({ alice: {}, bob: {} });
+  await acceptFriend("alice", "bob");
+  await friendships.relationshipRef("alice", "bob").update({ participants: ["alice", "intruder"] });
+  await assert.rejects(friendships.listFriends("alice"),
+    (error) => error.code === "friendship-data-invalid");
+  await assert.rejects(friendships.findRelationship("alice", "bob"),
+    (error) => error.code === "friendship-data-invalid");
+});
