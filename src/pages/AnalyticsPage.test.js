@@ -1,6 +1,6 @@
-//Tests real data display, empty accounts, leaderboard failures, retry handling,
-//and preventing previous user's statistics from remaining visible after changing accounts
+
 import {
+  act,
   fireEvent,
   render,
   screen,
@@ -38,18 +38,47 @@ jest.mock("../services/leaderboardService", () => ({
   },
 }));
 
-const sample = [
-  {
-    id: "a1",
-    mode: "Quiz Style",
-    status: "completed",
-    completedAt: "2026-10-02T12:00:00Z",
-    result: {
-      score: 88,
-      completionStatus: "completed",
-    },
+// Use local calendar dates to avoid tests expiring over time.
+const localDate = (daysAgo = 0) => {
+  const now = new Date();
+
+  return new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate() - daysAgo,
+    12
+  );
+};
+
+const dateLabel = (daysAgo = 0) =>
+  localDate(daysAgo).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+  });
+
+const makeSession = (
+  id = "a1",
+  score = 88,
+  daysAgo = 0,
+  mode = "Quiz Style"
+) => ({
+  id,
+  mode,
+  status: "completed",
+  completedAt: localDate(daysAgo).toISOString(),
+  result: {
+    score,
+    completionStatus: "completed",
   },
-];
+});
+
+const renderPage = () =>
+  render(
+    <AnalyticsPage
+      currentPage="/analytics"
+      onNavigate={jest.fn()}
+    />
+  );
 
 beforeEach(() => {
   jest.clearAllMocks();
@@ -58,22 +87,17 @@ beforeEach(() => {
     user: { uid: "alice" },
   });
 
-  analyticsService.getCompletedSessions.mockResolvedValue(
-    sample
-  );
+  analyticsService.getCompletedSessions.mockResolvedValue([
+    makeSession(),
+  ]);
 
   leaderboardService.getUserRanking.mockResolvedValue({
     elo: 1300,
   });
 });
 
-test("renders actual session metrics and ranking", async () => {
-  render(
-    <AnalyticsPage
-      currentPage="/analytics"
-      onNavigate={jest.fn()}
-    />
-  );
+test("renders actual lifetime statistics and current ELO", async () => {
+  renderPage();
 
   expect(
     await screen.findByText("1300")
@@ -84,14 +108,26 @@ test("renders actual session metrics and ranking", async () => {
   ).toBeGreaterThan(0);
 
   expect(
-    screen.getAllByText("Quiz Style").length
-  ).toBeGreaterThan(0);
+    screen.getByText("Across 1 all-time scored interviews.")
+  ).toBeInTheDocument();
+
+  expect(
+    screen.getByRole("heading", {
+      name: "Daily Average — Last 30 Days",
+    })
+  ).toBeInTheDocument();
 
   expect(
     screen.getByRole("img", {
-      name: /Quiz Style: 88% on Oct 2/i,
+      name: `${dateLabel()}: 88% daily average across 1 interview`,
     })
   ).toBeInTheDocument();
+
+  expect(
+    screen.getAllByRole("img", {
+      name: /No scored interviews/i,
+    })
+  ).toHaveLength(29);
 
   // Old prototype value must not appear.
   expect(
@@ -99,18 +135,15 @@ test("renders actual session metrics and ranking", async () => {
   ).not.toBeInTheDocument();
 });
 
-test("renders an empty state", async () => {
+test("shows 30 missing dates for an empty account", async () => {
   analyticsService.getCompletedSessions.mockResolvedValue([]);
 
-  render(
-    <AnalyticsPage
-      currentPage="/analytics"
-      onNavigate={jest.fn()}
-    />
-  );
+  renderPage();
 
   expect(
-    await screen.findByText("No completed interviews yet")
+    await screen.findByRole("heading", {
+      name: "Daily Average — Last 30 Days",
+    })
   ).toBeInTheDocument();
 
   expect(
@@ -118,44 +151,44 @@ test("renders an empty state", async () => {
   ).toBeInTheDocument();
 
   expect(
+    screen.getAllByRole("img", {
+      name: /No scored interviews/i,
+    })
+  ).toHaveLength(30);
+
+  expect(
     screen.queryByRole("img", {
-      name: /Quiz Style: 88%/i,
+      name: /daily average across/i,
     })
   ).not.toBeInTheDocument();
 });
 
-test("analytics works when leaderboard fails", async () => {
+test("analytics still works when leaderboard fails", async () => {
   leaderboardService.getUserRanking.mockRejectedValue(
     new Error("Ranking unavailable")
   );
 
-  render(
-    <AnalyticsPage
-      currentPage="/analytics"
-      onNavigate={jest.fn()}
-    />
-  );
+  renderPage();
 
   expect(
     await screen.findByRole("img", {
-      name: /Quiz Style: 88% on Oct 2/i,
+      name: `${dateLabel()}: 88% daily average across 1 interview`,
     })
+  ).toBeInTheDocument();
+
+  expect(
+    screen.getByText("Across 1 all-time scored interviews.")
   ).toBeInTheDocument();
 });
 
-test("shows an error and supports retry", async () => {
+test("shows history errors and supports retry", async () => {
   analyticsService.getCompletedSessions
     .mockRejectedValueOnce(
       new Error("Temporary outage")
     )
-    .mockResolvedValueOnce(sample);
+    .mockResolvedValueOnce([makeSession()]);
 
-  render(
-    <AnalyticsPage
-      currentPage="/analytics"
-      onNavigate={jest.fn()}
-    />
-  );
+  renderPage();
 
   expect(
     await screen.findByText("Temporary outage")
@@ -169,7 +202,7 @@ test("shows an error and supports retry", async () => {
 
   expect(
     await screen.findByRole("img", {
-      name: /Quiz Style: 88% on Oct 2/i,
+      name: `${dateLabel()}: 88% daily average across 1 interview`,
     })
   ).toBeInTheDocument();
 
@@ -179,16 +212,11 @@ test("shows an error and supports retry", async () => {
 });
 
 test("clears previous account metrics when user changes", async () => {
-  const { rerender } = render(
-    <AnalyticsPage
-      currentPage="/analytics"
-      onNavigate={jest.fn()}
-    />
-  );
+  const { rerender } = renderPage();
 
   expect(
     await screen.findByRole("img", {
-      name: /Quiz Style: 88% on Oct 2/i,
+      name: `${dateLabel()}: 88% daily average across 1 interview`,
     })
   ).toBeInTheDocument();
 
@@ -212,15 +240,88 @@ test("clears previous account metrics when user changes", async () => {
     />
   );
 
+  // Old account data should not remain visible.
   expect(
     screen.queryByText("88%")
   ).not.toBeInTheDocument();
 
-  finishBob([]);
-
   await waitFor(() => {
-    expect(
-      screen.getByText("No completed interviews yet")
-    ).toBeInTheDocument();
+    expect(typeof finishBob).toBe("function");
   });
+
+  act(() => {
+    finishBob([]);
+  });
+
+  expect(
+    await screen.findByRole("heading", {
+      name: "Daily Average — Last 30 Days",
+    })
+  ).toBeInTheDocument();
+
+  expect(
+    screen.getAllByRole("img", {
+      name: /No scored interviews/i,
+    })
+  ).toHaveLength(30);
+});
+
+test("daily averages include recent sessions while lifetime stats include older ones", async () => {
+  analyticsService.getCompletedSessions.mockResolvedValue([
+    makeSession("a1", 88, 0, "Quiz Style"),
+    makeSession("a2", 72, 0, "Code Style"),
+    makeSession("older", 40, 40, "Theoretical Style"),
+  ]);
+
+  renderPage();
+
+  expect(
+    await screen.findByText(
+      "Across 3 all-time scored interviews."
+    )
+  ).toBeInTheDocument();
+
+  // Lifetime average: (88 + 72 + 40) / 3 = 67%.
+  expect(
+    screen.getAllByText("67%").length
+  ).toBeGreaterThan(0);
+
+  // Daily average: (88 + 72) / 2 = 80%.
+  expect(
+    screen.getByRole("img", {
+      name: `${dateLabel()}: 80% daily average across 2 interviews`,
+    })
+  ).toBeInTheDocument();
+
+  expect(
+    screen.getAllByRole("img", {
+      name: /No scored interviews/i,
+    })
+  ).toHaveLength(29);
+
+  expect(
+    screen.getByRole("heading", {
+      name: "Performance Breakdown",
+    })
+  ).toBeInTheDocument();
+});
+
+test("distinguishes a zero score from a day without data", async () => {
+  analyticsService.getCompletedSessions.mockResolvedValue([
+    makeSession("zero", 0),
+  ]);
+
+  renderPage();
+
+  expect(
+    await screen.findByRole("img", {
+      name: `${dateLabel()}: 0% daily average across 1 interview`,
+    })
+  ).toBeInTheDocument();
+
+  expect(
+    screen.getAllByRole("img", {
+      name: /No scored interviews/i,
+    })
+  ).toHaveLength(29);
 });

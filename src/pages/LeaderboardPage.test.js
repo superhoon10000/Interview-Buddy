@@ -86,6 +86,20 @@ test("renders current ELO, global standing and user's saved rank badge", async (
 
   render(<LeaderboardPage currentPage="/leaderboard" onNavigate={() => {}} />);
   const table = await screen.findByRole("table");
+
+  //Row badges
+  expect(
+    within(table).getByRole("img", {
+      name: "NVIDIA ELO badge for Sam",
+    })
+  ).toBeInTheDocument();
+
+  expect(
+    within(table).getByRole("img", {
+      name: "Bill Gates ELO badge for Me",
+    })
+  ).toBeInTheDocument();
+
   expect(within(table).getByRole("columnheader", { name: "ELO Score" })).toBeInTheDocument();
   expect(within(table).getByText("Sam")).toBeInTheDocument();
   expect(within(table).getByText("Me")).toBeInTheDocument();
@@ -96,7 +110,7 @@ test("renders current ELO, global standing and user's saved rank badge", async (
   expect(screen.getAllByText("1,160").length).toBeGreaterThan(0);
   expect(screen.queryByText("Total Points")).not.toBeInTheDocument();
   expect(screen.getByAltText("Bill Gates ELO rank badge")).toHaveAttribute(
-    "src", "/Tech%20CEO%20Mascot%20Innovation%20Badge.png"
+    "src", "/Minisofty%20Capybara%20Innovation%20Badge.png"
   );
   expect(screen.getByText("No friends available yet.")).toBeInTheDocument();
 });
@@ -231,31 +245,197 @@ test("friends tab retains ELO labels for the future friends service", async () =
   expect(screen.getByText("Rank #5")).toBeInTheDocument();
 });
 
+//Preserve OG test purpose while checking new removal location
 test("friend request and removal call APIs, not local fake changes", async () => {
-  const friend = { uid: "friend-1", username: "Taylor", elo: 1400, rank: 5 };
+  const friend = {
+    uid: "friend-1",
+    username: "Taylor",
+    elo: 1400,
+    rank: 5,
+  };
+
   leaderboardService.getGlobalLeaderboard.mockResolvedValue([]);
+
   leaderboardService.getFriendsLeaderboard
-    .mockResolvedValueOnce([friend]) // Load on mount.
-    .mockResolvedValueOnce([friend]) // Pending request does not add a friend.
-    .mockResolvedValueOnce([]); // Removal persists in backend.
+    .mockResolvedValueOnce([friend])
+    .mockResolvedValueOnce([friend])
+    .mockResolvedValueOnce([]);
+
+  leaderboardService.getAcceptedFriends
+    .mockResolvedValueOnce([
+      { uid: "friend-1", username: "Taylor" },
+    ])
+    .mockResolvedValueOnce([]);
+
   leaderboardService.getUserRanking.mockResolvedValue(null);
-  leaderboardService.sendFriendRequest.mockResolvedValue({ status: "pending" });
+  leaderboardService.sendFriendRequest.mockResolvedValue({
+    status: "pending",
+  });
   leaderboardService.removeFriend.mockResolvedValue({});
 
-  render(<LeaderboardPage currentPage="/leaderboard" onNavigate={() => {}} />);
-  fireEvent.click(screen.getByRole("tab", { name: "Friends" }));
-  expect(await screen.findByRole("button", { name: "Remove Taylor from friends" })).toBeInTheDocument();
+  render(
+    <LeaderboardPage
+      currentPage="/leaderboard"
+      onNavigate={() => {}}
+    />
+  );
 
-  fireEvent.change(screen.getByRole("textbox", { name: "Username" }), { target: { value: "Morgan" } });
-  fireEvent.click(screen.getByRole("button", { name: "Add Friend" }));
-  await waitFor(() => expect(leaderboardService.sendFriendRequest).toHaveBeenCalledWith("Morgan"));
-  expect(await screen.findByText(/Friend request sent to "Morgan"/)).toBeInTheDocument();
-  expect(screen.queryByText("Morgan", { selector: ".ibRankingUsername" })).not.toBeInTheDocument();
+  fireEvent.click(
+    screen.getByRole("tab", { name: "Friends" })
+  );
 
-  await waitFor(() => expect(screen.getByRole("button", { name: "Remove Taylor from friends" })).toBeEnabled());
-  fireEvent.click(screen.getByRole("button", { name: "Remove Taylor from friends" }));
-  await waitFor(() => expect(leaderboardService.removeFriend).toHaveBeenCalledWith("friend-1"));
-  expect(await screen.findByText("No friends yet")).toBeInTheDocument();
+  const accepted = screen.getByRole("region", {
+    name: "Accepted Friends",
+  });
+
+  // Remove must exist in Accepted Friends.
+  expect(
+    await within(accepted).findByRole("button", {
+      name: "Remove Taylor from accepted friends",
+    })
+  ).toBeInTheDocument();
+
+  // Sending a friend request should not immediately add them.
+  fireEvent.change(
+    screen.getByRole("textbox", { name: "Username" }),
+    { target: { value: "Morgan" } }
+  );
+
+  fireEvent.click(
+    screen.getByRole("button", { name: "Add Friend" })
+  );
+
+  await waitFor(() => {
+    expect(
+      leaderboardService.sendFriendRequest
+    ).toHaveBeenCalledWith("Morgan");
+  });
+
+  expect(
+    await screen.findByText(/Friend request sent to "Morgan"/)
+  ).toBeInTheDocument();
+
+  expect(
+    screen.queryByText("Morgan", {
+      selector: ".ibRankingUsername",
+    })
+  ).not.toBeInTheDocument();
+
+  // Removal happens only through Accepted Friends.
+  const removeButton = within(accepted).getByRole("button", {
+    name: "Remove Taylor from accepted friends",
+  });
+
+  await waitFor(() => {
+    expect(removeButton).toBeEnabled();
+  });
+
+  fireEvent.click(removeButton);
+
+  await waitFor(() => {
+    expect(
+      leaderboardService.removeFriend
+    ).toHaveBeenCalledWith("friend-1");
+  });
+
+  expect(
+    await within(accepted).findByText("No accepted friends")
+  ).toBeInTheDocument();
+
+  expect(
+    await screen.findByText("No friends yet")
+  ).toBeInTheDocument();
+});
+
+//Test both requests together.
+test("shows self in Friends Rankings with Remove only in Accepted Friends", async () => {
+  leaderboardService.getGlobalLeaderboard.mockResolvedValue([]);
+
+  leaderboardService.getFriendsLeaderboard.mockResolvedValue([
+    {
+      uid: "friend-1",
+      username: "Taylor",
+      rank: 1,
+      elo: 1400,
+    },
+    {
+      uid: "test-user",
+      username: "Me",
+      rank: 2,
+      elo: 1200,
+    },
+  ]);
+
+  leaderboardService.getAcceptedFriends.mockResolvedValue([
+    { uid: "friend-1", username: "Taylor" },
+  ]);
+
+  leaderboardService.getUserRanking.mockResolvedValue({
+    uid: "test-user",
+    username: "Me",
+    rank: 2,
+    elo: 1200,
+  });
+
+  render(
+    <LeaderboardPage
+      currentPage="/leaderboard"
+      onNavigate={() => {}}
+    />
+  );
+
+  fireEvent.click(
+    screen.getByRole("tab", { name: "Friends" })
+  );
+
+  const rankings = screen.getByRole("region", {
+    name: "Friends leaderboard",
+  });
+
+  const table = await within(rankings).findByRole("table");
+
+  // Both the friend and the current user are ranked.
+  expect(
+    within(table).getByText("Taylor")
+  ).toBeInTheDocument();
+
+  expect(
+    within(table).getByText("Me")
+  ).toBeInTheDocument();
+
+  // The signed-in user's row is identified.
+  expect(
+    within(table).getByText("You")
+  ).toBeInTheDocument();
+
+  // Self is not counted as an accepted friend.
+  expect(
+    within(rankings).getByText("1 ranked friend + you")
+  ).toBeInTheDocument();
+
+  // Ranking table no longer provides removal actions.
+  expect(
+    within(table).queryByRole("columnheader", {
+      name: "Action",
+    })
+  ).not.toBeInTheDocument();
+
+  expect(
+    within(rankings).queryByRole("button", {
+      name: /Remove Taylor/i,
+    })
+  ).not.toBeInTheDocument();
+
+  // Accepted Friends still provides removal.
+  const accepted = screen.getByRole("region", {
+    name: "Accepted Friends",
+  });
+
+  expect(
+    within(accepted).getByRole("button", {
+      name: "Remove Taylor from accepted friends",
+    })
+  ).toBeInTheDocument();
 });
 
 test("failed requests do not claim a friend was added", async () => {
@@ -866,7 +1046,6 @@ describe("SCRUM-108 friend discovery", () => {
   });
 });
 
-
 describe("SCRUM-110 friends-only ranking refresh workflow", () => {
   const ranking = (uid, username, rank, elo) => ({ uid, username, rank, elo });
   const viewFriends = () => fireEvent.click(screen.getByRole("tab", { name: "Friends" }));
@@ -1016,5 +1195,100 @@ describe("SCRUM-110 friends-only ranking refresh workflow", () => {
     expect(rows.map((row) => within(row).getAllByRole("cell")[1].textContent)).toEqual(["Alice", "Bob", "Carol"]);
     expect(rows.map((row) => within(row).getAllByRole("cell")[0].textContent)).toEqual(["1", "1", "3"]);
     expect(screen.getByText(/Equal ELO scores share the same rank/)).toBeInTheDocument();
+  });
+});
+
+describe("D-03 application-level friends and ELO workflow regression", () => {
+  const entry = (uid, username, rank, elo) => ({ uid, username, rank, elo });
+
+  test("D03-T07 refresh displays the new server ELO and updated global rank", async () => {
+    leaderboardService.getGlobalLeaderboard
+      .mockResolvedValueOnce([
+        entry("rival", "Rival", 1, 1010),
+        entry("test-user", "Me", 2, 1000),
+      ])
+      .mockResolvedValueOnce([
+        entry("test-user", "Me", 1, 1016),
+        entry("rival", "Rival", 2, 1010),
+      ]);
+    leaderboardService.getUserRanking
+      .mockResolvedValueOnce(entry("test-user", "Me", 2, 1000))
+      .mockResolvedValueOnce(entry("test-user", "Me", 1, 1016));
+    leaderboardService.getFriendsLeaderboard.mockResolvedValue([]);
+
+    render(<LeaderboardPage currentPage="/leaderboard" onNavigate={() => {}} />);
+    const globalPanel = screen.getByRole("tabpanel", { name: "Global" });
+    expect(await within(globalPanel).findByText("Rival")).toBeInTheDocument();
+    expect(await screen.findByText("#2")).toBeInTheDocument();
+    expect(within(globalPanel).getAllByRole("row")[1]).toHaveTextContent("Rival");
+
+    const refreshButton = screen.getByRole("button", { name: /Refresh/i });
+    await waitFor(() => expect(refreshButton).toBeEnabled());
+    fireEvent.click(refreshButton);
+
+    await waitFor(() => {
+      expect(within(globalPanel).getAllByRole("row")[1]).toHaveTextContent("Me");
+    });
+
+    expect(await screen.findByText("#1")).toBeInTheDocument();
+    expect(within(globalPanel).getByText("1,016")).toBeInTheDocument();
+    expect(leaderboardService.getGlobalLeaderboard).toHaveBeenCalledTimes(2);
+    expect(leaderboardService.getUserRanking).toHaveBeenCalledTimes(2);
+  });
+
+  test("D03-T03/T04 self and duplicate request errors leave friends unchanged", async () => {
+    leaderboardService.getGlobalLeaderboard.mockResolvedValue([]);
+    leaderboardService.getFriendsLeaderboard.mockResolvedValue([]);
+    leaderboardService.getUserRanking.mockResolvedValue(null);
+    leaderboardService.sendFriendRequest
+      .mockRejectedValueOnce(new Error("Cannot send a friend request to yourself."))
+      .mockRejectedValueOnce(new Error("Friend request already exists."));
+
+    render(<LeaderboardPage currentPage="/leaderboard" onNavigate={() => {}} />);
+    fireEvent.click(screen.getByRole("tab", { name: "Friends" }));
+    const input = await screen.findByRole("textbox", { name: "Username" });
+    await waitFor(() => expect(input).toBeEnabled());
+
+    fireEvent.change(input, { target: { value: "test-user" } });
+    fireEvent.click(screen.getByRole("button", { name: "Add Friend" }));
+    expect(await screen.findByText("Cannot send a friend request to yourself.")).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByRole("button", { name: "Add Friend" })).toBeEnabled());
+
+    fireEvent.change(input, { target: { value: "Bob" } });
+    fireEvent.click(screen.getByRole("button", { name: "Add Friend" }));
+    expect(await screen.findByText("Friend request already exists.")).toBeInTheDocument();
+
+    expect(screen.queryByText(/Friend request sent to/)).not.toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Accepted Friends" })).toHaveTextContent("No accepted friends");
+    expect(leaderboardService.getAcceptedFriends).toHaveBeenCalledTimes(1);
+    expect(leaderboardService.getFriendRequests).toHaveBeenCalledTimes(1);
+  });
+
+  test("D03-T11 failed global refresh hides stale rankings and allows recovery", async () => {
+    leaderboardService.getGlobalLeaderboard
+      .mockResolvedValueOnce([entry("old", "OldLeader", 1, 1200)])
+      .mockRejectedValueOnce(new Error("Unable to retrieve rankings."))
+      .mockResolvedValueOnce([entry("new", "RecoveredLeader", 1, 1300)]);
+    leaderboardService.getFriendsLeaderboard.mockResolvedValue([]);
+    leaderboardService.getUserRanking.mockResolvedValue(null);
+
+    render(<LeaderboardPage currentPage="/leaderboard" onNavigate={() => {}} />);
+    const globalPanel = screen.getByRole("tabpanel", { name: "Global" });
+    expect(await within(globalPanel).findByText("OldLeader")).toBeInTheDocument();
+
+    const refreshButton = screen.getByRole("button", { name: /Refresh/i });
+    await waitFor(() => expect(refreshButton).toBeEnabled());
+    fireEvent.click(refreshButton);
+
+    expect(await within(globalPanel).findByRole("alert")).toHaveTextContent("Unable to retrieve rankings.");
+    expect(within(globalPanel).queryByText("OldLeader")).not.toBeInTheDocument();
+
+    await waitFor(() => expect(refreshButton).toBeEnabled());
+    fireEvent.click(refreshButton);
+
+    expect(await within(globalPanel).findByText("RecoveredLeader")).toBeInTheDocument();
+    expect(within(globalPanel).getByText("1,300")).toBeInTheDocument();
+    expect(within(globalPanel).queryByText("OldLeader")).not.toBeInTheDocument();
+    expect(leaderboardService.getGlobalLeaderboard).toHaveBeenCalledTimes(3);
   });
 });

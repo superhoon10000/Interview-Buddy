@@ -2,17 +2,37 @@
 "use strict";
 
 /**
- * Create five disposable, email-verified Interview Buddy test users.
+ * Create disposable, email-verified Interview Buddy test accounts.
+ *
+ * By default, the script generates five accounts with randomized usernames,
+ * email addresses, and secure passwords. Optional --username and --email
+ * arguments allow creation of a single customized test account instead.
+ * If only one custom field is provided, the other is generated automatically.
  *
  * Run from server/:
+ *
+ *   // Preview five generated accounts (no changes made)
  *   node scripts/seedVerifiedTestUsers.js --project=PROJECT_ID --live
+ *
+ *   // Create five generated accounts
  *   node scripts/seedVerifiedTestUsers.js --project=PROJECT_ID --live --apply
  *
- * For emulators, set BOTH FIREBASE_AUTH_EMULATOR_HOST and
- * FIRESTORE_EMULATOR_HOST, then substitute --emulator for --live.
+ *   // Preview a custom account
+ *   node scripts/seedVerifiedTestUsers.js --project=PROJECT_ID --live --username=DemoUser --email=demo@example.test
  *
- * The credential Markdown file is stored under the repository's already
- * gitignored server/scripts/output/ directory. Never commit or share it.
+ *   // Create a custom account
+ *   node scripts/seedVerifiedTestUsers.js --project=PROJECT_ID --live --apply --username=DemoUser --email=demo@example.test
+ *
+ * Safety and configuration:
+ * - Without --apply, the script performs a dry run and makes no changes.
+ * - --live targets the configured Firebase project.
+ * - For local emulators, configure BOTH FIREBASE_AUTH_EMULATOR_HOST and
+ *   FIRESTORE_EMULATOR_HOST, then use --emulator instead of --live.
+ * - Created users are marked email-verified and receive standard user
+ *   privileges in Firebase Authentication and Firestore.
+ * - Generated passwords and account details are saved to a Markdown file
+ *   in server/scripts/output/, which is excluded by .gitignore.
+ * - Never commit or publicly share generated credentials.
  */
 
 require("dotenv").config();
@@ -23,24 +43,50 @@ const crypto = require("node:crypto");
 
 const ACCOUNT_COUNT = 5;
 
+//Adds arguements for custom username / emails (facilitate presentation test accounts)
+//Preserves existing safety checks
 function parseArgs(argv) {
   if (argv.includes("--help")) return { help: true };
 
   const projectArg = argv.find((arg) => arg.startsWith("--project="));
+  const usernameArg = argv.find((arg) => arg.startsWith("--username="));
+  const emailArg = argv.find((arg) => arg.startsWith("--email="));
+
   const project = projectArg ? projectArg.slice("--project=".length).trim() : "";
+  const username = usernameArg ? usernameArg.slice("--username=".length).trim() : "";
+  const email = emailArg ? emailArg.slice("--email=".length).trim().toLowerCase() : "";
+
   const apply = argv.includes("--apply");
   const live = argv.includes("--live");
   const emulator = argv.includes("--emulator");
+
   const allowed = new Set(["--apply", "--live", "--emulator"]);
 
   if (projectArg) allowed.add(projectArg);
+  if (usernameArg) allowed.add(usernameArg);
+  if (emailArg) allowed.add(emailArg);
+
   const unexpected = argv.filter((arg) => !allowed.has(arg));
 
   if (!project || unexpected.length || live === emulator) {
     throw new Error(
       "Usage: node scripts/seedVerifiedTestUsers.js " +
-      "--project=PROJECT_ID (--live | --emulator) [--apply]"
+      "--project=PROJECT_ID (--live | --emulator) [--apply] " +
+      "[--username=NAME] [--email=EMAIL]"
     );
+  }
+
+  if (usernameArg && !/^[A-Za-z0-9_-]{2,64}$/.test(username)) {
+    throw new Error(
+      "--username must be 2-64 letters, numbers, underscores, or hyphens."
+    );
+  }
+
+  if (
+    emailArg &&
+    (email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
+  ) {
+    throw new Error("--email must be a valid email address.");
   }
 
   if (project !== process.env.FIREBASE_PROJECT_ID) {
@@ -72,21 +118,34 @@ function parseArgs(argv) {
     );
   }
 
-  return { project, apply, live, emulator };
+  return { project, apply, live, emulator, username, email };
 }
 
-function makeAccounts() {
+
+function makeAccounts(options) {
   const uniqueTag = crypto.randomBytes(5).toString("hex");
+
+  const makeAccount = (username, email) => ({
+    username,
+    email,
+    password: `IB!${crypto.randomBytes(20).toString("base64url")}9aA`,
+  });
+
+  if (options.username || options.email) {
+    const username = options.username || `IBTest01_${uniqueTag}`;
+    const email = options.email || `${username.toLowerCase()}@example.test`;
+
+    return [makeAccount(username, email)];
+  }
 
   return Array.from({ length: ACCOUNT_COUNT }, (_, index) => {
     const number = String(index + 1).padStart(2, "0");
     const username = `IBTest${number}_${uniqueTag}`;
 
-    return {
+    return makeAccount(
       username,
-      email: `${username.toLowerCase()}@example.test`,
-      password: `IB!${crypto.randomBytes(20).toString("base64url")}9aA`,
-    };
+      `${username.toLowerCase()}@example.test`
+    );
   });
 }
 
@@ -104,7 +163,7 @@ function makeReport(project, target, outputFile) {
     `- Firebase project: \`${project}\``,
     `- Target: ${target}`,
     `- Created (UTC): ${new Date().toISOString()}`,
-    "- Email addresses use the reserved `.test` domain and have no mailbox.",
+    "- Auto-generated email addresses use the reserved `.test` domain and have no mailbox; custom emails are used as supplied.",
     "- These accounts are administratively marked verified for testing only.",
     "- All accounts have standard `user` privileges.",
     "",
@@ -124,7 +183,8 @@ async function run() {
   if (options.help) {
     console.log(
       "Usage: node scripts/seedVerifiedTestUsers.js " +
-      "--project=PROJECT_ID (--live | --emulator) [--apply]"
+      "--project=PROJECT_ID (--live | --emulator) [--apply] " +
+      "[--username=NAME] [--email=EMAIL]"
     );
     return;
   }
@@ -136,12 +196,13 @@ async function run() {
   console.log(`Firebase project: ${options.project}`);
   console.log(`Target: ${target}`);
   console.log(`Mode: ${options.apply ? "APPLY" : "DRY RUN"}`);
-  console.log(`Accounts to create: ${ACCOUNT_COUNT}`);
+  const accountCount = options.username || options.email ? 1 : ACCOUNT_COUNT;
+  console.log(`Accounts to create: ${accountCount}`);
 
   if (!options.apply) {
     console.log("No changes made and no passwords generated.");
     console.log(
-      "Add --apply to create five new accounts and their Markdown file."
+      `Add --apply to create ${accountCount} new account(s) and their Markdown file.`
     );
     return;
   }
@@ -160,7 +221,7 @@ async function run() {
   });
 
   const auth = admin.auth();
-  const accounts = makeAccounts();
+  const accounts = makeAccounts(options);
 
   const stamp = new Date()
     .toISOString()
@@ -225,7 +286,7 @@ async function run() {
       successful += 1;
 
       console.log(
-        `CREATED ${successful}/${ACCOUNT_COUNT}: ${account.email}`
+        `CREATED ${successful}/${accountCount}: ${account.email}`
       );
 
     } catch (error) {
@@ -272,7 +333,7 @@ async function run() {
   // Write final account creation summary.
   fs.appendFileSync(
     outputFile,
-    `\n**Created successfully: ${successful}/${ACCOUNT_COUNT}**\n`
+    `\n**Created successfully: ${successful}/${accountCount}**\n`
   );
 
   console.log(

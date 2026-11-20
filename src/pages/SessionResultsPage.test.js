@@ -283,3 +283,61 @@ test("missing completed session shows the unavailable state", async () => {
     )
   ).toBeInTheDocument();
 });
+
+describe("D-03 ELO presentation from completed sessions", () => {
+  test("D03-T07 shows a negative server-awarded ELO change after a low score", async () => {
+    historyService.getCompletedSessionResults.mockResolvedValue({
+      id: "d03-negative",
+      status: "completed",
+      mode: "Quiz Style",
+      result: {
+        score: 25,
+        questionsAssigned: 10,
+        questionsAnswered: 10,
+        questionsUnanswered: 0,
+        completionStatus: "completed",
+        rankEligible: true,
+        eloChange: -8,
+      },
+    });
+
+    renderResult("/results/d03-negative");
+
+    expect(await screen.findByText("25%")).toBeInTheDocument();
+    expect(screen.getByText("ELO Change")).toBeInTheDocument();
+    expect(screen.getByText("-8")).toBeInTheDocument();
+    expect(screen.queryByText("Estimated ELO Change")).not.toBeInTheDocument();
+  });
+
+  test("D03-T07 shows a saved zero ELO change instead of an unavailable value", () => {
+    renderResult("/results/d03-flat", {
+      sessionId: "d03-flat",
+      score: "50%",
+      completionStatus: "completed",
+      rankEligible: true,
+      questionsAssigned: 10,
+      questionsAnswered: 10,
+      eloChange: "0",
+    });
+
+    expect(screen.getByText("ELO Change")).toBeInTheDocument();
+    expect(screen.getByText("0")).toBeInTheDocument();
+    expect(screen.queryByText("Not ranked")).not.toBeInTheDocument();
+  });
+
+  test("D03-T02 completed four-question practice remains unranked even with a stray delta", () => {
+    renderResult("/results/d03-short", {
+      sessionId: "d03-short",
+      score: "100%",
+      completionStatus: "completed",
+      rankEligible: false,
+      questionsAssigned: 4,
+      questionsAnswered: 4,
+      eloChange: "+8",
+    });
+
+    expect(screen.getByText("ELO Change")).toBeInTheDocument();
+    expect(screen.getByText("Not ranked")).toBeInTheDocument();
+    expect(screen.queryByText("+8")).not.toBeInTheDocument();
+  });
+});

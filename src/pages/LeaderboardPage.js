@@ -4,6 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import { leaderboardService } from "../services/leaderboardService";
 import { getEloRankBadge } from "../utils/eloRankBadge";
 import StateRenderer from "../components/state/StateRenderer";
+import PeekingCapybara from "../components/leaderboard/PeekingCapybara";
 
 const PAGE_SIZE = 5;
 const scoreFormatter = new Intl.NumberFormat("en-US");
@@ -94,8 +95,7 @@ function RankingTable({
   data,
   currentUserId,
   currentUsername,
-  onRemove,
-  saving = false,
+  globalRanksByUid,
   emptyTitle = "No available data",
   emptyDescription = "There are no rankings to display yet.",
 }) {
@@ -127,7 +127,6 @@ function RankingTable({
             <th scope="col">Rank</th>
             <th scope="col">User</th>
             <th scope="col">ELO Score</th>
-            {onRemove && <th scope="col" className="ibRankingActionHeading">Action</th>}
           </tr>
         </thead>
         <tbody>
@@ -135,11 +134,24 @@ function RankingTable({
             const isCurrentUser = currentUserId != null && entry.uid != null
               ? String(entry.uid) === String(currentUserId)
               : Boolean(currentUsername) && entry.username.toLowerCase() === currentUsername.toLowerCase();
+
+            const badge = getEloRankBadge(
+              entry.elo,
+              globalRanksByUid?.get(String(entry.uid))
+            );
             return (
               <tr key={entry.uid != null ? String(entry.uid) : `${entry.username}-${index}`} className={isCurrentUser ? "ibRankingTableRow--current" : ""}>
                 <td><RankBadge rank={entry.rank} /></td>
                 <td>
                   <div className="ibRankingUser">
+                    {badge && (
+                      <img
+                        className="ibRankingRowBadge"
+                        src={badge.src}
+                        alt={`${badge.name} ELO badge for ${entry.username}`}
+                        title={`${badge.name} rank badge`}
+                      />
+                    )}
                     <span className="ibRankingUsername">{entry.username}</span>
                     {isCurrentUser && <span className="ibRankingYou">You</span>}
                   </div>
@@ -157,20 +169,6 @@ function RankingTable({
                     )}
                   </span>
                 </td>
-                {onRemove && (
-                  <td className="ibRankingActionCell">
-                    <button
-                      type="button"
-                      className="ibRankingRemoveButton"
-                      disabled={entry.uid == null || saving}
-                      title={entry.uid == null ? "Friend ID is not available" : undefined}
-                      onClick={() => onRemove(entry)}
-                      aria-label={`Remove ${entry.username} from friends`}
-                    >
-                      Remove
-                    </button>
-                  </td>
-                )}
               </tr>
             );
           })}
@@ -409,11 +407,32 @@ function LeaderboardPage({ currentPage, onNavigate }) {
   }, [user?.uid, refreshKey]);
 
   const friendRankings = useMemo(() => friends.data, [friends.data]);
+  const globalRanksByUid = useMemo(
+    () =>
+      new Map(
+        global.data.map(({ uid, rank }) => [
+          String(uid),
+          rank,
+        ])
+      ),
+    [global.data]
+  );
   const currentUser = standing.status === "success" ? standing.data : null;
   const rankBadge = getEloRankBadge(currentUser?.elo, currentUser?.rank);
   const hasFriends = acceptedFriends.status === "success";
   const friendCount = hasFriends ? acceptedFriends.data.length : null;
-  const rankedFriendCount = friends.status === "success" ? friendRankings.length : null;
+
+  //Dont count self in friend count, since we include self for friends leaderboard
+  const selfIsRanked =
+    friends.status === "success" &&
+    friendRankings.some(
+      (entry) => String(entry.uid) === String(user?.uid)
+    );
+
+  const rankedFriendCount =
+    friends.status === "success"
+      ? friendRankings.length - (selfIsRanked ? 1 : 0)
+      : null;
 
   //Empty messages for no friends or no ranked friends
   const friendsEmptyTitle = hasFriends
@@ -675,6 +694,7 @@ function LeaderboardPage({ currentPage, onNavigate }) {
       onNavigate={onNavigate}
     >
       <div className="ibRankingPage">
+        {activeTab === "friends" && <PeekingCapybara />}
         <div className="ibRankingMain">
           <div className="ibRankingToolbar">
             <div className="ibRankingTabs" role="tablist" aria-label="Leaderboard views">
@@ -691,7 +711,7 @@ function LeaderboardPage({ currentPage, onNavigate }) {
 
           {activeTab === "global" ? (
             <section className="ibRankingPanel" role="tabpanel" id="ib-global-panel" aria-labelledby="ib-global-tab">
-              <RankingTable data={{ ...global, data: global.data.slice(0, visibleGlobal) }} currentUserId={user?.uid} currentUsername={currentUser?.username} />
+              <RankingTable data={{ ...global, data: global.data.slice(0, visibleGlobal) }} currentUserId={user?.uid} currentUsername={currentUser?.username} globalRanksByUid={globalRanksByUid} />
               {global.status === "success" && visibleGlobal < global.data.length && (
                 <button type="button" className="ibRankingLoadMore" onClick={() => setVisibleGlobal((count) => count + PAGE_SIZE)}>Load More Rankings</button>
               )}
@@ -706,7 +726,7 @@ function LeaderboardPage({ currentPage, onNavigate }) {
                       ? "No available data"
                       : `${rankedFriendCount} ranked ${
                           rankedFriendCount === 1 ? "friend" : "friends"
-                        }`}
+                        }${selfIsRanked ? " + you" : ""}`}
                   </span>
                 </div>
 
@@ -723,8 +743,7 @@ function LeaderboardPage({ currentPage, onNavigate }) {
                   }}
                   currentUserId={user?.uid}
                   currentUsername={currentUser?.username}
-                  onRemove={hasFriends ? handleRemoveFriend : undefined}
-                  saving={saving}
+                  globalRanksByUid={globalRanksByUid}
                   emptyTitle={friendsEmptyTitle}
                   emptyDescription={friendsEmptyDescription}
                 />

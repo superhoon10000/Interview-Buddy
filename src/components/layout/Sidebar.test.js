@@ -218,7 +218,7 @@ test("sidebar uses the global #3 Meta badge regardless of a low ELO", async () =
   await renderSidebar();
 
   expect(await screen.findByAltText("Meta ELO rank badge")).toHaveAttribute(
-    "src", "/Meta%20Mascot%20Tech%20Keynote%20Badge.png"
+    "src", "/Capyark%E2%80%99s%20Neta%20Office%20Badge.png"
   );
 });
 
@@ -227,7 +227,7 @@ test("sidebar shows the #2 Bill Gates badge regardless of ELO", async () => {
   await renderSidebar();
 
   expect(await screen.findByAltText("Bill Gates ELO rank badge")).toHaveAttribute(
-    "src", "/Tech%20CEO%20Mascot%20Innovation%20Badge.png"
+    "src", "/Minisofty%20Capybara%20Innovation%20Badge.png"
   );
 });
 
@@ -279,7 +279,7 @@ test("keeps the NVIDIA badge while navigating before the next ranking response",
 
   finishRefresh({ uid: "test-user", username: "DPhoenix", rank: 2, elo: 1201 });
   expect(await screen.findByAltText("Bill Gates ELO rank badge")).toHaveAttribute(
-    "src", "/Tech%20CEO%20Mascot%20Innovation%20Badge.png"
+    "src", "/Minisofty%20Capybara%20Innovation%20Badge.png"
   );
 });
 
