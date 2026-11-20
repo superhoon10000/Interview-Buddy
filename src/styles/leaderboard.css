@@ -1,4 +1,106 @@
 /* Leaderboard and friends - uses the shared Interview Buddy design system. */
+/* Clip the slide at the viewport edge without blocking the page underneath. */
+.ibRankingCapyCorner {
+  position: fixed;
+  top: 0;
+  right: 0;
+  z-index: 30;
+  width: 80px;
+  aspect-ratio: 1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.ibRankingCapyButton {
+  position: absolute;
+  top: -1%;
+  /* The PNG has a small transparent margin beyond its wall. */
+  right: -5%;
+  width: 105%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  line-height: 0;
+  transform: translateX(110%);
+  visibility: hidden;
+  pointer-events: none;
+  transition: transform 420ms cubic-bezier(0.22, 1, 0.36, 1), visibility 0s 420ms;
+}
+
+.ibRankingCapyButton.is-showing {
+  transform: translateX(0);
+  visibility: visible;
+  pointer-events: auto;
+  cursor: pointer;
+  transition-delay: 0s;
+}
+
+.ibRankingCapyButton img {
+  display: block;
+  width: 100%;
+  height: auto;
+  user-select: none;
+}
+
+.ibRankingCapyButton:focus-visible {
+  outline-offset: -5px !important;
+}
+
+.ibRankingCapyPerformance {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+
+.ibRankingCapyPerformanceContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.ibRankingCapyPerformance img {
+  display: block;
+  width: 94vw;
+  height: calc(94vh - 60px);
+  height: calc(94dvh - 60px);
+  object-fit: contain;
+  border-radius: 16px;
+}
+
+.ibRankingCapyPerformance button {
+  pointer-events: auto;
+  padding: 8px 16px;
+  border: 1px solid var(--ib-border);
+  border-radius: 999px;
+  background: var(--ib-surface);
+  color: var(--ib-text);
+  box-shadow: var(--ib-shadow-sm);
+  cursor: pointer;
+}
+
+.ibRankingCapyError {
+  position: fixed;
+  top: 84px;
+  right: 12px;
+  z-index: 40;
+  max-width: min(280px, 90vw);
+  padding: 12px;
+  border-radius: 8px;
+  background: var(--ib-surface);
+  color: var(--ib-danger);
+  box-shadow: var(--ib-shadow-sm);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ibRankingCapyButton {
+    transition: none;
+  }
+}
+
 .ibRankingPage {
   --ib-ranking-accent: var(--ib-accent);
   --ib-ranking-accent-hover: var(--ib-accent-hover);
