@@ -109,6 +109,49 @@ jobs:
           echo "Expected failure detected (exit $probe_status); normal assertion remains enabled."
           echo "### CC6.3 CI gate: deliberately failing assertion returned exit $probe_status (expected)" >> "$GITHUB_STEP_SUMMARY"
 
+      # CI/CD-28: Report frontend and backend formatting issues without blocking CI.
+      # Existing formatting differences are tracked but not automatically changed.
+      - name: Report code formatting validation
+        shell: bash
+        run: |
+          echo "### Code Formatting Validation (Prettier)" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+
+          # Check formatting without stopping the reporting-only CI step.
+          set +e
+          npm run format:check > prettier-report.txt 2>&1
+          format_status=$?
+          set -e
+
+          # Show the full report in GitHub Actions logs.
+          cat prettier-report.txt
+
+          # Count files reported as needing formatting.
+          issue_count=$(grep -Ec '^\[warn\] (src/|server/src/)' prettier-report.txt || true)
+          issue_count=$(echo "$issue_count" | tr -d '[:space:]')
+
+          echo "**Mode:** Reporting only (non-blocking)" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "**Files with formatting issues:** $issue_count" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+
+          if [ "$format_status" -eq 0 ]; then
+            echo "Formatting validation passed."
+            echo "**Result:** All checked files follow formatting rules." >> "$GITHUB_STEP_SUMMARY"
+          elif [ "$format_status" -eq 1 ]; then
+            echo "Formatting issues detected (exit $format_status)."
+            echo "**Result:** Formatting issues detected; CI continues." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "::warning::Prettier could not complete successfully (exit $format_status)."
+            echo "**Result:** Formatting validation encountered an execution error; manual review required." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "Run \`npm run format:check\` locally to view the full report." >> "$GITHUB_STEP_SUMMARY"
+
+          # Reporting only: do not fail the workflow for formatting violations.
+          exit 0
+
       - name: Run frontend lint
         run: npm run lint
 

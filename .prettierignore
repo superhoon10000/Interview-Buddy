@@ -1,0 +1,24 @@
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Generated files
+build/
+coverage/
+.firebase/
+
+# Environment and credentials
+.env
+.env.*
+!.env.example
+**/service-account*.json
+**/*serviceAccount*.json
+**/firebase-adminsdk-*.json
+**/*firebase-adminsdk*.json
+gha-creds-*.json
+
+# Generated test output
+server/scripts/output/
+
+# Documentation
+docs/
