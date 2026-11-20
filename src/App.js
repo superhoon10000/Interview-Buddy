@@ -17,6 +17,29 @@ import { interviewService } from "./services/interviewService";
 
 import { useAuth } from "./context/AuthContext";
 
+// This optional feature is downloaded only when visiting the signed-in Dashboard.
+// It has no dependency on production interview services.
+const DashboardOfficeQuestLauncher = React.lazy(() =>
+  import("./components/easterEgg/OfficeQuestLauncher")
+);
+
+// A failed optional game chunk or renderer cannot crash the primary Dashboard.
+class OptionalOfficeQuestBoundary extends React.Component {
+  state = { failed: false };
+
+  static getDerivedStateFromError() {
+    return { failed: true };
+  }
+
+  componentDidCatch(error) {
+    console.warn("Optional office quest could not be opened:", error);
+  }
+
+  render() {
+    return this.state.failed ? null : this.props.children;
+  }
+}
+
 function App() {
   const navigate = useNavigate();
 
@@ -156,6 +179,7 @@ function App() {
   }
 
   return (
+    <>
     <AppRoutes
       currentPage={
         currentPage
@@ -188,6 +212,15 @@ function App() {
         sessionResult
       }
     />
+    {/* Hidden Dashboard-only listener. Disappears on navigation or logout. */}
+    {!loading && user && currentPage === PAGES.DASHBOARD && (
+      <OptionalOfficeQuestBoundary>
+        <React.Suspense fallback={null}>
+          <DashboardOfficeQuestLauncher />
+        </React.Suspense>
+      </OptionalOfficeQuestBoundary>
+    )}
+    </>
   );
 }
 

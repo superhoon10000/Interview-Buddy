@@ -1,0 +1,173 @@
+/* This stylesheet is intentionally namespaced. Nothing here styles the main app. */
+.officeQuestBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  overflow-y: auto;
+  background: rgba(5, 10, 22, 0.91);
+  backdrop-filter: blur(8px);
+}
+.officeQuestWindow, .officeQuestWindow * { box-sizing: border-box; }
+.officeQuestWindow {
+  color: #eaf4f2;
+  width: min(1040px, 100%);
+  max-height: calc(100dvh - 36px);
+  overflow-y: auto;
+  border: 4px solid #8ab2af;
+  outline: 5px solid #152a36;
+  background: #152535;
+  box-shadow: 0 0 0 8px #273a4c, 0 30px 75px rgba(0,0,0,.64);
+  font-family: "Courier New", Courier, monospace;
+  font-size: 13px;
+  line-height: 1.5;
+  image-rendering: pixelated;
+}
+.officeQuestWindow button { font: inherit; font-weight: 800; border-radius: 0; outline-offset: 3px; }
+.officeQuestWindow button:focus-visible { outline: 3px solid #f9db94; }
+.officeQuestWindow h1, .officeQuestWindow h2, .officeQuestWindow h3, .officeQuestWindow p { margin: 0; padding: 0; }
+.officeQuestHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 15px 18px;
+  border-bottom: 4px solid #344c57;
+  background: #1c3041;
+}
+.officeQuestBrand, .officeQuestHeaderRight { display: flex; gap: 13px; align-items: center; }
+.officeQuestBrandIcon {
+  display: grid; place-items: center; flex-shrink: 0;
+  width: 42px; height: 42px; background: #f0bc78;
+  box-shadow: inset -5px -5px 0 #b87c55, 4px 4px 0 #0f202d;
+  color: #213a44; font-size: 17px; font-weight: 900;
+}
+.officeQuestOverline { display: block; font-size: 10px; font-weight: 900; letter-spacing: 1.5px; color: #a1d3ce; text-transform: uppercase; }
+.officeQuestHeader h1 { font-size: clamp(15px,2.3vw,23px); letter-spacing: 1px; line-height: 1.3; color: #fff1c9; }
+.officeQuestProgress { padding: 9px 12px; color: #f5d99b; white-space: nowrap; background: #2e4051; border: 2px solid #496a72; font-weight: 900; }
+.officeQuestClose { background: #b65d61; color: #fff4e3; width: 37px; height: 37px; border: 0; box-shadow: inset -4px -4px 0 #873e4a; }
+.officeQuestClose:hover { background: #d47c76; }
+.officeQuestMain { display: grid; grid-template-columns: minmax(0, 1fr) 260px; gap: 0; }
+.officeQuestGameArea { padding: 15px; min-width: 0; background: #1c2e3e; }
+.officeQuestScene {
+  position: relative;
+  width: 100%;
+  border: 4px solid #61798b;
+  background: #32495c;
+  box-shadow: inset 0 0 0 4px #182c39;
+  overflow: hidden;
+}
+.officeQuestCanvas { display: block; width: 100%; height: auto; aspect-ratio: 5 / 3; image-rendering: pixelated; }
+.officeQuestPrompt {
+  display: flex; gap: 10px; align-items: center;
+  padding: 11px 10px; min-height: 45px; border: 2px solid #536e7d; border-top: 0;
+  font-weight: 800; font-size: 12px; color: #d9e9db; background: #263b4c;
+}
+.officeQuestPromptDot { height: 8px; width: 8px; flex-shrink: 0; background: #f6cc83; box-shadow: 0 0 0 3px #4b5864; }
+.officeQuestButtonRow { display: flex; justify-content: space-between; align-items: flex-end; gap: 10px; margin-top: 12px; }
+.officeQuestDpad { display: grid; justify-items: center; gap: 3px; }
+.officeQuestDpad > div { display: flex; gap: 3px; }
+.officeQuestDpad button, .officeQuestTalkButton {
+  background: #405669; color: #d8e8e7; border: 2px solid #66828e;
+  padding: 7px 10px; font-size: 11px; min-width: 55px;
+  box-shadow: inset -3px -3px 0 #283a4e;
+}
+.officeQuestDpad button:hover:not(:disabled), .officeQuestTalkButton:hover:not(:disabled) { background: #567486; }
+.officeQuestTalkButton { background: #edbc76; color: #253748; border-color: #ffe0a1; box-shadow: inset -4px -4px 0 #bd895c; min-height: 49px; padding: 10px 15px; }
+.officeQuestTalkButton:hover:not(:disabled) { background: #ffe3a8; }
+.officeQuestTalkButton:disabled { opacity: .5; cursor: not-allowed; }
+.officeQuestSide { border-left: 4px solid #344c57; padding: 16px; background: #1a2b3b; }
+.officeQuestQuestTitle > span, .officeQuestInventory > span, .officeQuestHelp > span { color: #8cc6c2; font-size: 10px; letter-spacing: 1.2px; font-weight: 900; }
+.officeQuestQuestTitle h2 { color: #f4c783; font-size: 17px; margin: 3px 0 5px; }
+.officeQuestQuestTitle p { color: #b7cbd3; font-size: 12px; }
+.officeQuestNPCList { margin-top: 16px; display: grid; gap: 6px; }
+.officeQuestNPC { display: flex; align-items: center; gap: 9px; padding: 9px 8px; background: #263b4b; border-left: 3px solid #4b6878; }
+.officeQuestNPCDone { background: #254a43; border-left-color: #8bd6a4; }
+.officeQuestNPCPixel { width: 15px; height: 17px; flex: 0 0 15px; box-shadow: 3px 3px 0 #142a38, inset -4px -4px 0 #43556a; }
+.officeQuestNPC > span:nth-child(2) { min-width: 0; flex: 1; display: flex; flex-direction: column; line-height: 1.4; }
+.officeQuestNPC strong { font-size: 12px; color: #eef8ed; }
+.officeQuestNPC small { color: #b0c3cc; font-size: 9px; letter-spacing: .3px; }
+.officeQuestNPCStatus { color: #dfbc76; font-size: 10px; font-weight: 900; }
+.officeQuestNPCDone .officeQuestNPCStatus { color: #8de2ae; }
+.officeQuestInventory { margin-top: 15px; padding: 10px; border: 2px dashed #52707c; display: grid; gap: 3px; }
+.officeQuestInventory strong { color: #f0c67e; font-size: 11px; }
+.officeQuestHelp { margin-top: 14px; }
+.officeQuestHelp p { margin-top: 5px; color: #b8ccd1; font-size: 11px; line-height: 1.75; }
+.officeQuestHelp strong { color: #e6ede0; }
+.officeQuestSmall { font-size: 11px !important; color: #a5c1c6 !important; margin-top: 9px !important; }
+.officeQuestFooter { padding: 9px 15px; font-size: 10px; font-weight: 900; letter-spacing: .5px; text-align: center; color: #99b2c1; border-top: 3px solid #344c57; }
+.officeQuestDialogShade {
+  position: absolute; inset: 0; z-index: 2; display: flex; align-items: center; justify-content: center;
+  padding: 13px; background: rgba(13, 24, 38, .83); overflow-y: auto;
+}
+.officeQuestDialog {
+  width: min(455px, 100%); max-height: 100%; overflow-y: auto;
+  padding: clamp(13px, 2.4vw, 24px);
+  color: #ebf5eb; background: #203446; border: 3px solid #a4c5c0;
+  box-shadow: 6px 6px 0 #101c2b, inset 0 0 0 3px #30495a;
+}
+.officeQuestDialog h2 { margin: 6px 0 12px; color: #fff0bd; font-size: clamp(17px, 2.5vw, 23px); line-height: 1.2; }
+.officeQuestDialog h2 small { display: inline-block; font-size: 11px; color: #a6c8cd; font-weight: 400; }
+.officeQuestDialog p { margin: 9px 0 13px; font-size: 12px; line-height: 1.65; }
+.officeQuestQuote { padding: 10px; color: #cde3e3; border-left: 4px solid #6da5a2; background: #2b4353; }
+.officeQuestActions { display: flex; flex-wrap: wrap; align-items: center; gap: 9px; margin-top: 15px; }
+.officeQuestPrimary, .officeQuestGoldButton, .officeQuestPlain {
+  padding: 10px 15px; border: 2px solid #c8f6de; font-size: 12px;
+}
+.officeQuestPrimary { color: #18364b; background: #9cdeb4; box-shadow: inset -4px -4px 0 #69b596; }
+.officeQuestPrimary:hover { background: #c5f5d2; }
+.officeQuestGoldButton { color: #293745; border-color: #ffe1a4; background: #efc378; box-shadow: inset -4px -4px 0 #b38a52; }
+.officeQuestGoldButton:hover { background: #ffe3aa; }
+.officeQuestPlain { color: #d9edf0; border-color: #658391; background: #344d5c; }
+.officeQuestPlain:hover { background: #4d6d7a; }
+.officeQuestQuestionDialog { width: min(490px, 100%); }
+.officeQuestQuestionText { font-size: 13px !important; color: #f2f4e8; font-weight: bold; }
+.officeQuestOptions { display: grid; gap: 7px; margin-top: 14px; }
+.officeQuestOption { display: flex; align-items: center; text-align: left; gap: 8px; min-height: 37px; width: 100%; padding: 7px 9px; border: 2px solid #5e8190; background: #304b5d; color: #f1f4ed; font-size: 12px !important; }
+.officeQuestOption:hover { background: #466c7a; border-color: #b8d9c5; }
+.officeQuestOptionNumber { display: inline-grid; place-items: center; width: 21px; height: 21px; flex: 0 0 21px; background: #e1bc7e; color: #223546; }
+.officeQuestVerdict { font-size: 12px; letter-spacing: 1.5px; font-weight: 900; }
+.officeQuestRight { color: #a0e5a8; }
+.officeQuestWrong { color: #ffaf9c; }
+.officeQuestPixelIcon, .officeQuestTrophy { display: inline-grid; place-items: center; background: #f1cd79; color: #273a4c; border: 4px solid #ffe9a6; box-shadow: 5px 5px 0 #aa7a4d; font-size: 20px; font-weight: 900; padding: 6px 13px; margin-bottom: 11px; }
+.officeQuestWinShade { background: rgba(18, 40, 41, .92); }
+.officeQuestWin { text-align: center; border-color: #f2d48d; }
+.officeQuestWin h2 { color: #ffdf83; font-size: clamp(22px, 3.5vw, 32px); }
+.officeQuestWin .officeQuestActions { justify-content: center; }
+.officeQuestTrophy { font-size: 25px; padding: 15px; }
+.officeQuestConfetti { color: #f9c977; letter-spacing: 8px; font-size: 18px; margin-bottom: 9px; }
+@media (max-width: 780px) {
+  .officeQuestBackdrop { align-items: flex-start; padding: 10px; }
+  .officeQuestWindow { max-height: calc(100dvh - 20px); }
+  .officeQuestHeader { padding: 9px; }
+  .officeQuestBrandIcon { display: none; }
+  .officeQuestHeader h1 { font-size: 15px; }
+  .officeQuestProgress { font-size: 10px; padding: 6px; }
+  .officeQuestMain { display: block; }
+  .officeQuestGameArea { padding: 9px; }
+  .officeQuestSide { border-left: 0; border-top: 4px solid #344c57; padding: 12px; }
+  .officeQuestNPCList { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .officeQuestDialogShade { padding: 5px; }
+  .officeQuestDialog { padding: 12px; }
+  .officeQuestDialog h2 { margin: 4px 0 6px; font-size: 16px; }
+  .officeQuestDialog p { font-size: 11px; margin: 5px 0 8px; line-height: 1.4; }
+  .officeQuestOption { padding: 5px; min-height: 29px; font-size: 10px !important; }
+  .officeQuestOptions { gap: 4px; margin-top: 8px; }
+  .officeQuestSmall { margin-top: 4px !important; }
+  .officeQuestDpad button { font-size: 10px; min-width: 49px; padding: 5px; }
+}
+@media (max-width: 420px) {
+  .officeQuestOverline { font-size: 8px; }
+  .officeQuestHeader h1 { font-size: 12px; }
+  .officeQuestClose { width: 28px; height: 28px; }
+  .officeQuestGameArea { padding: 5px; }
+  .officeQuestQuestionText { font-size: 10px !important; }
+  .officeQuestDialog { padding: 8px; }
+  .officeQuestDialog p { font-size: 10px; }
+  .officeQuestOption { min-height: 24px; }
+  .officeQuestFooter { font-size: 8px; }
+}
+@media (prefers-reduced-motion: reduce) { .officeQuestWindow * { scroll-behavior: auto; } }
