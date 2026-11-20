@@ -171,6 +171,7 @@ describe("POST /api/evaluate route", () => {
       .toHaveBeenCalledWith({
         question: privateQuestion,
         candidateResponse: "Candidate answer",
+        attemptId: "test-attempt-id",
       });
 
     expect(
@@ -214,6 +215,7 @@ describe("POST /api/evaluate route", () => {
         .toHaveBeenCalledWith({
           question: privateQuestion,
           candidateResponse,
+          attemptId: "test-attempt-id",
         });
 
       expect(next).not.toHaveBeenCalled();
@@ -559,6 +561,7 @@ describe("POST /api/evaluate route", () => {
       .toHaveBeenCalledWith({
         question: privateQuestion,
         candidateResponse: "My explanation.",
+        attemptId: "test-attempt-id",
       });
 
     expect(res.payload).toEqual({
