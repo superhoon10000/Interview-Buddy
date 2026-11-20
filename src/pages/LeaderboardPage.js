@@ -4,6 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import { leaderboardService } from "../services/leaderboardService";
 import { getEloRankBadge } from "../utils/eloRankBadge";
 import StateRenderer from "../components/state/StateRenderer";
+import PeekingCapybara from "../components/leaderboard/PeekingCapybara";
 
 const PAGE_SIZE = 5;
 const scoreFormatter = new Intl.NumberFormat("en-US");
@@ -693,6 +694,7 @@ function LeaderboardPage({ currentPage, onNavigate }) {
       onNavigate={onNavigate}
     >
       <div className="ibRankingPage">
+        {activeTab === "friends" && <PeekingCapybara />}
         <div className="ibRankingMain">
           <div className="ibRankingToolbar">
             <div className="ibRankingTabs" role="tablist" aria-label="Leaderboard views">

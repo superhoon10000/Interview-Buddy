@@ -51,7 +51,7 @@ function DashboardPage({
           </span>
 
           <h2 className="dashboardWelcomeTitle">
-            Welcome back, {displayName}!
+            Capytastic! Lets Practice, {displayName}!
           </h2>
 
           <p className="dashboardWelcomeText">
